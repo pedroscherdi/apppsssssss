@@ -987,6 +987,7 @@ const firebaseConfig = {
   <button class="tab" data-tab="tracao">📐 Tração Postes</button>
   <button class="tab" data-tab="cintas">🔗 Cintas</button>
   <button class="tab" data-tab="atualizar">⬆️ Atualizar Dados</button>
+  <button class="tab" data-tab="kanban">📋 Kanban</button>
 </div>
 
 <!-- TAB: CONSULTAR -->
@@ -3254,6 +3255,530 @@ const firebaseConfig = {
   // INIT: loadFromSheets é chamado pelo Firebase após login
   // loadFromSheets();
 </script>
+<!-- TAB: KANBAN (TRELLO) -->
+<div class="tab-panel" id="tab-kanban">
+
+  <style>
+    /* ── KANBAN ────────────────────────────────────────────── */
+    .kb-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;
+    }
+    .kb-board {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      -webkit-overflow-scrolling: touch;
+      align-items: flex-start;
+      min-height: 520px;
+    }
+    .kb-col {
+      flex-shrink: 0;
+      width: 270px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: border-color 0.2s;
+    }
+    .kb-col.drag-over { border-color: var(--accent); background: rgba(0,230,118,0.04); }
+    .kb-col-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      gap: 0.5rem;
+    }
+    .kb-col-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--text);
+      flex: 1;
+      cursor: text;
+      outline: none;
+      border: none;
+      background: transparent;
+    }
+    .kb-col-title:focus { color: var(--accent); }
+    .kb-col-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      background: rgba(0,230,118,0.1);
+      color: var(--accent);
+      border-radius: 20px;
+      padding: 1px 8px;
+      flex-shrink: 0;
+    }
+    .kb-col-del {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer; font-size: 0.85rem;
+      padding: 2px 5px; border-radius: 4px; transition: color 0.2s;
+      flex-shrink: 0;
+    }
+    .kb-col-del:hover { color: var(--danger); }
+    .kb-col-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .kb-cards {
+      padding: 0.6rem;
+      min-height: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .kb-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.75rem;
+      cursor: grab;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+      position: relative;
+      animation: fadeIn 0.2s ease;
+    }
+    .kb-card:active { cursor: grabbing; }
+    .kb-card.dragging { opacity: 0.4; transform: scale(0.97); }
+    .kb-card:hover { border-color: rgba(0,230,118,0.4); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+    .kb-card-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .kb-card-meta {
+      display: flex; align-items: center; gap: 0.4rem;
+      margin-top: 0.45rem; flex-wrap: wrap;
+    }
+    .kb-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-weight: 600;
+    }
+    .kb-card-del {
+      position: absolute; top: 5px; right: 6px;
+      background: none; border: none;
+      color: transparent; cursor: pointer; font-size: 0.75rem;
+      padding: 2px; border-radius: 3px;
+      transition: color 0.15s;
+    }
+    .kb-card:hover .kb-card-del { color: var(--muted); }
+    .kb-card-del:hover { color: var(--danger) !important; }
+    .kb-add-card {
+      margin: 0 0.6rem 0.6rem;
+      background: none; border: 1px dashed var(--border);
+      border-radius: 6px; color: var(--muted);
+      font-family: 'DM Mono', monospace; font-size: 0.78rem;
+      padding: 0.45rem 0.75rem; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      text-align: left; width: calc(100% - 1.2rem);
+    }
+    .kb-add-card:hover { border-color: var(--accent); color: var(--accent); }
+    .kb-add-col {
+      flex-shrink: 0; width: 200px;
+      background: rgba(0,230,118,0.04);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+      align-self: flex-start;
+    }
+    .kb-add-col input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      font-family: 'DM Mono', monospace; font-size: 0.82rem;
+    }
+    .kb-add-col input:focus { outline: none; border-color: var(--accent); }
+    .kb-add-col-btn {
+      background: var(--accent); color: #060f0a;
+      border: none; border-radius: 6px;
+      padding: 0.4rem 0.75rem;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .kb-add-col-btn:hover { opacity: 0.85; }
+
+    /* Modal */
+    .kb-modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 9000;
+      align-items: center; justify-content: center;
+    }
+    .kb-modal-bg.open { display: flex; }
+    .kb-modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem;
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 0.9rem;
+      animation: fadeIn 0.2s ease;
+      margin: 1rem;
+    }
+    .kb-modal h3 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1rem; color: var(--accent);
+    }
+    .kb-modal label {
+      font-family: 'DM Mono', monospace; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+      display: block; margin-bottom: 4px;
+    }
+    .kb-modal input, .kb-modal textarea, .kb-modal select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px; padding: 0.5rem 0.75rem;
+      font-family: 'DM Mono', monospace; font-size: 0.82rem;
+    }
+    .kb-modal textarea { min-height: 70px; resize: vertical; }
+    .kb-modal input:focus, .kb-modal textarea:focus, .kb-modal select:focus {
+      outline: none; border-color: var(--accent);
+    }
+    .kb-modal-btns { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .kb-priority-row { display: flex; gap: 0.4rem; }
+    .kb-pri-btn {
+      flex: 1; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); cursor: pointer;
+      font-family: 'DM Mono', monospace; font-size: 0.72rem; font-weight: 600;
+      padding: 0.35rem 0; transition: all 0.15s; color: var(--muted);
+    }
+    .kb-pri-btn.active { color: #060f0a !important; }
+    .kb-pri-btn[data-pri="baixa"].active { background: #47ff9a; border-color: #47ff9a; }
+    .kb-pri-btn[data-pri="media"].active { background: #ffd166; border-color: #ffd166; }
+    .kb-pri-btn[data-pri="alta"].active  { background: #ff6b6b; border-color: #ff6b6b; }
+
+    @media (max-width: 600px) {
+      .kb-col { width: 230px; }
+    }
+  </style>
+
+  <div class="kb-toolbar">
+    <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">
+      <strong style="color:var(--text);">Kanban</strong> · Arraste os cartões entre colunas
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button class="btn-ghost" style="font-size:0.75rem;padding:0.35rem 0.85rem;" onclick="kbReset()">↺ Resetar</button>
+      <button class="btn" style="font-size:0.75rem;padding:0.4rem 1rem;" onclick="kbSave();showToast('✅ Quadro salvo!','success')">💾 Salvar</button>
+    </div>
+  </div>
+
+  <div class="kb-board" id="kbBoard"></div>
+
+  <!-- Modal de novo cartão -->
+  <div class="kb-modal-bg" id="kbModalBg" onclick="kbCloseModal(event)">
+    <div class="kb-modal">
+      <h3>+ Novo Cartão</h3>
+      <div>
+        <label>Título <span style="color:var(--accent)">*</span></label>
+        <input type="text" id="kbCardTitle" placeholder="Ex: Revisar estrutura AT-123"/>
+      </div>
+      <div>
+        <label>Nota (opcional)</label>
+        <textarea id="kbCardNote" placeholder="Detalhes, links, referências..."></textarea>
+      </div>
+      <div>
+        <label>Prioridade</label>
+        <div class="kb-priority-row">
+          <button class="kb-pri-btn active" data-pri="baixa" onclick="kbSetPri(this)">● Baixa</button>
+          <button class="kb-pri-btn" data-pri="media" onclick="kbSetPri(this)">● Média</button>
+          <button class="kb-pri-btn" data-pri="alta" onclick="kbSetPri(this)">● Alta</button>
+        </div>
+      </div>
+      <div>
+        <label>Data (opcional)</label>
+        <input type="date" id="kbCardDate"/>
+      </div>
+      <div class="kb-modal-btns">
+        <button class="btn-ghost" onclick="document.getElementById('kbModalBg').classList.remove('open')">Cancelar</button>
+        <button class="btn" onclick="kbConfirmCard()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── KANBAN ────────────────────────────────────────────────────────────────
+
+const KB_KEY = 'sbKanban_v2';
+
+const KB_COL_COLORS = [
+  '#00e676','#69f0ae','#ffd166','#ff6b6b','#74c0fc','#f97316','#a78bfa','#f472b6'
+];
+
+const KB_DEFAULTS = [
+  {
+    id: 'col_1', title: 'A Fazer', color: '#ffd166',
+    cards: [
+      { id:'c1', title:'Revisar estruturas AT pendentes', note:'', pri:'alta', date:'' },
+      { id:'c2', title:'Atualizar BOM do lote 07', note:'Arquivo no Teams', pri:'media', date:'' },
+    ]
+  },
+  {
+    id: 'col_2', title: 'Em Andamento', color: '#74c0fc',
+    cards: [
+      { id:'c3', title:'Levantar quantitativo de cabos', note:'Planilha enviada pelo engenheiro', pri:'media', date:'' },
+    ]
+  },
+  {
+    id: 'col_3', title: 'Revisão', color: '#a78bfa',
+    cards: []
+  },
+  {
+    id: 'col_4', title: 'Concluído', color: '#47ff9a',
+    cards: [
+      { id:'c4', title:'Configurar SetupBoom', note:'', pri:'baixa', date:'' },
+    ]
+  },
+];
+
+const PRI_COLORS = { baixa:'rgba(71,255,154,0.2)', media:'rgba(255,209,102,0.2)', alta:'rgba(255,107,107,0.2)' };
+const PRI_TEXT   = { baixa:'#47ff9a', media:'#ffd166', alta:'#ff6b6b' };
+const PRI_LABEL  = { baixa:'Baixa', media:'Média', alta:'Alta' };
+
+let kbData = [];
+let kbTargetColId = null;
+let kbDragCardId  = null;
+let kbDragColId   = null;
+let kbPriAtual    = 'baixa';
+
+function kbLoad() {
+  try {
+    const saved = localStorage.getItem(KB_KEY);
+    kbData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(KB_DEFAULTS));
+  } catch(e) {
+    kbData = JSON.parse(JSON.stringify(KB_DEFAULTS));
+  }
+}
+
+function kbSave() {
+  localStorage.setItem(KB_KEY, JSON.stringify(kbData));
+}
+
+function kbReset() {
+  if (!confirm('Resetar o quadro para o padrão? Todos os cartões serão perdidos.')) return;
+  kbData = JSON.parse(JSON.stringify(KB_DEFAULTS));
+  kbSave();
+  kbRender();
+}
+
+function kbUid() {
+  return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+function kbRender() {
+  const board = document.getElementById('kbBoard');
+  if (!board) return;
+
+  board.innerHTML = '';
+
+  kbData.forEach(col => {
+    const colEl = document.createElement('div');
+    colEl.className = 'kb-col';
+    colEl.dataset.colId = col.id;
+
+    colEl.innerHTML = `
+      <div class="kb-col-header">
+        <span class="kb-col-dot" style="background:${col.color}"></span>
+        <input class="kb-col-title" value="${kbEsc(col.title)}" maxlength="40"
+          onblur="kbRenameCol('${col.id}', this.value)"
+          onkeydown="if(event.key==='Enter')this.blur()"/>
+        <span class="kb-col-count">${col.cards.length}</span>
+        <button class="kb-col-del" title="Remover coluna" onclick="kbDelCol('${col.id}')">✕</button>
+      </div>
+      <div class="kb-cards" id="cards_${col.id}"
+        ondragover="kbDragOver(event,'${col.id}')"
+        ondragleave="kbDragLeave(event,'${col.id}')"
+        ondrop="kbDrop(event,'${col.id}')">
+        ${col.cards.map(c => kbCardHtml(c)).join('')}
+      </div>
+      <button class="kb-add-card" onclick="kbOpenModal('${col.id}')">+ Adicionar cartão</button>
+    `;
+
+    board.appendChild(colEl);
+  });
+
+  // Add column panel
+  const addCol = document.createElement('div');
+  addCol.className = 'kb-add-col';
+  addCol.innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Nova Coluna</div>
+    <input type="text" id="kbNewColInput" placeholder="Nome da coluna..." maxlength="30"
+      onkeydown="if(event.key==='Enter')kbAddCol()"/>
+    <button class="kb-add-col-btn" onclick="kbAddCol()">+ Criar</button>
+  `;
+  board.appendChild(addCol);
+
+  // Attach drag listeners to cards
+  board.querySelectorAll('.kb-card').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      kbDragCardId = el.dataset.cardId;
+      kbDragColId  = el.dataset.colId;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      document.querySelectorAll('.kb-col').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+}
+
+function kbCardHtml(c) {
+  const dateStr = c.date ? `<span class="kb-tag" style="background:rgba(116,192,252,0.15);color:#74c0fc;">📅 ${c.date}</span>` : '';
+  const priTag  = `<span class="kb-tag" style="background:${PRI_COLORS[c.pri]};color:${PRI_TEXT[c.pri]};">${PRI_LABEL[c.pri]}</span>`;
+  const noteStr = c.note ? `<div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-top:0.3rem;line-height:1.5;">${kbEsc(c.note)}</div>` : '';
+
+  return `
+    <div class="kb-card" draggable="true" data-card-id="${c.id}" data-col-id="${c.colId||''}">
+      <button class="kb-card-del" onclick="kbDelCard('${c.id}')" title="Remover">✕</button>
+      <div class="kb-card-title">${kbEsc(c.title)}</div>
+      ${noteStr}
+      <div class="kb-card-meta">${priTag}${dateStr}</div>
+    </div>`;
+}
+
+function kbEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function kbOpenModal(colId) {
+  kbTargetColId = colId;
+  document.getElementById('kbCardTitle').value = '';
+  document.getElementById('kbCardNote').value  = '';
+  document.getElementById('kbCardDate').value  = '';
+  kbPriAtual = 'baixa';
+  document.querySelectorAll('.kb-pri-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.pri === 'baixa');
+  });
+  document.getElementById('kbModalBg').classList.add('open');
+  setTimeout(() => document.getElementById('kbCardTitle').focus(), 80);
+}
+
+function kbCloseModal(e) {
+  if (e.target === document.getElementById('kbModalBg'))
+    document.getElementById('kbModalBg').classList.remove('open');
+}
+
+function kbSetPri(btn) {
+  kbPriAtual = btn.dataset.pri;
+  document.querySelectorAll('.kb-pri-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function kbConfirmCard() {
+  const title = document.getElementById('kbCardTitle').value.trim();
+  if (!title) { document.getElementById('kbCardTitle').focus(); return; }
+  const note  = document.getElementById('kbCardNote').value.trim();
+  const date  = document.getElementById('kbCardDate').value;
+
+  const col = kbData.find(c => c.id === kbTargetColId);
+  if (!col) return;
+
+  col.cards.push({ id: kbUid(), title, note, pri: kbPriAtual, date });
+  kbSave();
+  kbRender();
+  document.getElementById('kbModalBg').classList.remove('open');
+  showToast('Cartão adicionado!', 'success');
+}
+
+function kbDelCard(cardId) {
+  kbData.forEach(col => {
+    col.cards = col.cards.filter(c => c.id !== cardId);
+  });
+  kbSave();
+  kbRender();
+}
+
+function kbDelCol(colId) {
+  const col = kbData.find(c => c.id === colId);
+  if (col && col.cards.length > 0) {
+    if (!confirm(`Remover a coluna "${col.title}" com ${col.cards.length} cartão(s)?`)) return;
+  }
+  kbData = kbData.filter(c => c.id !== colId);
+  kbSave();
+  kbRender();
+}
+
+function kbRenameCol(colId, newName) {
+  const col = kbData.find(c => c.id === colId);
+  if (col && newName.trim()) col.title = newName.trim();
+  kbSave();
+  // update count span only
+  const countEl = document.querySelector(`[data-col-id="${colId}"] .kb-col-count`);
+  if (countEl) countEl.textContent = col.cards.length;
+}
+
+function kbAddCol() {
+  const inp = document.getElementById('kbNewColInput');
+  const name = inp ? inp.value.trim() : '';
+  if (!name) { if(inp) inp.focus(); return; }
+  const color = KB_COL_COLORS[kbData.length % KB_COL_COLORS.length];
+  kbData.push({ id: kbUid(), title: name, color, cards: [] });
+  kbSave();
+  kbRender();
+  // scroll to new column
+  const board = document.getElementById('kbBoard');
+  if (board) board.scrollLeft = board.scrollWidth;
+}
+
+// ── Drag & Drop ──────────────────────────────────────────────────────────
+function kbDragOver(e, colId) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const colEl = document.querySelector(`[data-col-id="${colId}"]`);
+  if (colEl) colEl.classList.add('drag-over');
+}
+
+function kbDragLeave(e, colId) {
+  const colEl = document.querySelector(`[data-col-id="${colId}"]`);
+  if (colEl) colEl.classList.remove('drag-over');
+}
+
+function kbDrop(e, targetColId) {
+  e.preventDefault();
+  const colEl = document.querySelector(`[data-col-id="${targetColId}"]`);
+  if (colEl) colEl.classList.remove('drag-over');
+  if (!kbDragCardId || kbDragColId === targetColId) return;
+
+  // Find and move card
+  let card = null;
+  kbData.forEach(col => {
+    const idx = col.cards.findIndex(c => c.id === kbDragCardId);
+    if (idx !== -1) { card = col.cards.splice(idx, 1)[0]; }
+  });
+  if (!card) return;
+
+  const targetCol = kbData.find(c => c.id === targetColId);
+  if (targetCol) targetCol.cards.push(card);
+
+  kbDragCardId = null;
+  kbDragColId  = null;
+  kbSave();
+  kbRender();
+}
+
+// Init when tab is opened
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'kanban') {
+      kbLoad();
+      kbRender();
+    }
+  });
+});
+
+// Also init on DOMContentLoaded if tab is active
+document.addEventListener('DOMContentLoaded', () => {
+  kbLoad();
+});
+
+// ── FIM KANBAN ─────────────────────────────────────────────────────────────
+</script>
+
 </div><!-- fim appContent -->
 </body>
 </html>

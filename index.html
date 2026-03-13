@@ -945,6 +945,16 @@ const firebaseConfig = {
     min-width:280px;
   ">
     <p style="color:var(--muted);font-size:0.85rem;font-family:'DM Mono',monospace;">Faça login para continuar</p>
+    <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);letter-spacing:0.05em;" id="loginDate"></div>
+    <script>
+      (function(){
+        const d = new Date();
+        const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+        const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        document.getElementById('loginDate').textContent =
+          dias[d.getDay()] + ', ' + d.getDate() + ' de ' + meses[d.getMonth()] + ' de ' + d.getFullYear();
+      })();
+    </script>
     <button onclick="window._fbSignIn()" style="
       display:flex; align-items:center; gap:0.75rem;
       background:#fff; color:#1f1f1f;

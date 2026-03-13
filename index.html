@@ -828,7 +828,58 @@ const firebaseConfig = {
       .fav-grid { grid-template-columns: 1fr !important; }
     }
     /* ── FIM MOBILE ──────────────────────────────────────────────────── */
-  </style>
+  
+/* KANBAN */
+.kanban-board{
+display:flex;
+gap:1rem;
+overflow-x:auto;
+}
+
+.kanban-column{
+background:var(--surface);
+border:1px solid var(--border);
+border-radius:10px;
+padding:1rem;
+min-width:250px;
+flex:1;
+}
+
+.kanban-column h3{
+font-size:0.9rem;
+margin-bottom:0.5rem;
+}
+
+.kanban-cards{
+min-height:200px;
+display:flex;
+flex-direction:column;
+gap:0.5rem;
+}
+
+.kanban-card{
+background:var(--bg);
+border:1px solid var(--border);
+padding:0.5rem 0.7rem;
+border-radius:6px;
+cursor:grab;
+font-family:'DM Mono', monospace;
+font-size:0.8rem;
+}
+
+.kanban-column input{
+margin-top:0.5rem;
+width:100%;
+background:var(--bg);
+border:1px solid var(--border);
+color:var(--text);
+border-radius:6px;
+padding:0.4rem;
+font-family:'DM Mono', monospace;
+font-size:0.8rem;
+}
+
+</style>
 </head>
 <body>
 
@@ -846,7 +897,58 @@ const firebaseConfig = {
       .iso-m { fill: #d0d0d0; stroke: #888; stroke-width: 1; }
       .poste-m { fill: #b0b0b0; stroke: #707070; stroke-width: 1.5; }
       .cruz-m { fill: #909090; stroke: #606060; stroke-width: 1.5; }
-    </style>
+    
+/* KANBAN */
+.kanban-board{
+display:flex;
+gap:1rem;
+overflow-x:auto;
+}
+
+.kanban-column{
+background:var(--surface);
+border:1px solid var(--border);
+border-radius:10px;
+padding:1rem;
+min-width:250px;
+flex:1;
+}
+
+.kanban-column h3{
+font-size:0.9rem;
+margin-bottom:0.5rem;
+}
+
+.kanban-cards{
+min-height:200px;
+display:flex;
+flex-direction:column;
+gap:0.5rem;
+}
+
+.kanban-card{
+background:var(--bg);
+border:1px solid var(--border);
+padding:0.5rem 0.7rem;
+border-radius:6px;
+cursor:grab;
+font-family:'DM Mono', monospace;
+font-size:0.8rem;
+}
+
+.kanban-column input{
+margin-top:0.5rem;
+width:100%;
+background:var(--bg);
+border:1px solid var(--border);
+color:var(--text);
+border-radius:6px;
+padding:0.4rem;
+font-family:'DM Mono', monospace;
+font-size:0.8rem;
+}
+
+</style>
     <rect class="poste-m" x="324" y="100" width="32" height="390" rx="3"/>
     <rect class="cruz-m" x="174" y="125" width="332" height="20" rx="4"/>
     <ellipse class="iso-m" cx="220" cy="117" rx="10" ry="6"/>
@@ -1674,6 +1776,29 @@ const firebaseConfig = {
     SetupBoom © 2025<br/>
     <span style="color:var(--accent);letter-spacing:0.05em;">Técnico PCP 2 </span>
   </div>
+
+<div class="tab-panel" id="kanban">
+<div class="kanban-board">
+
+<div class="kanban-column">
+<h3>A Fazer</h3>
+<div class="kanban-cards" id="todo"></div>
+<input type="text" placeholder="Novo card..." onkeypress="addCard(event,'todo')">
+</div>
+
+<div class="kanban-column">
+<h3>Em andamento</h3>
+<div class="kanban-cards" id="doing"></div>
+</div>
+
+<div class="kanban-column">
+<h3>Concluído</h3>
+<div class="kanban-cards" id="done"></div>
+</div>
+
+</div>
+</div>
+
 </footer>
 
 <script>
@@ -2388,6 +2513,57 @@ const firebaseConfig = {
     body { padding: 1.2cm 1.8cm; background: #f7fbf8; }
     @page { margin: 0; size: A4; }
   }
+
+/* KANBAN */
+.kanban-board{
+display:flex;
+gap:1rem;
+overflow-x:auto;
+}
+
+.kanban-column{
+background:var(--surface);
+border:1px solid var(--border);
+border-radius:10px;
+padding:1rem;
+min-width:250px;
+flex:1;
+}
+
+.kanban-column h3{
+font-size:0.9rem;
+margin-bottom:0.5rem;
+}
+
+.kanban-cards{
+min-height:200px;
+display:flex;
+flex-direction:column;
+gap:0.5rem;
+}
+
+.kanban-card{
+background:var(--bg);
+border:1px solid var(--border);
+padding:0.5rem 0.7rem;
+border-radius:6px;
+cursor:grab;
+font-family:'DM Mono', monospace;
+font-size:0.8rem;
+}
+
+.kanban-column input{
+margin-top:0.5rem;
+width:100%;
+background:var(--bg);
+border:1px solid var(--border);
+color:var(--text);
+border-radius:6px;
+padding:0.4rem;
+font-family:'DM Mono', monospace;
+font-size:0.8rem;
+}
+
 </style>
 </head>
 <body>
@@ -2441,6 +2617,35 @@ const firebaseConfig = {
 <script>
   window.onload = function() { window.print(); };
 <\/script>
+
+<script>
+function addCard(e,col){
+if(e.key !== "Enter") return
+let text = e.target.value.trim()
+if(!text) return
+let card = document.createElement("div")
+card.className = "kanban-card"
+card.draggable = true
+card.textContent = text
+card.addEventListener("dragstart", dragStart)
+document.getElementById(col).appendChild(card)
+e.target.value=""
+}
+
+let dragged
+
+function dragStart(e){
+dragged = e.target
+}
+
+document.querySelectorAll(".kanban-cards").forEach(col=>{
+col.addEventListener("dragover", e=>e.preventDefault())
+col.addEventListener("drop", ()=>{
+col.appendChild(dragged)
+})
+})
+</script>
+
 </body>
 </html>`;
 
@@ -3255,5 +3460,34 @@ const firebaseConfig = {
   // loadFromSheets();
 </script>
 </div><!-- fim appContent -->
+
+<script>
+function addCard(e,col){
+if(e.key !== "Enter") return
+let text = e.target.value.trim()
+if(!text) return
+let card = document.createElement("div")
+card.className = "kanban-card"
+card.draggable = true
+card.textContent = text
+card.addEventListener("dragstart", dragStart)
+document.getElementById(col).appendChild(card)
+e.target.value=""
+}
+
+let dragged
+
+function dragStart(e){
+dragged = e.target
+}
+
+document.querySelectorAll(".kanban-cards").forEach(col=>{
+col.addEventListener("dragover", e=>e.preventDefault())
+col.addEventListener("drop", ()=>{
+col.appendChild(dragged)
+})
+})
+</script>
+
 </body>
 </html>

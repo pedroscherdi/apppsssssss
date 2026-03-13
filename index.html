@@ -997,6 +997,7 @@ const firebaseConfig = {
   <button class="tab" data-tab="tracao">📐 Tração Postes</button>
   <button class="tab" data-tab="cintas">🔗 Cintas</button>
   <button class="tab" data-tab="atualizar">⬆️ Atualizar Dados</button>
+  <button class="tab" data-tab="kanban">📋 Tarefas</button>
 </div>
 
 <!-- TAB: CONSULTAR -->
@@ -1669,9 +1670,138 @@ const firebaseConfig = {
 </div>
 
 
+<!-- TAB: KANBAN -->
+<div class="tab-panel" id="tab-kanban">
+
+  <!-- Toolbar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.25rem;">
+    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+      <button class="btn" onclick="kbNovoCartao()" style="padding:0.45rem 1rem;font-size:0.82rem;">+ Novo Cartão</button>
+      <button class="btn-ghost" onclick="kbLimparConcluidos()" style="font-size:0.78rem;">🗑 Limpar Finalizados</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);" id="kb_count_label"></span>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div id="kb_board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:start;overflow-x:auto;padding-bottom:0.5rem;">
+    <!-- colunas injetadas por JS -->
+  </div>
+
+  <!-- Modal novo/editar cartão -->
+  <div id="kb_modal_overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10000;align-items:center;justify-content:center;">
+    <div id="kb_modal" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.75rem;width:min(480px,92vw);box-shadow:0 24px 64px rgba(0,0,0,0.6);position:relative;animation:fadeIn 0.2s ease;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:1.25rem;" id="kb_modal_title">Novo Cartão</div>
+
+      <div class="map-field" style="margin-bottom:0.85rem;">
+        <label>Título <span style="color:var(--accent)">*</span></label>
+        <input type="text" id="kb_inp_titulo" placeholder="Ex: Revisar projeto SE Norte" class="cabo-input" style="width:100%;"/>
+      </div>
+
+      <div class="map-field" style="margin-bottom:0.85rem;">
+        <label>Descrição</label>
+        <textarea id="kb_inp_desc" placeholder="Detalhes, observações..." rows="3" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0.5rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.82rem;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.85rem;">
+        <div class="map-field">
+          <label>Prazo</label>
+          <input type="date" id="kb_inp_prazo" class="cabo-input" style="width:100%;"/>
+        </div>
+        <div class="map-field">
+          <label>Prioridade</label>
+          <select id="kb_inp_prio" class="cabo-input" style="width:100%;">
+            <option value="baixa">🟢 Baixa</option>
+            <option value="media" selected>🟡 Média</option>
+            <option value="alta">🔴 Alta</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="map-field" style="margin-bottom:1.25rem;">
+        <label>Coluna</label>
+        <select id="kb_inp_col" class="cabo-input" style="width:100%;">
+          <option value="pendente">Pendente</option>
+          <option value="execucao">Em Execução</option>
+          <option value="revisao">Revisão</option>
+          <option value="finalizado">Finalizado</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+        <button class="btn-ghost" onclick="kbFecharModal()">Cancelar</button>
+        <button class="btn" onclick="kbSalvarCartao()">Salvar</button>
+      </div>
+
+      <button onclick="kbFecharModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+    </div>
+  </div>
+
+</div>
+<!-- FIM TAB KANBAN -->
+
+
+<!-- TAB: KANBAN -->
+<div class="tab-panel" id="tab-kanban">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;">
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Quadro de Tarefas</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text);">Controle de Atividades</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn-ghost" onclick="kbClearCompleted()" style="font-size:0.75rem;padding:0.35rem 0.85rem;">🗑 Limpar Concluídas</button>
+      <button class="btn" onclick="kbShowAddCard(null)" style="font-size:0.82rem;">＋ Nova Tarefa</button>
+    </div>
+  </div>
+
+  <div id="kb_board" style="display:flex;gap:1rem;overflow-x:auto;padding-bottom:1.5rem;align-items:flex-start;-webkit-overflow-scrolling:touch;min-height:300px;"></div>
+
+  <div id="kb_modal_overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9000;backdrop-filter:blur(4px);" onclick="kbCloseModal(event)">
+    <div id="kb_modal" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;width:min(420px,92vw);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:1rem;box-shadow:0 24px 64px rgba(0,0,0,0.7);" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span id="kb_modal_title" style="font-weight:700;font-size:1rem;">Nova Tarefa</span>
+        <button onclick="kbCloseModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px;">Título <span style="color:var(--accent)">*</span></label>
+        <input id="kb_inp_title" type="text" placeholder="Descreva a tarefa..." style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.6rem 0.9rem;font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:600;transition:border-color 0.2s;outline:none;" onkeydown="if(event.key==='Enter')kbSaveCard()" />
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px;">Descrição</label>
+        <textarea id="kb_inp_desc" placeholder="Detalhes opcionais..." rows="3" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.6rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.8rem;resize:vertical;outline:none;transition:border-color 0.2s;"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px;">Coluna</label>
+          <select id="kb_inp_col" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.55rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.8rem;cursor:pointer;outline:none;"></select>
+        </div>
+        <div>
+          <label style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px;">Prioridade</label>
+          <select id="kb_inp_prio" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:0.55rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.8rem;cursor:pointer;outline:none;">
+            <option value="low">🟢 Baixa</option>
+            <option value="med" selected>🟡 Média</option>
+            <option value="high">🔴 Alta</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:8px;">Etiqueta</label>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;" id="kb_tag_btns"></div>
+      </div>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;margin-top:0.25rem;">
+        <button class="btn-ghost" onclick="kbCloseModal()" style="font-size:0.82rem;">Cancelar</button>
+        <button class="btn" id="kb_btn_save" onclick="kbSaveCard()" style="font-size:0.82rem;">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <div class="toast" id="toast"></div>
 
-<footer>
+
   <div>
     <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Criado por</div>
     <span class="footer-name">Pedro Scherdien</span>
@@ -3261,8 +3391,550 @@ const firebaseConfig = {
   });
   // ── FIM CALCULADORA DE TRAÇÃO ────────────────────────────────────────────
 
+
+
+  // ── KANBAN BOARD ─────────────────────────────────────────────────────────
+  const KB_STORAGE_KEY = 'sbKanban_v2';
+
+  const KB_COLS_DEFAULT = [
+    { id: 'backlog',     title: '📋 Backlog',       accent: '#6b6b80' },
+    { id: 'todo',        title: '🕐 A Fazer',        accent: '#ffd166' },
+    { id: 'inprogress',  title: '⚡ Em Andamento',   accent: '#00e676' },
+    { id: 'review',      title: '🔍 Revisão',        accent: '#69f0ae' },
+    { id: 'done',        title: '✅ Concluído',       accent: '#47ff9a' },
+  ];
+
+  const KB_TAGS = [
+    { id: 'campo',    label: '🏗 Campo',      bg: 'rgba(255,107,107,0.15)', color: '#ff6b6b'  },
+    { id: 'escritorio', label: '💼 Escritório', bg: 'rgba(105,240,174,0.15)', color: '#69f0ae' },
+    { id: 'urgente',  label: '🔥 Urgente',    bg: 'rgba(255,159,67,0.15)',  color: '#ff9f43'  },
+    { id: 'projeto',  label: '📐 Projeto',    bg: 'rgba(0,230,118,0.15)',   color: '#00e676'  },
+    { id: 'manut',    label: '🔧 Manutenção', bg: 'rgba(78,168,222,0.15)', color: '#4ea8de'  },
+    { id: 'reuniao',  label: '👥 Reunião',    bg: 'rgba(200,160,255,0.15)','color': '#c8a0ff' },
+  ];
+
+  const KB_PRIO = {
+    low:  { icon: '🟢', label: 'Baixa',  border: 'rgba(71,255,154,0.3)'  },
+    med:  { icon: '🟡', label: 'Média',  border: 'rgba(255,209,102,0.3)' },
+    high: { icon: '🔴', label: 'Alta',   border: 'rgba(255,107,107,0.5)' },
+  };
+
+  let kbData = { cols: KB_COLS_DEFAULT.map(c => c.id), cards: [] };
+  let kbEditId = null;
+  let kbTargetCol = null;
+  let kbDragId = null;
+  let kbSelectedTag = null;
+
+  function kbLoad() {
+    try {
+      const saved = localStorage.getItem(KB_STORAGE_KEY);
+      if (saved) kbData = JSON.parse(saved);
+      if (!kbData.cards) kbData.cards = [];
+      // seed demo cards if empty
+      if (!kbData.cards.length) kbSeed();
+    } catch(e) { kbSeed(); }
+  }
+
+  function kbSave() {
+    localStorage.setItem(KB_STORAGE_KEY, JSON.stringify(kbData));
+  }
+
+  function kbSeed() {
+    kbData.cards = [
+      { id: kbUid(), col: 'todo',       title: 'Vistoria Linha MT Rua X',           desc: 'Verificar isoladores e conexões', prio: 'high', tag: 'campo',    ts: Date.now() },
+      { id: kbUid(), col: 'inprogress', title: 'Atualizar BOM Estrutura AS22',      desc: '',                               prio: 'med',  tag: 'projeto',  ts: Date.now() },
+      { id: kbUid(), col: 'todo',       title: 'Reunião de alinhamento semana',     desc: 'Sala B, 14h',                    prio: 'low',  tag: 'reuniao',  ts: Date.now() },
+      { id: kbUid(), col: 'done',       title: 'Dimensionamento transformador 30kVA', desc: 'Cliente: Fazenda Boa Vista',   prio: 'med',  tag: 'escritorio',ts: Date.now() },
+      { id: kbUid(), col: 'backlog',    title: 'Checar norma NT.015 atualização',   desc: '',                               prio: 'low',  tag: 'escritorio',ts: Date.now() },
+    ];
+    kbSave();
+  }
+
+  function kbUid() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+  function kbRender() {
+    const board = document.getElementById('kb_board');
+    if (!board) return;
+
+    const colDefs = KB_COLS_DEFAULT;
+    board.innerHTML = colDefs.map(col => {
+      const cards = kbData.cards.filter(c => c.col === col.id);
+      return `
+        <div class="kb-col" id="kbcol_${col.id}" data-col="${col.id}"
+          style="
+            flex-shrink:0;width:240px;
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-top:3px solid ${col.accent};
+            border-radius:10px;
+            display:flex;flex-direction:column;
+            max-height:calc(100vh - 280px);
+          "
+          ondragover="kbDragOver(event,'${col.id}')"
+          ondrop="kbDrop(event,'${col.id}')"
+          ondragleave="kbDragLeave(event)"
+        >
+          <!-- Col header -->
+          <div style="padding:0.75rem 0.9rem 0.6rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <span style="font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:600;color:var(--text);">${col.title}</span>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <span style="font-family:'DM Mono',monospace;font-size:0.68rem;background:rgba(0,0,0,0.2);color:var(--muted);border-radius:20px;padding:1px 7px;">${cards.length}</span>
+              <button onclick="kbShowAddCard('${col.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='${col.accent}'" onmouseout="this.style.color='var(--muted)'">＋</button>
+            </div>
+          </div>
+
+          <!-- Cards -->
+          <div style="padding:0.6rem;display:flex;flex-direction:column;gap:0.5rem;overflow-y:auto;flex:1;" id="kbcards_${col.id}">
+            ${cards.length === 0
+              ? `<div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-align:center;padding:1.5rem 0.5rem;opacity:0.5;">Arraste ou clique ＋</div>`
+              : cards.map(card => kbCardHtml(card)).join('')
+            }
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function kbCardHtml(card) {
+    const prio = KB_PRIO[card.prio] || KB_PRIO.med;
+    const tag  = KB_TAGS.find(t => t.id === card.tag);
+    const isDone = card.col === 'done';
+    return `
+      <div class="kb-card" id="kbcard_${card.id}" data-id="${card.id}"
+        draggable="true"
+        ondragstart="kbDragStart(event,'${card.id}')"
+        ondragend="kbDragEnd(event)"
+        style="
+          background:var(--bg);
+          border:1px solid ${prio.border};
+          border-radius:8px;
+          padding:0.65rem 0.75rem;
+          cursor:grab;
+          transition:box-shadow 0.15s, opacity 0.15s, transform 0.15s;
+          position:relative;
+          ${isDone ? 'opacity:0.55;' : ''}
+        "
+        onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.4)';this.style.transform='translateY(-1px)'"
+        onmouseout="this.style.boxShadow='';this.style.transform=''"
+      >
+        <!-- Priority dot + title -->
+        <div style="display:flex;align-items:flex-start;gap:0.4rem;margin-bottom:${card.desc?'0.4rem':'0'};">
+          <span style="font-size:0.65rem;margin-top:3px;flex-shrink:0;">${prio.icon}</span>
+          <span style="font-family:'Syne',sans-serif;font-weight:600;font-size:0.82rem;color:var(--text);line-height:1.35;${isDone?'text-decoration:line-through;':''}">${card.title}</span>
+        </div>
+        ${card.desc ? `<div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.45;margin-bottom:0.45rem;padding-left:1.05rem;">${card.desc}</div>` : ''}
+        <!-- Footer -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-left:1.05rem;margin-top:0.3rem;">
+          ${tag ? `<span style="font-family:'DM Mono',monospace;font-size:0.65rem;background:${tag.bg};color:${tag.color};border-radius:20px;padding:2px 7px;">${tag.label}</span>` : '<span></span>'}
+          <div style="display:flex;gap:0.3rem;">
+            <button onclick="kbEditCard('${card.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;padding:2px 4px;border-radius:4px;transition:color 0.15s;" title="Editar" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
+            <button onclick="kbDeleteCard('${card.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;padding:2px 4px;border-radius:4px;transition:color 0.15s;" title="Excluir" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+          </div>
+        </div>
+        <!-- Move arrows (mobile) -->
+        <div style="position:absolute;top:0.4rem;right:0.4rem;display:flex;gap:2px;" id="kbmove_${card.id}">
+          ${KB_COLS_DEFAULT.filter(c=>c.id!==card.col).map(c=>
+            `<button onclick="kbMoveCard('${card.id}','${c.id}')" title="→ ${c.title}" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.6rem;opacity:0;transition:opacity 0.15s;padding:1px 2px;" class="kb-move-btn">▸</button>`
+          ).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Show add/edit modal
+  function kbShowAddCard(colId) {
+    kbEditId = null;
+    kbTargetCol = colId;
+    document.getElementById('kb_modal_title').textContent = 'Nova Tarefa';
+    document.getElementById('kb_inp_title').value = '';
+    document.getElementById('kb_inp_desc').value = '';
+    document.getElementById('kb_inp_prio').value = 'med';
+    kbSelectedTag = null;
+
+    // Populate column select
+    const sel = document.getElementById('kb_inp_col');
+    sel.innerHTML = KB_COLS_DEFAULT.map(c =>
+      `<option value="${c.id}" ${c.id===(colId||'todo')?'selected':''}>${c.title}</option>`
+    ).join('');
+
+    // Tag buttons
+    kbRenderTagBtns();
+
+    document.getElementById('kb_modal_overlay').style.display = 'block';
+    setTimeout(() => document.getElementById('kb_inp_title').focus(), 50);
+  }
+
+  function kbEditCard(id) {
+    const card = kbData.cards.find(c => c.id === id);
+    if (!card) return;
+    kbEditId = id;
+    document.getElementById('kb_modal_title').textContent = 'Editar Tarefa';
+    document.getElementById('kb_inp_title').value = card.title;
+    document.getElementById('kb_inp_desc').value  = card.desc || '';
+    document.getElementById('kb_inp_prio').value  = card.prio || 'med';
+    kbSelectedTag = card.tag || null;
+
+    const sel = document.getElementById('kb_inp_col');
+    sel.innerHTML = KB_COLS_DEFAULT.map(c =>
+      `<option value="${c.id}" ${c.id===card.col?'selected':''}>${c.title}</option>`
+    ).join('');
+
+    kbRenderTagBtns();
+    document.getElementById('kb_modal_overlay').style.display = 'block';
+    setTimeout(() => document.getElementById('kb_inp_title').focus(), 50);
+  }
+
+  function kbRenderTagBtns() {
+    const cont = document.getElementById('kb_tag_btns');
+    cont.innerHTML = KB_TAGS.map(t => `
+      <button onclick="kbSelectTag('${t.id}')" id="kbtag_${t.id}" style="
+        font-family:'DM Mono',monospace;font-size:0.7rem;
+        background:${kbSelectedTag===t.id?t.bg:'var(--bg)'};
+        color:${kbSelectedTag===t.id?t.color:'var(--muted)'};
+        border:1px solid ${kbSelectedTag===t.id?t.color:'var(--border)'};
+        border-radius:20px;padding:3px 9px;cursor:pointer;
+        transition:all 0.15s;
+      ">${t.label}</button>
+    `).join('');
+  }
+
+  function kbSelectTag(id) {
+    kbSelectedTag = kbSelectedTag === id ? null : id;
+    kbRenderTagBtns();
+  }
+
+  function kbSaveCard() {
+    const title = document.getElementById('kb_inp_title').value.trim();
+    if (!title) { document.getElementById('kb_inp_title').style.borderColor = 'var(--danger)'; return; }
+    const col  = document.getElementById('kb_inp_col').value;
+    const prio = document.getElementById('kb_inp_prio').value;
+    const desc = document.getElementById('kb_inp_desc').value.trim();
+
+    if (kbEditId) {
+      const card = kbData.cards.find(c => c.id === kbEditId);
+      if (card) { card.title = title; card.col = col; card.prio = prio; card.desc = desc; card.tag = kbSelectedTag; }
+    } else {
+      kbData.cards.push({ id: kbUid(), col, title, desc, prio, tag: kbSelectedTag, ts: Date.now() });
+    }
+    kbSave();
+    kbRender();
+    kbCloseModal();
+    showToast(kbEditId ? '✏ Tarefa atualizada' : '✅ Tarefa criada', 'success');
+  }
+
+  function kbDeleteCard(id) {
+    kbData.cards = kbData.cards.filter(c => c.id !== id);
+    kbSave();
+    kbRender();
+  }
+
+  function kbMoveCard(id, colId) {
+    const card = kbData.cards.find(c => c.id === id);
+    if (card) { card.col = colId; kbSave(); kbRender(); }
+  }
+
+  function kbClearCompleted() {
+    kbData.cards = kbData.cards.filter(c => c.col !== 'done');
+    kbSave();
+    kbRender();
+    showToast('🗑 Tarefas concluídas removidas.', 'success');
+  }
+
+  function kbCloseModal(e) {
+    if (e && e.target !== document.getElementById('kb_modal_overlay')) return;
+    document.getElementById('kb_modal_overlay').style.display = 'none';
+  }
+
+  // ── Drag & Drop ──────────────────────────────────────────────────────────
+  function kbDragStart(e, id) {
+    kbDragId = id;
+    e.dataTransfer.effectAllowed = 'move';
+    const el = document.getElementById('kbcard_' + id);
+    if (el) { setTimeout(() => el.style.opacity = '0.35', 0); }
+  }
+
+  function kbDragEnd(e) {
+    if (kbDragId) {
+      const el = document.getElementById('kbcard_' + kbDragId);
+      if (el) el.style.opacity = '';
+    }
+    document.querySelectorAll('.kb-col').forEach(c => c.style.background = '');
+    kbDragId = null;
+  }
+
+  function kbDragOver(e, colId) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.kb-col').forEach(c => c.style.background = '');
+    const colEl = document.getElementById('kbcol_' + colId);
+    if (colEl) colEl.style.background = 'rgba(0,230,118,0.05)';
+  }
+
+  function kbDragLeave(e) {
+    const col = e.currentTarget;
+    if (!col.contains(e.relatedTarget)) col.style.background = '';
+  }
+
+  function kbDrop(e, colId) {
+    e.preventDefault();
+    document.querySelectorAll('.kb-col').forEach(c => c.style.background = '');
+    if (!kbDragId) return;
+    const card = kbData.cards.find(c => c.id === kbDragId);
+    if (card && card.col !== colId) {
+      card.col = colId;
+      kbSave();
+      kbRender();
+    }
+    kbDragId = null;
+  }
+
+  // Init kanban when tab is opened
+  document.querySelectorAll('.tab').forEach(btn => {
+    if (btn.dataset.tab === 'kanban') {
+      btn.addEventListener('click', () => {
+        kbLoad();
+        kbRender();
+      });
+    }
+  });
+
+  // Pre-load if already on kanban tab
+  if (document.getElementById('tab-kanban')?.classList.contains('active')) {
+    kbLoad(); kbRender();
+  }
+  // ── FIM KANBAN ────────────────────────────────────────────────────────────
+
   // INIT: loadFromSheets é chamado pelo Firebase após login
   // loadFromSheets();
+
+  // ── KANBAN ───────────────────────────────────────────────────────────────
+  const KB_COLS = [
+    { id:'pendente',   label:'Pendente',     icon:'⏳', color:'rgba(255,209,102,0.15)', border:'rgba(255,209,102,0.35)' },
+    { id:'execucao',   label:'Em Execução',  icon:'⚡', color:'rgba(0,230,118,0.10)',  border:'rgba(0,230,118,0.3)'   },
+    { id:'revisao',    label:'Revisão',      icon:'🔎', color:'rgba(78,168,222,0.10)', border:'rgba(78,168,222,0.3)'  },
+    { id:'finalizado', label:'Finalizado',   icon:'✅', color:'rgba(105,240,174,0.07)', border:'rgba(105,240,174,0.2)' },
+  ];
+
+  const KB_PRIO = {
+    alta:  { label:'Alta',  color:'#ff6b6b', dot:'🔴' },
+    media: { label:'Média', color:'#ffd166', dot:'🟡' },
+    baixa: { label:'Baixa', color:'#69f0ae', dot:'🟢' },
+  };
+
+  let kbCards = JSON.parse(localStorage.getItem('sb_kanban') || '[]');
+  let kbEditId = null;
+  let kbDragId = null;
+
+  function kbSave() { localStorage.setItem('sb_kanban', JSON.stringify(kbCards)); }
+
+  function kbRender() {
+    const board = document.getElementById('kb_board');
+    if (!board) return;
+
+    // Count
+    const total = kbCards.length;
+    const done  = kbCards.filter(c => c.col === 'finalizado').length;
+    const lbl   = document.getElementById('kb_count_label');
+    if (lbl) lbl.textContent = `${total} cartão${total!==1?'ões':''} · ${done} finalizado${done!==1?'s':''}`;
+
+    board.innerHTML = KB_COLS.map(col => {
+      const cards = kbCards.filter(c => c.col === col.id);
+      const cardsHtml = cards.length === 0
+        ? `<div style="text-align:center;padding:2rem 0.5rem;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.72rem;opacity:0.6;">Nenhum cartão</div>`
+        : cards.map(c => kbCardHtml(c)).join('');
+
+      return `
+        <div class="kb-col" data-col="${col.id}"
+          style="background:${col.color};border:1px solid ${col.border};border-radius:12px;overflow:hidden;min-height:200px;"
+          ondragover="kbDragOver(event,'${col.id}')" ondrop="kbDrop(event,'${col.id}')" ondragleave="kbDragLeave(event)">
+          <!-- Header -->
+          <div style="padding:0.75rem 0.9rem 0.6rem;border-bottom:1px solid ${col.border};display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <span style="font-size:0.9rem;">${col.icon}</span>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;color:var(--text);">${col.label}</span>
+              <span style="font-family:'DM Mono',monospace;font-size:0.7rem;background:rgba(255,255,255,0.08);border-radius:20px;padding:1px 7px;color:var(--muted);">${cards.length}</span>
+            </div>
+            <button onclick="kbNovoCartaoNaCol('${col.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">+</button>
+          </div>
+          <!-- Cards -->
+          <div style="padding:0.6rem;display:flex;flex-direction:column;gap:0.55rem;" id="kb_cards_${col.id}">
+            ${cardsHtml}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function kbCardHtml(c) {
+    const prio = KB_PRIO[c.prio] || KB_PRIO.media;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    let prazoHtml = '';
+    if (c.prazo) {
+      const d = new Date(c.prazo + 'T00:00:00');
+      const diff = Math.round((d - hoje) / 86400000);
+      const label = d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
+      const cor = diff < 0 ? 'var(--danger)' : diff <= 2 ? '#ffd166' : 'var(--muted)';
+      const ico = diff < 0 ? '⚠' : '📅';
+      prazoHtml = `<span style="font-size:0.68rem;color:${cor};font-family:'DM Mono',monospace;">${ico} ${label}${diff<0?' (atrasado)':diff===0?' (hoje)':''}</span>`;
+    }
+
+    const descHtml = c.desc
+      ? `<p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin:0 0 0.5rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${c.desc}</p>`
+      : '';
+
+    return `
+      <div class="kb-card" draggable="true" data-id="${c.id}"
+        ondragstart="kbDragStart(event,'${c.id}')"
+        ondragend="kbDragEnd(event)"
+        style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${prio.color};border-radius:8px;padding:0.75rem;cursor:grab;transition:box-shadow 0.15s,transform 0.15s;user-select:none;"
+        onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.3)';this.style.transform='translateY(-1px)'"
+        onmouseleave="this.style.boxShadow='';this.style.transform=''">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.4rem;margin-bottom:${descHtml||prazoHtml?'0.45rem':'0'};">
+          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;color:var(--text);line-height:1.3;flex:1;">${c.titulo}</span>
+          <div style="display:flex;gap:0.2rem;flex-shrink:0;">
+            <button onclick="kbEditarCartao('${c.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;padding:1px 3px;transition:color 0.15s;" title="Editar" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✎</button>
+            <button onclick="kbDeletarCartao('${c.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;padding:1px 3px;transition:color 0.15s;" title="Excluir" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+          </div>
+        </div>
+        ${descHtml}
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.3rem;">
+          <span style="font-size:0.68rem;font-family:'DM Mono',monospace;color:${prio.color};">${prio.dot} ${prio.label}</span>
+          ${prazoHtml}
+        </div>
+      </div>`;
+  }
+
+  // Drag & Drop
+  function kbDragStart(e, id) {
+    kbDragId = id;
+    setTimeout(() => { const el = document.querySelector(`[data-id="${id}"]`); if(el) el.style.opacity='0.4'; }, 0);
+  }
+  function kbDragEnd(e) {
+    const el = document.querySelector(`[data-id="${kbDragId}"]`);
+    if (el) el.style.opacity = '1';
+    document.querySelectorAll('.kb-col').forEach(c => c.style.outline = '');
+    kbDragId = null;
+  }
+  function kbDragOver(e, colId) {
+    e.preventDefault();
+    const col = document.querySelector(`[data-col="${colId}"]`);
+    if (col) col.style.outline = '2px solid var(--accent)';
+  }
+  function kbDragLeave(e) {
+    const col = e.currentTarget;
+    if (col) col.style.outline = '';
+  }
+  function kbDrop(e, colId) {
+    e.preventDefault();
+    document.querySelectorAll('.kb-col').forEach(c => c.style.outline = '');
+    if (!kbDragId) return;
+    const card = kbCards.find(c => c.id === kbDragId);
+    if (card) { card.col = colId; kbSave(); kbRender(); }
+  }
+
+  // Modal
+  function kbNovoCartao() { kbAbrirModal(null, 'pendente'); }
+  function kbNovoCartaoNaCol(colId) { kbAbrirModal(null, colId); }
+
+  function kbAbrirModal(id, colId) {
+    kbEditId = id || null;
+    document.getElementById('kb_modal_title').textContent = id ? 'Editar Cartão' : 'Novo Cartão';
+
+    if (id) {
+      const c = kbCards.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('kb_inp_titulo').value = c.titulo;
+      document.getElementById('kb_inp_desc').value   = c.desc || '';
+      document.getElementById('kb_inp_prazo').value  = c.prazo || '';
+      document.getElementById('kb_inp_prio').value   = c.prio || 'media';
+      document.getElementById('kb_inp_col').value    = c.col;
+    } else {
+      document.getElementById('kb_inp_titulo').value = '';
+      document.getElementById('kb_inp_desc').value   = '';
+      document.getElementById('kb_inp_prazo').value  = '';
+      document.getElementById('kb_inp_prio').value   = 'media';
+      document.getElementById('kb_inp_col').value    = colId || 'pendente';
+    }
+
+    const ov = document.getElementById('kb_modal_overlay');
+    ov.style.display = 'flex';
+    setTimeout(() => document.getElementById('kb_inp_titulo').focus(), 100);
+  }
+
+  function kbFecharModal() {
+    document.getElementById('kb_modal_overlay').style.display = 'none';
+    kbEditId = null;
+  }
+
+  document.getElementById('kb_modal_overlay').addEventListener('click', function(e) {
+    if (e.target === this) kbFecharModal();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') kbFecharModal();
+  });
+
+  function kbSalvarCartao() {
+    const titulo = document.getElementById('kb_inp_titulo').value.trim();
+    if (!titulo) { document.getElementById('kb_inp_titulo').focus(); return; }
+
+    const data = {
+      titulo,
+      desc:  document.getElementById('kb_inp_desc').value.trim(),
+      prazo: document.getElementById('kb_inp_prazo').value,
+      prio:  document.getElementById('kb_inp_prio').value,
+      col:   document.getElementById('kb_inp_col').value,
+    };
+
+    if (kbEditId) {
+      const idx = kbCards.findIndex(c => c.id === kbEditId);
+      if (idx !== -1) kbCards[idx] = { ...kbCards[idx], ...data };
+    } else {
+      kbCards.push({ id: 'kb_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), ...data });
+    }
+
+    kbSave();
+    kbFecharModal();
+    kbRender();
+    showToast(kbEditId ? '✎ Cartão atualizado!' : '✅ Cartão criado!', 'success');
+  }
+
+  function kbEditarCartao(id) { kbAbrirModal(id, null); }
+
+  function kbDeletarCartao(id) {
+    kbCards = kbCards.filter(c => c.id !== id);
+    kbSave();
+    kbRender();
+    showToast('Cartão removido.', 'success');
+  }
+
+  function kbLimparConcluidos() {
+    const n = kbCards.filter(c => c.col === 'finalizado').length;
+    if (!n) { showToast('Nenhum cartão finalizado.', 'error'); return; }
+    kbCards = kbCards.filter(c => c.col !== 'finalizado');
+    kbSave();
+    kbRender();
+    showToast(`🗑 ${n} cartão${n!==1?'ões':''} removido${n!==1?'s':''}.`, 'success');
+  }
+
+  // Render ao abrir a aba
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'kanban') kbRender();
+    });
+  });
+
+  // Render inicial se aba ativa
+  if (document.querySelector('.tab.active[data-tab="kanban"]')) kbRender();
+
+  // Responsive: em mobile, 1 coluna
+  (function kbResponsive() {
+    const board = document.getElementById('kb_board');
+    if (!board) return;
+    const update = () => { board.style.gridTemplateColumns = window.innerWidth < 700 ? '1fr' : 'repeat(4,1fr)'; };
+    update();
+    window.addEventListener('resize', update);
+  })();
+  // ── FIM KANBAN ───────────────────────────────────────────────────────────
 </script>
 </div><!-- fim appContent -->
 </body>

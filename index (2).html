@@ -1,0 +1,3259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SetupBoom</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+const firebaseConfig = {
+      apiKey: "AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk",
+      authDomain: "setupapp-f3ff4.firebaseapp.com",
+      projectId: "setupapp-f3ff4",
+      storageBucket: "setupapp-f3ff4.firebasestorage.app",
+      messagingSenderId: "255369189466",
+      appId: "1:255369189466:web:c2dd50f0f64259bb7e2063"
+    };
+
+
+    // ============================================================
+
+    const app      = initializeApp(firebaseConfig);
+    const auth     = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Expõe funções para o HTML
+    window._fbSignIn  = () => signInWithPopup(auth, provider).catch(e => alert('Erro ao entrar: ' + e.message));
+    window._fbSignOut = () => signOut(auth);
+
+    onAuthStateChanged(auth, user => {
+      const loginScreen = document.getElementById('loginScreen');
+      const appContent  = document.getElementById('appContent');
+      const userInfo    = document.getElementById('userInfo');
+
+      if (user) {
+        // Logado: mostra o app, esconde login
+        loginScreen.style.display = 'none';
+        appContent.style.display  = 'block';
+        userInfo.innerHTML = `
+          <img src="${user.photoURL || ''}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'"/>
+          <span style="font-size:0.8rem;color:var(--muted);font-family:'DM Mono',monospace;">${user.email}</span>
+          <button class="btn-ghost" onclick="window._fbSignOut()" style="font-size:0.75rem;padding:0.3rem 0.75rem;">Sair</button>
+        `;
+        // Carrega dados após login
+        if (typeof loadFromSheets === 'function') loadFromSheets();
+      } else {
+        // Não logado: mostra tela de login
+        loginScreen.style.display = 'flex';
+        appContent.style.display  = 'none';
+      }
+    });
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060f0a;
+      --surface: #0d1f14;
+      --border: #1a3325;
+      --accent: #00e676;
+      --accent2: #69f0ae;
+      --text: #f0f0f0;
+      --muted: #6b6b80;
+      --danger: #ff6b6b;
+      --success: #47ff9a;
+      --radius: 10px;
+    }
+
+    body.light {
+      --bg: #f4faf6;
+      --surface: #ffffff;
+      --border: #d0e8d8;
+      --accent: #00a854;
+      --accent2: #00796b;
+      --text: #0d1f14;
+      --muted: #6b8070;
+      --danger: #e53935;
+      --success: #00c853;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 20px;
+      padding: 0.3rem 0.85rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    body {
+      position: relative;
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-box {
+      width: 48px; height: 48px;
+      background: transparent;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .sheets-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .sheets-status .left { display: flex; align-items: center; gap: 0.6rem; }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .status-dot.ok { background: var(--success); animation: pulse 2s infinite; }
+    .status-dot.loading { background: var(--accent); animation: pulse 0.6s infinite; }
+    .status-dot.error { background: var(--danger); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .status-text { color: var(--muted); }
+    .status-text strong { color: var(--text); }
+
+    .btn {
+      background: var(--accent);
+      color: #060f0a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 1rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 0.45rem 1rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(0,230,118,0.03); }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+    .upload-zone p { color: var(--muted); font-size: 0.88rem; }
+    .upload-zone strong { color: var(--accent); }
+
+    .file-info {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+    }
+    .file-info.visible { display: flex; }
+    .file-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 1.5s infinite; }
+    .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 0 4px; transition: color 0.2s; }
+    .file-clear:hover { color: var(--danger); }
+
+    .mapper {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .mapper.visible { display: block; }
+    .mapper h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 1rem; }
+
+    .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.75rem; }
+
+    .map-field label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .map-field label span { color: var(--accent); }
+
+    select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      cursor: pointer;
+      appearance: none;
+      transition: border-color 0.2s;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    .send-row {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      justify-content: flex-end;
+    }
+    .send-row.visible { display: flex; }
+    .send-msg { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); flex: 1; }
+
+    .search-area { display: none; margin-bottom: 1.5rem; }
+    .search-area.visible { display: block; }
+
+    .search-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      font-family: 'DM Mono', monospace;
+      display: block;
+    }
+
+    .search-wrap { position: relative; }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { outline: none; border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--muted); font-weight: 400; }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .dropdown.open { display: block; }
+
+    .dropdown-item {
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background: rgba(0,230,118,0.08); color: var(--accent); }
+    .dropdown-item mark { background: none; color: var(--accent); font-weight: 700; }
+
+    .results { display: none; }
+    .results.visible { display: block; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .results-title { font-size: 1.1rem; font-weight: 700; }
+    .results-title span { font-family: 'DM Mono', monospace; color: var(--accent); font-size: 1rem; }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      background: rgba(105,240,174,0.12);
+      color: var(--accent2);
+      border: 1px solid rgba(105,240,174,0.25);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    .btn-export {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-export:hover { background: rgba(0,230,118,0.08); border-color: var(--accent); }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+
+    thead th {
+      background: var(--surface);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    td { padding: 0.75rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.82rem; vertical-align: middle; }
+    td:first-child { color: var(--accent2); font-weight: 500; }
+
+    .qty-pill {
+      display: inline-block;
+      background: rgba(0,230,118,0.1);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+    }
+    .unit-text { color: var(--muted); font-size: 0.75rem; }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem; right: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1.1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      display: flex; align-items: center; gap: 0.6rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      z-index: 999;
+      max-width: 340px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(71,255,154,0.3); }
+    .toast.error { border-color: rgba(255,107,107,0.3); }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .info-card strong { color: var(--text); }
+    .info-card code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent2);
+    }
+
+    .busca-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .busca-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .busca-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .busca-result {
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .busca-hint {
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+    }
+
+    .busca-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .busca-item-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .busca-item-desc {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .busca-empty {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--danger);
+    }
+
+    .cabo-form {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .cabo-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      transition: border-color 0.2s;
+    }
+    .cabo-input:focus { outline: none; border-color: var(--accent); }
+
+    .cabo-resultado {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .cabo-res-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .cabo-res-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cabo-res-item.destaque {
+      background: rgba(0,230,118,0.07);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .cabo-res-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .cabo-res-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .cabo-res-item.destaque .cabo-res-val {
+      font-size: 1.4rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .fases-selector {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 2px;
+    }
+
+    .fase-btn {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 0.45rem 0;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .fase-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .fase-btn.active { background: var(--accent); border-color: var(--accent); color: #060f0a; }
+
+    .cabo-lista { margin-top: 1rem; }
+
+    .fase-btn {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 0.5rem 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+    .fase-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .fase-btn.active { background: rgba(0,230,118,0.12); border-color: var(--accent); color: var(--accent); }
+
+    .fav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .fav-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .fav-card:hover { border-color: var(--accent); background: rgba(0,230,118,0.04); }
+
+    .fav-card-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .fav-card-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .fav-remove {
+      position: absolute;
+      top: 0.5rem; right: 0.6rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .fav-remove:hover { color: var(--danger); }
+
+    .btn-export.favoritado { background: rgba(0,230,118,0.12); color: var(--accent); border-color: var(--accent); }
+    .btn-export-pdf { color: #ff9f43; border-color: rgba(255,159,67,0.4); }
+    .btn-export-pdf:hover { background: rgba(255,159,67,0.08); border-color: #ff9f43; color: #ff9f43; }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .footer-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .footer-contact {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-contact a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .footer-contact a:hover { opacity: 0.7; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── MOBILE RESPONSIVO ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .tracao-grid { grid-template-columns: 1fr !important; }
+
+      body { padding: 1rem 0.85rem; }
+
+      header { margin-bottom: 1.25rem; }
+      header > div:first-child { display: flex; align-items: center; gap: 0.75rem; }
+      h1 { font-size: 1.35rem; }
+
+      /* Botão de tema: move para baixo do header */
+      body > header > div[style*="absolute"] {
+        position: static !important;
+        margin-top: 0.5rem;
+      }
+
+      /* Abas: scroll horizontal */
+      .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 0;
+        padding-bottom: 2px;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab {
+        font-size: 0.78rem;
+        padding: 0.55rem 0.7rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* Grids viram 1 coluna */
+      .map-grid { grid-template-columns: 1fr 1fr !important; }
+      .busca-grid { grid-template-columns: 1fr !important; }
+      .cabo-res-row { grid-template-columns: 1fr 1fr !important; }
+      .fav-grid { grid-template-columns: 1fr 1fr !important; }
+
+      /* Formulário de cabo */
+      .cabo-form { flex-direction: column; align-items: stretch; }
+      .cabo-form > div { width: 100% !important; }
+
+      /* Tabela: scroll horizontal */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 400px; }
+
+      /* Status bar */
+      .sheets-status { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+
+      /* Botões de exportação */
+      .results-header { flex-direction: column; align-items: flex-start; }
+      .results-header > div:last-child { flex-wrap: wrap; }
+
+      /* Rodapé */
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; align-items: center; }
+
+      /* Info card menor */
+      .info-card { font-size: 0.82rem; }
+
+      /* Toast */
+      .toast { left: 1rem; right: 1rem; bottom: 1rem; max-width: 100%; }
+
+      /* Mapper */
+      .mapper { padding: 1rem; }
+
+      /* Seção parafuso — SVG horizontal responsivo */
+      #prf_svg { max-width: 100%; }
+
+      /* send-row */
+      .send-row { flex-direction: column; align-items: stretch; }
+      .send-row .btn, .send-row .btn-ghost { width: 100%; text-align: center; }
+    }
+
+    @media (max-width: 400px) {
+      .map-grid { grid-template-columns: 1fr !important; }
+      .cabo-res-row { grid-template-columns: 1fr !important; }
+      .fav-grid { grid-template-columns: 1fr !important; }
+    }
+    /* ── FIM MOBILE ──────────────────────────────────────────────────── */
+  </style>
+</head>
+<body>
+
+<!-- ========== TELA DE LOGIN ========== -->
+<div id="loginScreen" style="
+  display:flex; align-items:center; justify-content:center;
+  position:fixed; inset:0; z-index:9999;
+  background:var(--bg);
+  flex-direction:column; gap:1.5rem;
+">
+  <!-- Mascote -->
+  <svg width="220" height="200" viewBox="100 120 480 380" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      .cabo-m { stroke: #555; stroke-width: 2.5; fill: none; stroke-linecap: round; }
+      .iso-m { fill: #d0d0d0; stroke: #888; stroke-width: 1; }
+      .poste-m { fill: #b0b0b0; stroke: #707070; stroke-width: 1.5; }
+      .cruz-m { fill: #909090; stroke: #606060; stroke-width: 1.5; }
+    </style>
+    <rect class="poste-m" x="324" y="100" width="32" height="390" rx="3"/>
+    <rect class="cruz-m" x="174" y="125" width="332" height="20" rx="4"/>
+    <ellipse class="iso-m" cx="220" cy="117" rx="10" ry="6"/>
+    <ellipse class="iso-m" cx="220" cy="124" rx="8" ry="5"/>
+    <ellipse class="iso-m" cx="220" cy="130" rx="6" ry="4"/>
+    <ellipse class="iso-m" cx="340" cy="117" rx="10" ry="6"/>
+    <ellipse class="iso-m" cx="340" cy="124" rx="8" ry="5"/>
+    <ellipse class="iso-m" cx="340" cy="130" rx="6" ry="4"/>
+    <ellipse class="iso-m" cx="460" cy="117" rx="10" ry="6"/>
+    <ellipse class="iso-m" cx="460" cy="124" rx="8" ry="5"/>
+    <ellipse class="iso-m" cx="460" cy="130" rx="6" ry="4"/>
+    <path class="cabo-m" d="M210,111 Q150,128 80,120"/>
+    <path class="cabo-m" d="M230,111 Q285,104 330,111"/>
+    <path class="cabo-m" d="M350,111 Q405,104 450,111"/>
+    <path class="cabo-m" d="M470,111 Q540,128 600,120"/>
+    <ellipse style="fill:white;stroke:#444;stroke-width:1.5;" cx="275" cy="136" rx="16" ry="13"/>
+    <ellipse style="fill:#1a1a2e;" cx="275" cy="136" rx="7" ry="8"/>
+    <ellipse style="fill:white;" cx="279" cy="132" rx="3" ry="2.5"/>
+    <ellipse style="fill:white;stroke:#444;stroke-width:1.5;" cx="405" cy="136" rx="16" ry="13"/>
+    <ellipse style="fill:#1a1a2e;" cx="405" cy="136" rx="7" ry="8"/>
+    <ellipse style="fill:white;" cx="409" cy="132" rx="3" ry="2.5"/>
+    <path style="fill:none;stroke:#555;stroke-width:2.5;stroke-linecap:round;" d="M262,125 Q275,120 288,124"/>
+    <path style="fill:none;stroke:#555;stroke-width:2.5;stroke-linecap:round;" d="M392,124 Q405,120 418,125"/>
+    <path style="fill:none;stroke:#707070;stroke-width:1.5;stroke-linecap:round;" d="M338,168 Q334,175 337,179 Q340,181 343,179 Q346,175 342,168"/>
+    <ellipse style="fill:#ccc;opacity:0.4;" cx="316" cy="188" rx="10" ry="7"/>
+    <ellipse style="fill:#ccc;opacity:0.4;" cx="364" cy="188" rx="10" ry="7"/>
+    <path style="fill:none;stroke:#555;stroke-width:2.5;stroke-linecap:round;" d="M320,182 Q340,198 360,182"/>
+    <!-- Eletricista -->
+    <path style="fill:#d45a00;stroke:#a03a00;stroke-width:1;" d="M148,330 Q148,305 178,302 Q208,305 208,330 Z"/>
+    <rect style="fill:#d45a00;stroke:#a03a00;stroke-width:1;" x="144" y="328" width="68" height="8" rx="2"/>
+    <rect style="fill:#d45a00;stroke:#a03a00;stroke-width:1;" x="143" y="334" width="70" height="5" rx="2"/>
+    <rect style="fill:#e8b88a;stroke:#c4845a;stroke-width:1;" x="155" y="330" width="46" height="52" rx="14"/>
+    <rect style="fill:#5a3a1a;" x="155" y="330" width="8" height="18" rx="4"/>
+    <rect style="fill:#5a3a1a;" x="193" y="330" width="8" height="18" rx="4"/>
+    <ellipse style="fill:#f8f8f8;stroke:#bbb;stroke-width:0.5;" cx="168" cy="347" rx="7" ry="7.5"/>
+    <ellipse style="fill:#3d2b1f;" cx="169" cy="348" rx="4" ry="4.5"/>
+    <ellipse style="fill:white;" cx="171" cy="346" rx="1.5" ry="1.5"/>
+    <ellipse style="fill:#f8f8f8;stroke:#bbb;stroke-width:0.5;" cx="188" cy="347" rx="7" ry="7.5"/>
+    <ellipse style="fill:#3d2b1f;" cx="189" cy="348" rx="4" ry="4.5"/>
+    <ellipse style="fill:white;" cx="191" cy="346" rx="1.5" ry="1.5"/>
+    <path style="fill:none;stroke:#5a3a1a;stroke-width:1.5;stroke-linecap:round;" d="M161,340 Q168,337 175,339"/>
+    <path style="fill:none;stroke:#5a3a1a;stroke-width:1.5;stroke-linecap:round;" d="M181,339 Q188,337 195,340"/>
+    <path style="fill:none;stroke:#c4845a;stroke-width:1.2;stroke-linecap:round;" d="M178,352 Q175,358 176,362 Q178,364 180,362 Q182,358 180,352"/>
+    <path style="fill:none;stroke:#b06040;stroke-width:1.5;stroke-linecap:round;" d="M169,368 Q178,374 187,368"/>
+    <rect style="fill:#e8b88a;stroke:#c4845a;stroke-width:0.5;" x="172" y="380" width="12" height="14"/>
+    <path style="fill:#2952a8;stroke:#1a3878;stroke-width:1;" d="M140,394 Q155,384 178,382 Q201,384 216,394 L216,468 L140,468 Z"/>
+    <rect style="fill:#00a844;" x="162" y="396" width="32" height="5" rx="2"/>
+    <rect style="fill:#1e42a0;stroke:#152e78;stroke-width:1;" x="145" y="402" width="22" height="22" rx="2"/>
+    <rect style="fill:#00a844;" x="145" y="402" width="22" height="4" rx="2"/>
+    <line style="stroke:#1a3878;stroke-width:1.5;" x1="178" y1="382" x2="178" y2="468"/>
+    <rect style="fill:#c8a000;stroke:#a07800;stroke-width:0.5;" x="175" y="420" width="6" height="8" rx="1"/>
+    <rect style="fill:#5a3a1a;stroke:#3a2010;stroke-width:1;" x="140" y="448" width="76" height="12" rx="3"/>
+    <rect style="fill:#d4a000;stroke:#a07800;stroke-width:1;" x="172" y="450" width="12" height="8" rx="2"/>
+    <path style="fill:#2952a8;stroke:#1a3878;stroke-width:1;" d="M140,394 L118,460 Q122,466 132,464 L152,402 Z"/>
+    <rect style="fill:#00a844;" x="118" y="430" width="24" height="4" rx="1"/>
+    <ellipse style="fill:#e8b88a;stroke:#c4845a;stroke-width:1;" cx="126" cy="466" rx="11" ry="9"/>
+    <rect style="fill:#7a5a28;stroke:#5a3a10;stroke-width:1.5;" x="88" y="438" width="36" height="48" rx="3"/>
+    <rect style="fill:#f5f2ee;stroke:#ddd;stroke-width:0.5;" x="92" y="444" width="28" height="38" rx="1"/>
+    <rect style="fill:#c8860a;stroke:#8b5e00;stroke-width:1;" x="102" y="433" width="16" height="10" rx="3"/>
+    <line style="stroke:#2952a8;stroke-width:1.5;" x1="96" y1="452" x2="116" y2="452"/>
+    <line style="stroke:#2952a8;stroke-width:1.5;" x1="96" y1="458" x2="112" y2="458"/>
+    <line style="stroke:#00a844;stroke-width:1.5;" x1="96" y1="464" x2="114" y2="464"/>
+    <line style="stroke:#00a844;stroke-width:1.5;" x1="96" y1="470" x2="110" y2="470"/>
+    <path style="fill:#2952a8;stroke:#1a3878;stroke-width:1;" d="M216,394 L238,460 Q234,466 224,464 L204,402 Z"/>
+    <rect style="fill:#00a844;" x="214" y="430" width="24" height="4" rx="1"/>
+    <ellipse style="fill:#e8b88a;stroke:#c4845a;stroke-width:1;" cx="230" cy="466" rx="11" ry="9"/>
+    <rect style="fill:#c87800;stroke:#8b5000;stroke-width:1.5;" x="224" y="462" width="44" height="34" rx="3"/>
+    <rect style="fill:#a86000;stroke:#8b5000;stroke-width:1;" x="224" y="462" width="44" height="10" rx="3"/>
+    <path style="fill:none;stroke:#5a3000;stroke-width:2.5;stroke-linecap:round;" d="M236,462 Q246,452 258,462"/>
+    <rect style="fill:#d49000;stroke:#a07000;stroke-width:0.5;" x="240" y="467" width="8" height="5" rx="1"/>
+    <line style="stroke:#8b5000;stroke-width:1;" x1="224" y1="480" x2="268" y2="480"/>
+    <rect style="fill:#00a844;" x="228" y="484" width="36" height="4" rx="1"/>
+    <rect style="fill:#2952a8;stroke:#1a3878;stroke-width:1;" x="143" y="466" width="30" height="64" rx="4"/>
+    <rect style="fill:#2952a8;stroke:#1a3878;stroke-width:1;" x="183" y="466" width="30" height="64" rx="4"/>
+    <rect style="fill:#00a844;" x="143" y="480" width="30" height="4" rx="1"/>
+    <rect style="fill:#00a844;" x="183" y="480" width="30" height="4" rx="1"/>
+    <rect style="fill:#00a844;" x="143" y="508" width="30" height="4" rx="1"/>
+    <rect style="fill:#00a844;" x="183" y="508" width="30" height="4" rx="1"/>
+    <rect style="fill:#1a1a1a;stroke:#111;stroke-width:1;" x="140" y="526" width="36" height="18" rx="3"/>
+    <rect style="fill:#1a1a1a;stroke:#111;stroke-width:1;" x="180" y="526" width="36" height="18" rx="3"/>
+    <rect style="fill:#333;" x="138" y="540" width="40" height="6" rx="2"/>
+    <rect style="fill:#333;" x="178" y="540" width="40" height="6" rx="2"/>
+  </svg>
+
+  <div style="text-align:center;">
+    <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;">Setup<span style="color:var(--accent)">Boom</span></h1>
+    <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.05em;">Estrutura de Materiais</p>
+  </div>
+  <div style="
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:2rem 2.5rem;
+    text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:1.25rem;
+    min-width:280px;
+  ">
+    <p style="color:var(--muted);font-size:0.85rem;font-family:'DM Mono',monospace;">Faça login para continuar</p>
+    <button onclick="window._fbSignIn()" style="
+      display:flex; align-items:center; gap:0.75rem;
+      background:#fff; color:#1f1f1f;
+      border:none; border-radius:8px;
+      padding:0.65rem 1.25rem;
+      font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem;
+      cursor:pointer; transition:opacity 0.2s; width:100%; justify-content:center;
+    " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.3 35.2 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.3C9.6 35.5 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.2 5.2C37 36.5 44 31 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+      Entrar com Google
+    </button>
+  </div>
+</div>
+<!-- ===================================== -->
+
+<!-- ========== CONTEÚDO DO APP ========== -->
+<div id="appContent" style="display:none;">
+
+<header>
+  <div style="position:absolute;top:1.5rem;right:2rem;display:flex;gap:0.5rem;align-items:center;" id="headerRight">
+    <div id="userInfo" style="display:flex;align-items:center;gap:0.5rem;"></div>
+    <button class="theme-toggle" id="themeToggle">🌙 Escuro</button>
+  </div>
+
+  <div class="logo-box"><img src="data:image/png;base64,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" style="width:36px;height:36px;object-fit:contain;" /></div>
+  <div>
+    <h1>Setup<span>Boom</span></h1>
+    <p class="subtitle">Estrutura de Materiais · Google Sheets</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="consultar">🔍 Consultar</button>
+  <button class="tab" data-tab="buscar">🔎 Buscar Item</button>
+  <button class="tab" data-tab="whereused">📌 Onde é Usado</button>
+  <button class="tab" data-tab="cabos">🔌 Cabos m→kg</button>
+  <button class="tab" data-tab="favoritos">⭐ Favoritos</button>
+  <button class="tab" data-tab="parafuso">🔩 Parafuso</button>
+  <button class="tab" data-tab="elos">⚡ Elos</button>
+  <button class="tab" data-tab="tracao">📐 Tração Postes</button>
+  <button class="tab" data-tab="cintas">🔗 Cintas</button>
+  <button class="tab" data-tab="atualizar">⬆️ Atualizar Dados</button>
+</div>
+
+<!-- TAB: CONSULTAR -->
+<div class="tab-panel active" id="tab-consultar">
+
+  <div class="sheets-status" id="sheetsStatus">
+    <div class="left">
+      <div class="status-dot loading" id="statusDot"></div>
+      <div class="status-text" id="statusText">Conectando ao Google Sheets...</div>
+    </div>
+    <button class="btn-ghost" onclick="loadFromSheets()">↻ Atualizar</button>
+  </div>
+
+  <div class="search-area" id="searchArea">
+    <span class="search-label">Selecione o código da estrutura</span>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Digite ou pesquise o código..." autocomplete="off" />
+      <div class="dropdown" id="dropdown"></div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-header">
+      <div class="results-title">Componentes de <span id="selectedCode"></span></div>
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+        <div class="badge" id="countBadge"></div>
+        <button class="btn-export" id="btnFavorito" onclick="toggleFavorito()">⭐ Favoritar</button>
+        <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+        <button class="btn-export" onclick="exportExcel()">⬇ Excel</button>
+        <button class="btn-export btn-export-pdf" onclick="exportPDF()">⬇ PDF</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB: BUSCAR ITEM -->
+<div class="tab-panel" id="tab-buscar">
+
+  <div class="info-card">
+    <strong>Busca bidirecional:</strong> pesquise pelo <strong>Código do Item</strong> para ver a Descrição, ou pesquise pela <strong>Descrição</strong> para encontrar o Código.
+  </div>
+
+  <div class="busca-grid">
+
+    <div class="busca-card">
+      <div class="busca-label">🔑 Código → Descrição</div>
+      <div class="search-wrap">
+        <input type="text" id="buscaCodigo" placeholder="Digite o código do item..." autocomplete="off" />
+        <div class="dropdown" id="dropdownCodigo"></div>
+      </div>
+      <div class="busca-result" id="resultCodigo">
+        <span class="busca-hint">Digite um código para ver a descrição</span>
+      </div>
+    </div>
+
+    <div class="busca-card">
+      <div class="busca-label">📝 Descrição → Código</div>
+      <div class="search-wrap">
+        <input type="text" id="buscaDesc" placeholder="Digite a descrição..." autocomplete="off" />
+        <div class="dropdown" id="dropdownDesc"></div>
+      </div>
+      <div class="busca-result" id="resultDesc">
+        <span class="busca-hint">Digite uma descrição para ver o código</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TAB: ONDE É USADO -->
+<div class="tab-panel" id="tab-whereused">
+
+  <div class="info-card">
+    <strong>Onde é usado:</strong> pesquise pelo <strong>Código do Item</strong> para descobrir em quais estruturas ele aparece e com qual quantidade.
+  </div>
+
+  <div style="margin-bottom:1.25rem;">
+    <span class="search-label">Código do componente</span>
+    <div class="search-wrap">
+      <input type="text" id="wuSearch" placeholder="Digite o código do item..." autocomplete="off" />
+      <div class="dropdown" id="dropdownWU"></div>
+    </div>
+  </div>
+
+  <div id="wuResults" style="display:none;">
+    <div class="results-header">
+      <div class="results-title">Estruturas que usam <span id="wuCode" style="font-family:'DM Mono',monospace;color:var(--accent);font-size:1rem;"></span></div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div class="badge" id="wuBadge"></div>
+      </div>
+    </div>
+
+    <div id="wuDesc" style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-bottom:1rem;padding:0.6rem 0.9rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:none;"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Estrutura Pai</th>
+            <th>Quantidade</th>
+            <th>Unidade</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="wuBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="wuEmpty" style="display:none;text-align:center;padding:3rem;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.85rem;">
+    🔍 Nenhuma estrutura encontrada para este componente.
+  </div>
+
+</div>
+
+<!-- TAB: CABOS -->
+<div class="tab-panel" id="tab-cabos">
+
+  <div class="info-card">
+    <strong>Conversor de Cabos:</strong> selecione o cabo e informe a quantidade em metros para calcular o peso em kg, baseado no peso por metro cadastrado na planilha.
+  </div>
+
+  <div class="cabo-form">
+    <div class="map-field" style="flex:1;min-width:200px;">
+      <label>Cabo</label>
+      <div class="search-wrap">
+        <input type="text" id="caboSearch" placeholder="Digite o nome do cabo..." autocomplete="off" />
+        <div class="dropdown" id="dropdownCabo"></div>
+      </div>
+    </div>
+    <div class="map-field" style="width:140px;">
+      <label>Distância (m)</label>
+      <input type="number" id="caboMetros" min="0" step="0.01" placeholder="0,00" class="cabo-input" />
+    </div>
+    <div class="map-field" style="width:120px;">
+      <label>Fases</label>
+      <select id="caboFases" class="cabo-input">
+        <option value="1">1 fase</option>
+        <option value="2">2 fases</option>
+        <option value="3" selected>3 fases</option>
+      </select>
+    </div>
+    <div style="padding-top:1.3rem;">
+      <button class="btn" onclick="calcularCabo()">Calcular</button>
+    </div>
+  </div>
+
+  <div class="cabo-resultado" id="caboResultado" style="display:none;">
+    <div class="cabo-res-row">
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Cabo</span>
+        <span class="cabo-res-val" id="resNome">—</span>
+      </div>
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Peso por metro</span>
+        <span class="cabo-res-val" id="resPpm">—</span>
+      </div>
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Distância</span>
+        <span class="cabo-res-val" id="resMetros">—</span>
+      </div>
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Fases</span>
+        <span class="cabo-res-val" id="resFases">—</span>
+      </div>
+      <div class="cabo-res-item destaque">
+        <span class="cabo-res-label">Total em kg</span>
+        <span class="cabo-res-val" id="resKg">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cabo-lista" id="caboLista" style="display:none;">
+    <div class="busca-label" style="margin-bottom:0.75rem;">Todos os cabos cadastrados</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nome do Cabo</th><th>Peso (kg/m)</th></tr></thead>
+        <tbody id="caboListaBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB: FAVORITOS -->
+<div class="tab-panel" id="tab-favoritos">
+  <div class="info-card">
+    <strong>Favoritos:</strong> salve as estruturas que você consulta com mais frequência para acessar rapidamente.
+  </div>
+  <div id="favListaVazia" style="text-align:center;padding:3rem;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.85rem;">
+    ⭐ Nenhum favorito ainda.<br/>
+    <span style="font-size:0.75rem;margin-top:0.5rem;display:block;">Ao consultar uma estrutura, clique em ⭐ para salvar aqui.</span>
+  </div>
+  <div id="favLista" style="display:none;">
+    <div class="fav-grid" id="favGrid"></div>
+  </div>
+</div>
+
+<!-- TAB: PARAFUSO -->
+<div class="tab-panel" id="tab-parafuso">
+
+  <div class="info-card">
+    <strong>Calculadora de Parafuso:</strong> selecione o código da estrutura e a face (A ou B). Os valores de topo, base e altura são preenchidos automaticamente. Informe a distância X abaixo do topo e a calculadora calcula o comprimento do parafuso por interpolação.
+  </div>
+
+  <!-- BUSCA DO CÓDIGO EQTL -->
+  <div style="margin-bottom:1.25rem;">
+    <span class="search-label">Código da Estrutura (EQTL)</span>
+    <div class="search-wrap">
+      <input type="text" id="prf_codigoSearch" placeholder="Digite o código EQTL..." autocomplete="off" />
+      <div class="dropdown" id="prf_dropdown"></div>
+    </div>
+  </div>
+
+  <!-- SELETOR DE FACE -->
+  <div style="margin-bottom:1.25rem;display:none;" id="prf_faceRow">
+    <span class="busca-label" style="margin-bottom:0.5rem;display:block;">Face</span>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="fase-btn active" id="prf_faceA" onclick="prfSetFace('A')">Face A</button>
+      <button class="fase-btn" id="prf_faceB" onclick="prfSetFace('B')">Face B</button>
+    </div>
+  </div>
+
+  <!-- INFO DA ESTRUTURA SELECIONADA -->
+  <div id="prf_estrutura_info" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem 1.25rem;margin-bottom:1.25rem;font-family:'DM Mono',monospace;font-size:0.82rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem;">
+      <div><span style="color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;display:block;">Código</span><span id="prf_info_codigo" style="color:var(--accent);font-weight:600;">—</span></div>
+      <div><span style="color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;display:block;">Comprimento</span><span id="prf_info_comp" style="color:var(--text);">—</span></div>
+      <div><span style="color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;display:block;">Resistência Face A</span><span id="prf_info_resA" style="color:var(--warn,#ffd166);">—</span></div>
+      <div><span style="color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;display:block;">Resistência Face B</span><span id="prf_info_resB" style="color:var(--warn,#ffd166);">—</span></div>
+      <div><span style="color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;display:block;">Topo (face sel.)</span><span id="prf_info_topo" style="color:var(--accent2);">—</span></div>
+      <div><span style="color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;display:block;">Base (face sel.)</span><span id="prf_info_base" style="color:var(--accent2);">—</span></div>
+    </div>
+  </div>
+
+  <div class="map-grid" style="margin-bottom:1rem;">
+    <div class="map-field">
+      <label>Largura interna no Topo — A ou B (mm) <span style="color:var(--accent)">*</span></label>
+      <input type="number" id="prf_wtopo" placeholder="ex: 120" min="0" step="0.5" class="cabo-input" oninput="prfPreview()" />
+    </div>
+    <div class="map-field">
+      <label>Largura interna na Base — A ou B (mm) <span style="color:var(--accent)">*</span></label>
+      <input type="number" id="prf_wbase" placeholder="ex: 264" min="0" step="0.5" class="cabo-input" oninput="prfPreview()" />
+    </div>
+    <div class="map-field">
+      <label>Altura total da estrutura (mm) <span style="color:var(--accent)">*</span></label>
+      <input type="number" id="prf_halt" placeholder="ex: 900" min="1" step="1" class="cabo-input" oninput="prfPreview()" />
+    </div>
+    <div class="map-field">
+      <label>Distância X abaixo do topo (mm)</label>
+      <input type="number" id="prf_posX" placeholder="0 = no topo" min="0" step="1" value="0" class="cabo-input" oninput="prfPreview()" />
+    </div>
+    <div class="map-field">
+      <label>Arruela por lado (mm)</label>
+      <input type="number" id="prf_arru" value="3" min="0" step="0.5" class="cabo-input" oninput="prfPreview()" />
+    </div>
+    <div class="map-field">
+      <label>Folga saída porca (mm)</label>
+      <input type="number" id="prf_folga" value="5" min="0" step="1" class="cabo-input" oninput="prfPreview()" />
+    </div>
+  </div>
+
+  <div id="prf_largura_preview" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem 1.25rem;margin-bottom:1.25rem;font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--muted);">
+    Largura na posição X: <strong id="prf_largura_val" style="color:var(--accent);font-size:1rem;">—</strong>
+  </div>
+
+  <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <button class="btn" onclick="calcularParafuso()">⟶ Calcular</button>
+    <button class="btn-ghost" onclick="limparParafuso()">Limpar</button>
+  </div>
+
+  <div id="prf_resultado" class="cabo-resultado" style="display:none;">
+    <div class="cabo-res-row" id="prf_cards" style="margin-bottom:1.25rem;"></div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap;">
+      <svg id="prf_svg" style="flex-shrink:0;"></svg>
+      <div id="prf_legend" style="display:flex;flex-direction:column;gap:0.55rem;font-family:'DM Mono',monospace;font-size:0.78rem;"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1rem;">
+      <div style="padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--bg);">Composição do comprimento</div>
+      <div id="prf_breakdown"></div>
+    </div>
+    <div id="prf_recomendacao" style="background:var(--surface);border:1px solid rgba(0,230,118,0.25);border-radius:var(--radius);padding:1rem 1.25rem;"></div>
+  </div>
+
+</div>
+
+<!-- TAB: ATUALIZAR -->
+<div class="tab-panel" id="tab-atualizar">
+
+  <div class="info-card">
+    <strong>Como funciona:</strong> Faça upload de um CSV ou Excel com sua BOM completa.
+    O app vai <strong>substituir todos os dados</strong> da planilha pelo novo arquivo.
+    Mapeie as colunas abaixo — o app tenta detectar automaticamente.
+  </div>
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
+    <div class="upload-icon">📂</div>
+    <p><strong>Arraste seu arquivo</strong> ou clique para selecionar</p>
+    <p style="margin-top:6px;font-size:0.78rem;">Suporta CSV, XLS e XLSX</p>
+  </div>
+
+  <div class="file-info" id="fileInfo">
+    <div class="file-dot"></div>
+    <span class="file-name" id="fileName"></span>
+    <button class="file-clear" id="fileClear">✕</button>
+  </div>
+
+  <div class="mapper" id="mapper">
+    <h3>Mapeie as colunas do arquivo</h3>
+    <div class="map-grid">
+      <div class="map-field">
+        <label>Código da Estrutura <span>*</span></label>
+        <select id="colStructure"><option value="">— selecione —</option></select>
+      </div>
+      <div class="map-field">
+        <label>Código do Item <span>*</span></label>
+        <select id="colItem"><option value="">— selecione —</option></select>
+      </div>
+      <div class="map-field">
+        <label>Descrição</label>
+        <select id="colDesc"><option value="">(nenhuma)</option></select>
+      </div>
+      <div class="map-field">
+        <label>Quantidade</label>
+        <select id="colQty"><option value="">(nenhuma)</option></select>
+      </div>
+      <div class="map-field">
+        <label>Unidade</label>
+        <select id="colUnit"><option value="">(nenhuma)</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="send-row" id="sendRow">
+    <span class="send-msg" id="sendMsg"></span>
+    <button class="btn-ghost" id="btnCancelUpload">Cancelar</button>
+    <button class="btn" id="btnSend">⬆️ Enviar para Sheets</button>
+  </div>
+
+</div>
+
+<!-- TAB: ELOS -->
+<div class="tab-panel" id="tab-elos">
+
+  <div class="info-card">
+    <strong>Elos Fusíveis para Transformadores Trifásicos:</strong> selecione a potência do transformador e a tensão da rede. O seletor mostra o <strong>IN(A)</strong> e o <strong>ELO</strong> recomendado.
+  </div>
+
+  <div class="map-grid" style="margin-bottom:1.25rem;">
+    <div class="map-field">
+      <label>Potência (kVA) <span style="color:var(--accent)">*</span></label>
+      <select id="elo_potencia" class="cabo-input" onchange="calcularElo()">
+        <option value="">— selecione —</option>
+        <option>15</option><option>30</option><option>45</option><option>75</option>
+        <option>112.5</option><option>150</option><option>225</option><option>300</option>
+        <option>400</option><option>500</option><option>750</option><option>1000</option>
+      </select>
+    </div>
+    <div class="map-field">
+      <label>Tensão da Rede <span style="color:var(--accent)">*</span></label>
+      <select id="elo_tensao" class="cabo-input" onchange="calcularElo()">
+        <option value="">— selecione —</option>
+        <option value="11.4">11,4 kV</option>
+        <option value="13.8">13,8 kV</option>
+        <option value="22">22 kV</option>
+        <option value="34.5">34,5 kV</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div id="elo_resultado" style="display:none;" class="cabo-resultado">
+    <div class="cabo-res-row">
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Potência</span>
+        <span class="cabo-res-val" id="elo_res_pot">—</span>
+      </div>
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Tensão</span>
+        <span class="cabo-res-val" id="elo_res_ten">—</span>
+      </div>
+      <div class="cabo-res-item destaque">
+        <span class="cabo-res-label">IN (A)</span>
+        <span class="cabo-res-val" id="elo_res_in">—</span>
+      </div>
+      <div class="cabo-res-item destaque">
+        <span class="cabo-res-label">ELO</span>
+        <span class="cabo-res-val" id="elo_res_elo">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aviso sem dados -->
+  <div id="elo_indisponivel" style="display:none;font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--danger);padding:0.75rem 0;">
+    ✕ Combinação não disponível nesta tensão.
+  </div>
+
+  <!-- Tabela completa de referência -->
+  <div style="margin-top:1.5rem;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem;">Tabela completa de referência</div>
+    <div class="table-wrap">
+      <table id="elo_tabela">
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:middle;">kVA</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);">11,4 kV</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);">13,8 kV</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);">22 kV</th>
+            <th colspan="2" style="text-align:center;border-bottom:1px solid var(--border);">34,5 kV</th>
+          </tr>
+          <tr>
+            <th>IN(A)</th><th>ELO</th>
+            <th>IN(A)</th><th>ELO</th>
+            <th>IN(A)</th><th>ELO</th>
+            <th>IN(A)</th><th>ELO</th>
+          </tr>
+        </thead>
+        <tbody id="elo_tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- TAB: TRAÇÃO POSTES -->
+<div class="tab-panel" id="tab-tracao">
+
+  <div class="info-card">
+    <strong>Dimensionamento de Poste e Estai:</strong> configure as linhas de condutores (N°, tipo, distância do topo, ângulo e TMR), selecione o vão médio e altura do poste. O sistema calcula o esforço resultante no topo, indica o tipo de poste e o estai necessário.
+  </div>
+
+  <!-- Layout principal: esquerda = inputs, direita = resultados -->
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1.25rem;align-items:start;" class="tracao-grid">
+
+    <!-- COLUNA ESQUERDA -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- Tabela de condutores -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <div style="padding:0.65rem 1rem;background:rgba(0,230,118,0.06);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);">⚡ Linhas de Condutores</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">Ângulo: 0°=esq · 90°=atrás · 180°=dir</span>
+        </div>
+
+        <!-- Cabeçalhos -->
+        <div style="display:grid;grid-template-columns:60px 1fr 60px 1fr 100px 90px 130px;gap:0;border-bottom:1px solid var(--border);">
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);text-align:center;">N° cond.</div>
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Tipo cond.</div>
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);text-align:center;">N° cond.</div>
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Tipo cond.</div>
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);text-align:center;">Dist. topo</div>
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);text-align:center;">Ângulo</div>
+          <div style="padding:0.45rem 0.5rem;font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);text-align:center;">TMR</div>
+        </div>
+
+        <!-- Linhas de condutores (4 linhas) -->
+        <div id="trc_linhas">
+          <!-- gerado por JS -->
+        </div>
+      </div>
+
+      <!-- Linha inferior: Vão + Altura + Botão -->
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.75rem;align-items:end;">
+        <div class="map-field">
+          <label>Vão Médio e Tabela</label>
+          <select id="trc_vao" onchange="calcularTracao()">
+            <option value="45">45 m — Tab. Padrão CEEE</option>
+            <option value="70">70 m — Tab. Cálculo 1.995</option>
+            <option value="140c">140 m — Tab. Cálculo 1.995</option>
+            <option value="140p">140 m — Tab. Padrão CEEE</option>
+          </select>
+        </div>
+        <div class="map-field">
+          <label>Altura do Poste</label>
+          <select id="trc_altPoste" onchange="calcularTracao()">
+            <option value="5">5 m</option><option value="6">6 m</option><option value="7">7 m</option>
+            <option value="8">8 m</option><option value="9">9 m</option><option value="10">10 m</option>
+            <option value="11" selected>11 m</option><option value="12">12 m</option>
+            <option value="13">13 m</option><option value="14">14 m</option><option value="15">15 m</option>
+          </select>
+        </div>
+        <button class="btn" onclick="calcularTracao()" style="white-space:nowrap;padding:0.5rem 1.4rem;">▶ Calcular</button>
+      </div>
+
+      <!-- Diagrama vetorial -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;">Diagrama Vetorial</div>
+        <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+          <svg id="trc_diagrama" width="160" height="160" viewBox="-80 -80 160 160"
+            style="flex-shrink:0;background:var(--bg);border-radius:50%;border:1px solid var(--border);">
+            <!-- eixos -->
+            <line x1="-70" y1="0" x2="70" y2="0" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="0" y1="-70" x2="0" y2="70" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <text x="72" y="4" font-size="8" fill="rgba(255,255,255,0.2)" font-family="DM Mono,monospace">180°</text>
+            <text x="-78" y="4" font-size="8" fill="rgba(255,255,255,0.2)" font-family="DM Mono,monospace">0°</text>
+            <!-- vetores e resultante injetados por JS -->
+            <g id="trc_vetores"></g>
+          </svg>
+          <div id="trc_diag_legenda" style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);line-height:2;">
+            Aguardando cálculo…
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUNA DIREITA: Resultados -->
+    <div style="display:flex;flex-direction:column;gap:0.85rem;">
+
+      <!-- Poste — Esforço no Topo -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <div style="padding:0.55rem 0.85rem;background:rgba(0,230,118,0.06);border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">
+          Poste — Esforço no Topo
+        </div>
+        <div style="padding:0.65rem 0.85rem;text-align:center;">
+          <div id="trc_esforco_val" style="font-size:1.6rem;font-weight:800;color:var(--accent);font-family:'Syne',sans-serif;">—</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);">kN</div>
+        </div>
+        <div style="border-top:1px solid var(--border);">
+          <div style="display:grid;grid-template-columns:1fr auto auto;padding:0.4rem 0.85rem;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.72rem;">
+            <span style="color:var(--muted);">Tipo de Poste</span><span></span><span></span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:0.35rem 0.85rem;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.72rem;">
+            <span style="color:var(--muted);">Concreto</span><span id="trc_p_conc" style="color:var(--accent);font-weight:600;">—</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:0.35rem 0.85rem;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.72rem;">
+            <span style="color:var(--muted);">Madeira</span><span id="trc_p_mad" style="font-weight:600;">—</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;padding:0.35rem 0.85rem;font-family:'DM Mono',monospace;font-size:0.72rem;">
+            <span style="color:var(--muted);">Ferro</span><span id="trc_p_fer" style="font-weight:600;">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estais -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <div style="padding:0.55rem 0.85rem;background:rgba(0,230,118,0.06);border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">
+          Estais
+        </div>
+        <div style="padding:0.5rem 0.85rem;border-bottom:1px solid var(--border);">
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.4rem;">Momento Resultante</div>
+          <div style="display:grid;grid-template-columns:1fr auto;margin-bottom:0.2rem;">
+            <span style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">Result. X</span>
+            <span id="trc_rx" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);font-weight:600;">—</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;">
+            <span style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">Result. Y</span>
+            <span id="trc_ry" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent2);font-weight:600;">—</span>
+          </div>
+        </div>
+        <div style="padding:0.4rem 0.85rem;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">
+          Estai Indicado
+        </div>
+        <div id="trc_estais_lista" style="padding:0.35rem 0;">
+          <!-- linhas de estai injetadas por JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- TAB: CINTAS -->
+<div class="tab-panel" id="tab-cintas">
+
+  <div class="info-card">
+    <strong>Cintas para Poste:</strong> selecione o poste e o tipo de aplicação. O seletor mostra o comprimento de cinta recomendado em mm.
+  </div>
+
+  <div class="map-grid" style="margin-bottom:1.25rem;">
+    <div class="map-field">
+      <label>Poste <span style="color:var(--accent)">*</span></label>
+      <select id="cinta_poste" class="cabo-input" onchange="calcularCinta()">
+        <option value="">— selecione —</option>
+        <option>9/2 kN</option><option>9/4 kN</option><option>9/6 kN</option><option>9/10 kN</option>
+        <option>10/2 kN</option><option>10/4 kN</option><option>10/6 kN</option><option>10/10 kN</option>
+        <option>11/4 kN</option><option>11/6 kN</option><option>11/10 kN</option>
+        <option>12/4 kN</option><option>12/6 kN</option><option>12/10 kN</option>
+      </select>
+    </div>
+    <div class="map-field">
+      <label>Tipo de Aplicação <span style="color:var(--accent)">*</span></label>
+      <select id="cinta_tipo" class="cabo-input" onchange="calcularCinta()">
+        <option value="">— selecione —</option>
+        <option value="estrut1_at_1">1ª Estrut. AT — col.1</option>
+        <option value="estrut1_at_2">1ª Estrut. AT — col.2</option>
+        <option value="estrut2_at_1">2ª Estrut. AT — col.1</option>
+        <option value="estrut2_at_2">2ª Estrut. AT — col.2</option>
+        <option value="estrut_ptr_1">Estrut. p/TR — col.1</option>
+        <option value="estrut_ptr_2">Estrut. p/TR — col.2</option>
+        <option value="tang_as22_1">Tangente 1º as22</option>
+        <option value="tang_as22_2">Tangente 2º as22</option>
+        <option value="encab_1as22_1">Encabeçamento 1º as22 — col.1</option>
+        <option value="encab_1as22_2">Encabeçamento 1º as22 — col.2</option>
+        <option value="encab_2as22_1">Encabeçamento 2º as22 — col.1</option>
+        <option value="encab_2as22_2">Encabeçamento 2º as22 — col.2</option>
+        <option value="ip">IP</option>
+        <option value="tel">Tel</option>
+        <option value="tv">TV</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="cinta_resultado" style="display:none;" class="cabo-resultado">
+    <div class="cabo-res-row">
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Poste</span>
+        <span class="cabo-res-val" id="cinta_res_poste">—</span>
+      </div>
+      <div class="cabo-res-item">
+        <span class="cabo-res-label">Aplicação</span>
+        <span class="cabo-res-val" id="cinta_res_tipo">—</span>
+      </div>
+      <div class="cabo-res-item destaque">
+        <span class="cabo-res-label">Comprimento</span>
+        <span class="cabo-res-val" id="cinta_res_val">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="cinta_indisponivel" style="display:none;font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--muted);padding:0.75rem 0;">
+    — Não aplicável para este poste.
+  </div>
+
+  <!-- Tabela completa -->
+  <div style="margin-top:1.5rem;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem;">Tabela completa de referência</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="3" style="vertical-align:middle;">Poste</th>
+            <th colspan="2" style="text-align:center;">1ª Estrut. AT</th>
+            <th colspan="2" style="text-align:center;">2ª Estrut. AT</th>
+            <th colspan="2" style="text-align:center;">Estrut. p/TR</th>
+            <th colspan="2" style="text-align:center;">Tangente</th>
+            <th colspan="4" style="text-align:center;">Encabeçamento</th>
+            <th>IP</th><th>Tel</th><th>TV</th>
+          </tr>
+          <tr>
+            <th colspan="2"></th><th colspan="2"></th><th colspan="2"></th>
+            <th>1º as22</th><th>2º as22</th>
+            <th colspan="2">1º as22</th><th colspan="2">2º as22</th>
+            <th></th><th></th><th></th>
+          </tr>
+          <tr>
+            <th>c1</th><th>c2</th><th>c1</th><th>c2</th><th>c1</th><th>c2</th>
+            <th></th><th></th>
+            <th>c1</th><th>c2</th><th>c1</th><th>c2</th>
+            <th></th><th></th><th></th>
+          </tr>
+        </thead>
+        <tbody id="cinta_tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Criado por</div>
+    <span class="footer-name">Pedro Scherdien</span>
+  </div>
+  <div class="footer-contact">
+    <span>📱</span>
+    <a href="https://wa.me/5553984742332" target="_blank">(53) 98474-2332</a>
+  </div>
+  <div style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);text-align:right;line-height:1.6;">
+    SetupBoom © 2025<br/>
+    <span style="color:var(--accent);letter-spacing:0.05em;">Técnico PCP 2 </span>
+  </div>
+</footer>
+
+<script>
+  const API_KEY  = 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
+  const SHEET_ID = '1_KoOY_AfIxr4d7Afg24ZTvuBaV2CMZzl0yIFZFJynVM';
+  const SHEET_NAME = 'Dados';
+  const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`;
+
+  let allData = [], structures = {}, allCodes = [], columnMap = {}, uploadedData = [], rawRows = [];
+
+  // TABS
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'tracao') {
+        if (!document.getElementById('trc_c1_0')) trcBuildLinhas();
+        setTimeout(calcularTracao, 50);
+      }
+    });
+  });
+
+  // LOAD FROM SHEETS
+  async function loadFromSheets() {
+    setStatus('loading', 'Carregando dados do Google Sheets...');
+    document.getElementById('searchArea').classList.remove('visible');
+    document.getElementById('results').classList.remove('visible');
+
+    try {
+      const url = `${BASE_URL}/values/${encodeURIComponent(SHEET_NAME)}!A:AD?key=${API_KEY}`;
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (json.error) throw new Error(json.error.message);
+
+      const rows = json.values || [];
+      if (rows.length < 2) {
+        setStatus('error', 'Planilha vazia. Envie dados pela aba "Atualizar Dados".');
+        return;
+      }
+
+      const headers = rows[0];
+
+      // Garante que cada linha tenha ao menos 17 colunas (até Q)
+      const maxLen = Math.max(headers.length, 30);
+      const paddedHeaders = [...headers, ...Array(maxLen).fill('')].slice(0, maxLen);
+
+      rawRows = rows.slice(1).map(r => [...r, ...Array(30).fill('')].slice(0,30));
+      allData = rows.slice(1).map(row => {
+        const padded = [...row, ...Array(maxLen).fill('')].slice(0, maxLen);
+        const obj = {};
+        paddedHeaders.forEach((h, i) => obj[h] = padded[i] || '');
+        obj['__D'] = padded[3] || '';
+        obj['__E'] = padded[4] || '';
+        obj['__F'] = padded[5] || '';
+        obj['__G'] = padded[6] || '';
+        obj['__H'] = padded[7] || '';
+        obj['__O'] = padded[14] || '';
+        obj['__P'] = padded[15] || '';
+        obj['__Q'] = padded[16] || '';
+        // Dimensões da estrutura (colunas U-AD)
+        obj['__CODIGO_EQTL'] = padded[20] || '';
+        obj['__COMPRIMENTO'] = padded[21] || '';
+        obj['__RES_A']       = padded[23] || '';
+        obj['__RES_B']       = padded[24] || '';
+        obj['__TOPO_A']      = padded[26] || '';
+        obj['__TOPO_B']      = padded[27] || '';
+        obj['__BASE_A']      = padded[28] || '';
+        obj['__BASE_B']      = padded[29] || '';
+        return obj;
+      });
+
+      columnMap = { structure: '__D', item: '__E', desc: '__F', unit: '__G', qty: '__H' };
+      buildStructures();
+      buildItemIndex();
+      buildCabosIndex();
+      buildDimIndex();
+
+      const amostra = [...new Set(allData.slice(0,5).map(r=>r['__D']).filter(Boolean))].join(', ') || '(vazio)';
+      console.log('Col D amostra:', amostra, '| Estruturas:', allCodes.length, allCodes.slice(0,5));
+
+      const ts = new Date().toLocaleTimeString('pt-BR');
+      setStatus('ok', `<strong>${allCodes.length} estruturas</strong> · ${allData.length} linhas · ${ts} <span style="color:var(--accent2);font-size:0.72rem"> | Col D: ${amostra}</span>`);
+      document.getElementById('searchArea').classList.add('visible', 'fade-in');
+
+    } catch(e) {
+      setStatus('error', 'Erro: ' + e.message + ' — verifique se a aba se chama "Dados" e se a planilha está pública.');
+    }
+  }
+
+  function autoDetectCols(headers) {
+    const find = kws => headers.find(h => kws.some(k => h.toLowerCase().includes(k))) || '';
+    return {
+      structure: find(['estrutura','pai','parent','assembly']),
+      item:      find(['item','filho','child','componente']),
+      desc:      find(['desc','nome','name','descricao','descrição','produto']),
+      qty:       find(['qtd','qty','quantidade','quant','amount']),
+      unit:      find(['un','unid','unit','unidade','medida']),
+    };
+  }
+
+  function buildStructures() {
+    structures = {};
+    allData.forEach(row => {
+      const code = String(row[columnMap.structure] || '').trim();
+      if (!code) return;
+      if (!structures[code]) structures[code] = [];
+      structures[code].push(row);
+    });
+    allCodes = Object.keys(structures).sort();
+  }
+
+  function setStatus(state, msg) {
+    document.getElementById('statusDot').className = 'status-dot ' + state;
+    document.getElementById('statusText').innerHTML = msg;
+  }
+
+  // SEARCH
+  const searchInput = document.getElementById('searchInput');
+  const dropdown = document.getElementById('dropdown');
+
+  searchInput.addEventListener('input', () => renderDropdown(searchInput.value.trim().toLowerCase()));
+  searchInput.addEventListener('focus', () => renderDropdown(searchInput.value.trim().toLowerCase()));
+  document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) dropdown.classList.remove('open'); });
+
+  function renderDropdown(q) {
+    const filtered = q ? allCodes.filter(c => c.toLowerCase().includes(q)) : allCodes;
+    if (!filtered.length) { dropdown.classList.remove('open'); return; }
+    dropdown.innerHTML = filtered.slice(0, 80).map(c => {
+      const hl = q ? c.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : c;
+      return `<div class="dropdown-item" data-code="${c}">${hl}</div>`;
+    }).join('');
+    dropdown.classList.add('open');
+    dropdown.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        searchInput.value = el.dataset.code;
+        dropdown.classList.remove('open');
+        showResults(el.dataset.code);
+      });
+    });
+  }
+
+  function showResults(code) {
+    const items = structures[code] || [];
+    document.getElementById('selectedCode').textContent = code;
+    document.getElementById('countBadge').textContent = `${items.length} componente${items.length !== 1 ? 's' : ''}`;
+
+    const cols = [
+      { key: columnMap.item, label: 'Código do Item' },
+      columnMap.desc ? { key: columnMap.desc, label: 'Descrição' }  : null,
+      columnMap.qty  ? { key: columnMap.qty,  label: 'Quantidade' } : null,
+      columnMap.unit ? { key: columnMap.unit, label: 'Unidade' }    : null,
+    ].filter(Boolean);
+
+    document.getElementById('tableHead').innerHTML = `<tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr>`;
+    document.getElementById('tableBody').innerHTML = items.length
+      ? items.map((row, i) => `
+          <tr class="fade-in" style="animation-delay:${i*0.03}s">
+            ${cols.map((c, ci) => {
+              const val = row[c.key] ?? '';
+              if (ci === 0) return `<td>${val}</td>`;
+              if (c.key === columnMap.qty)  return `<td><span class="qty-pill">${val}</span></td>`;
+              if (c.key === columnMap.unit) return `<td><span class="unit-text">${val}</span></td>`;
+              return `<td>${val}</td>`;
+            }).join('')}
+          </tr>`).join('')
+      : `<tr><td colspan="${cols.length}" style="padding:2rem;text-align:center;color:var(--muted)">Nenhum componente encontrado.</td></tr>`;
+
+    currentItems = items;
+    currentCols = cols;
+    codigoAtual = code;
+    updateFavBtn();
+    document.getElementById('results').classList.add('visible', 'fade-in');
+  }
+
+  // UPLOAD
+  const uploadZone = document.getElementById('uploadZone');
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+  document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+  document.getElementById('fileClear').addEventListener('click', resetUpload);
+  document.getElementById('btnCancelUpload').addEventListener('click', resetUpload);
+
+  function handleFile(file) {
+    if (!file) return;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileInfo').classList.add('visible');
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      uploadedData = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      if (!uploadedData.length) { showToast('Arquivo vazio.', 'error'); return; }
+
+      const cols = Object.keys(uploadedData[0]);
+      populateMapSelects(cols);
+      autoFillMapSelects(cols);
+      document.getElementById('mapper').classList.add('visible', 'fade-in');
+      document.getElementById('sendMsg').textContent = `${uploadedData.length} linhas prontas para envio`;
+      document.getElementById('sendRow').classList.add('visible');
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function populateMapSelects(cols) {
+    ['colStructure','colItem','colDesc','colQty','colUnit'].forEach(id => {
+      const sel = document.getElementById(id);
+      const req = id === 'colStructure' || id === 'colItem';
+      sel.innerHTML = req ? '<option value="">— selecione —</option>' : '<option value="">(nenhuma)</option>';
+      cols.forEach(c => { const o = document.createElement('option'); o.value = o.textContent = c; sel.appendChild(o); });
+    });
+  }
+
+  function autoFillMapSelects(cols) {
+    const match = (id, kws) => {
+      const f = cols.find(c => kws.some(k => c.toLowerCase().includes(k)));
+      if (f) document.getElementById(id).value = f;
+    };
+    match('colStructure', ['estrutura','pai','parent','assembly']);
+    match('colItem',      ['item','filho','child','componente']);
+    match('colDesc',      ['desc','nome','name','descricao','descrição']);
+    match('colQty',       ['qtd','qty','quantidade','quant']);
+    match('colUnit',      ['un','unid','unit','unidade']);
+  }
+
+  document.getElementById('btnSend').addEventListener('click', async () => {
+    const s = document.getElementById('colStructure').value;
+    const i = document.getElementById('colItem').value;
+    if (!s || !i) { showToast('Selecione as colunas obrigatórias.', 'error'); return; }
+
+    const map = {
+      structure: s, item: i,
+      desc: document.getElementById('colDesc').value,
+      qty:  document.getElementById('colQty').value,
+      unit: document.getElementById('colUnit').value,
+    };
+
+    const headers = ['estrutura','item','descricao','quantidade','unidade'];
+    const rows = uploadedData.map(row => [
+      row[map.structure] ?? '',
+      row[map.item]      ?? '',
+      map.desc ? (row[map.desc] ?? '') : '',
+      map.qty  ? (row[map.qty]  ?? '') : '',
+      map.unit ? (row[map.unit] ?? '') : '',
+    ]);
+
+    const btn = document.getElementById('btnSend');
+    btn.disabled = true;
+    btn.textContent = '⏳ Enviando...';
+
+    try {
+      await fetch(`${BASE_URL}/values/${encodeURIComponent(SHEET_NAME)}:clear?key=${API_KEY}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}),
+      });
+
+      const res = await fetch(
+        `${BASE_URL}/values/${encodeURIComponent(SHEET_NAME)}?valueInputOption=RAW&key=${API_KEY}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ range: SHEET_NAME, majorDimension: 'ROWS', values: [headers, ...rows] }),
+        }
+      );
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message);
+
+      showToast(`✅ ${rows.length} linhas enviadas com sucesso!`, 'success');
+      resetUpload();
+      loadFromSheets();
+
+    } catch(e) {
+      showToast('Erro ao enviar: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⬆️ Enviar para Sheets';
+    }
+  });
+
+  function resetUpload() {
+    uploadedData = [];
+    document.getElementById('fileInfo').classList.remove('visible');
+    document.getElementById('mapper').classList.remove('visible');
+    document.getElementById('sendRow').classList.remove('visible');
+    document.getElementById('fileInput').value = '';
+  }
+
+  // TOAST
+  let toastTimer;
+  function showToast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.className = `toast ${type} show`;
+    el.innerHTML = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
+  }
+
+  // ÍNDICE DE DIMENSÕES (CÓDIGO EQTL -> topo/base/comprimento)
+  let dimIndex = {}; // codigoEqtl -> { comprimento, topoA, topoB, baseA, baseB }
+  let dimCodes = [];
+
+  function buildDimIndex() {
+    dimIndex = {};
+    rawRows.forEach(row => {
+      const code = String(row[20] || '').trim();
+      if (!code) return;
+      if (!dimIndex[code]) {
+        dimIndex[code] = {
+          comprimento: String(row[21] || '').trim(),
+          resA:        String(row[23] || '').trim(),
+          resB:        String(row[24] || '').trim(),
+          topoA:       String(row[26] || '').trim(),
+          topoB:       String(row[27] || '').trim(),
+          baseA:       String(row[28] || '').trim(),
+          baseB:       String(row[29] || '').trim(),
+        };
+      }
+    });
+    dimCodes = Object.keys(dimIndex).sort();
+  }
+
+  // BUSCA BIDIRECIONAL (colunas K=10, L=11)
+  let itemIndex = {}; // codigo -> [descs]
+  let descIndex = {}; // desc_lower -> [codigos]
+
+  function buildItemIndex() {
+    itemIndex = {};
+    descIndex = {};
+    allData.forEach(row => {
+      const padded = Object.values(row);
+      // K = índice 10, L = índice 11 via __col keys não existem, usar allData raw
+    });
+    // rebuild from raw rows stored separately
+    rawRows.forEach(row => {
+      const code = String(row[10] || '').trim();
+      const desc = String(row[11] || '').trim();
+      if (!code && !desc) return;
+      if (code) {
+        if (!itemIndex[code]) itemIndex[code] = new Set();
+        if (desc) itemIndex[code].add(desc);
+      }
+      if (desc) {
+        const dk = desc.toLowerCase();
+        if (!descIndex[dk]) descIndex[dk] = { label: desc, codes: new Set() };
+        if (code) descIndex[dk].codes.add(code);
+      }
+    });
+  }
+
+  // Busca por código
+  const buscaCodigo = document.getElementById('buscaCodigo');
+  const dropdownCodigo = document.getElementById('dropdownCodigo');
+
+  buscaCodigo.addEventListener('input', () => {
+    const q = buscaCodigo.value.trim().toLowerCase();
+    if (!q) { dropdownCodigo.classList.remove('open'); document.getElementById('resultCodigo').innerHTML = '<span class="busca-hint">Digite um código para ver a descrição</span>'; return; }
+    const matches = Object.keys(itemIndex).filter(c => c.toLowerCase().includes(q));
+    renderBuscaDropdown(dropdownCodigo, matches, q, (val) => {
+      buscaCodigo.value = val;
+      dropdownCodigo.classList.remove('open');
+      const descs = [...(itemIndex[val] || [])];
+      const el = document.getElementById('resultCodigo');
+      if (!descs.length) { el.innerHTML = '<span class="busca-empty">Nenhuma descrição encontrada</span>'; return; }
+      el.innerHTML = descs.map(d => `<div class="busca-item"><span class="busca-item-code">${val}</span><span class="busca-item-desc">${d}</span></div>`).join('');
+    });
+  });
+
+  buscaCodigo.addEventListener('focus', () => buscaCodigo.dispatchEvent(new Event('input')));
+
+  // Busca por descrição
+  const buscaDesc = document.getElementById('buscaDesc');
+  const dropdownDesc = document.getElementById('dropdownDesc');
+
+  buscaDesc.addEventListener('input', () => {
+    const q = buscaDesc.value.trim().toLowerCase();
+    if (!q) { dropdownDesc.classList.remove('open'); document.getElementById('resultDesc').innerHTML = '<span class="busca-hint">Digite uma descrição para ver o código</span>'; return; }
+    const matches = Object.keys(descIndex).filter(k => k.includes(q));
+    const labels = matches.map(k => descIndex[k].label);
+    renderBuscaDropdown(dropdownDesc, labels, q, (val) => {
+      buscaDesc.value = val;
+      dropdownDesc.classList.remove('open');
+      const dk = val.toLowerCase();
+      const codes = [...(descIndex[dk]?.codes || [])];
+      const el = document.getElementById('resultDesc');
+      if (!codes.length) { el.innerHTML = '<span class="busca-empty">Nenhum código encontrado</span>'; return; }
+      el.innerHTML = codes.map(c => `<div class="busca-item"><span class="busca-item-code">${c}</span><span class="busca-item-desc">${val}</span></div>`).join('');
+    });
+  });
+
+  buscaDesc.addEventListener('focus', () => buscaDesc.dispatchEvent(new Event('input')));
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#buscaCodigo') && !e.target.closest('#dropdownCodigo')) dropdownCodigo.classList.remove('open');
+    if (!e.target.closest('#buscaDesc') && !e.target.closest('#dropdownDesc')) dropdownDesc.classList.remove('open');
+  });
+
+  function renderBuscaDropdown(ddEl, items, q, onSelect) {
+    if (!items.length) { ddEl.classList.remove('open'); return; }
+    ddEl.innerHTML = items.slice(0, 60).map(item => {
+      const hl = q ? item.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : item;
+      return `<div class="dropdown-item" data-val="${item.replace(/"/g,'&quot;')}">${hl}</div>`;
+    }).join('');
+    ddEl.classList.add('open');
+    ddEl.querySelectorAll('.dropdown-item').forEach(el => el.addEventListener('click', () => onSelect(el.dataset.val)));
+  }
+
+  // CABOS (coluna O=14, P=15)
+  let cabosIndex = {}; // nome_lower -> { nome, ppm }
+
+  function buildCabosIndex() {
+    cabosIndex = {};
+    allData.forEach(row => {
+      const nome = String(row['__O'] || '').trim();
+      const ppm  = parseFloat(String(row['__P'] || '').replace(',', '.'));
+      if (!nome || isNaN(ppm)) return;
+      cabosIndex[nome.toLowerCase()] = { nome, ppm };
+    });
+    console.log('Cabos indexados:', Object.keys(cabosIndex).length, Object.keys(cabosIndex).slice(0,5));
+
+    // Populate lista
+    const keys = Object.keys(cabosIndex).sort();
+    const tbody = document.getElementById('caboListaBody');
+    if (tbody) {
+      tbody.innerHTML = keys.map(k => `
+        <tr>
+          <td>${cabosIndex[k].nome}</td>
+          <td><span class="qty-pill">${cabosIndex[k].ppm.toFixed(4)}</span></td>
+        </tr>`).join('');
+      if (keys.length) document.getElementById('caboLista').style.display = 'block';
+    }
+  }
+
+  let faseAtual = 1;
+
+  function selecionarFase(btn) {
+    document.querySelectorAll('.fase-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    faseAtual = parseInt(btn.dataset.fase);
+  }
+
+  const caboSearch = document.getElementById('caboSearch');
+  const dropdownCabo = document.getElementById('dropdownCabo');
+  let caboSelecionado = null;
+
+  caboSearch.addEventListener('input', () => {
+    const q = caboSearch.value.trim().toLowerCase();
+    const matches = Object.keys(cabosIndex).filter(k => k.includes(q));
+    if (!matches.length) { dropdownCabo.classList.remove('open'); return; }
+    dropdownCabo.innerHTML = matches.slice(0, 60).map(k => {
+      const hl = q ? cabosIndex[k].nome.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : cabosIndex[k].nome;
+      return `<div class="dropdown-item" data-key="${k}">${hl}</div>`;
+    }).join('');
+    dropdownCabo.classList.add('open');
+    dropdownCabo.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        caboSelecionado = cabosIndex[el.dataset.key];
+        caboSearch.value = caboSelecionado.nome;
+        dropdownCabo.classList.remove('open');
+      });
+    });
+  });
+
+  caboSearch.addEventListener('focus', () => caboSearch.dispatchEvent(new Event('input')));
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#caboSearch') && !e.target.closest('#dropdownCabo')) dropdownCabo.classList.remove('open');
+  });
+
+  function calcularCabo() {
+    const metros = parseFloat(document.getElementById('caboMetros').value);
+    const fases  = parseInt(document.getElementById('caboFases').value);
+    if (!caboSelecionado) { showToast('Selecione um cabo primeiro.', 'error'); return; }
+    if (isNaN(metros) || metros <= 0) { showToast('Informe uma distância válida em metros.', 'error'); return; }
+
+    const kg = metros * fases * caboSelecionado.ppm;
+
+    document.getElementById('resNome').textContent   = caboSelecionado.nome;
+    document.getElementById('resPpm').textContent    = caboSelecionado.ppm.toFixed(4) + ' kg/m';
+    document.getElementById('resMetros').textContent = metros.toLocaleString('pt-BR') + ' m';
+    document.getElementById('resFases').textContent  = fases + (fases === 1 ? ' fase' : ' fases');
+    document.getElementById('resKg').textContent     = kg.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + ' kg';
+
+    document.getElementById('caboResultado').style.display = 'block';
+  }
+
+  // WHERE-USED
+  const wuSearch = document.getElementById('wuSearch');
+  const dropdownWU = document.getElementById('dropdownWU');
+
+  wuSearch.addEventListener('input', () => {
+    const q = wuSearch.value.trim().toLowerCase();
+    if (!q) { dropdownWU.classList.remove('open'); return; }
+    const matches = [...new Set(allData.map(r => String(r[columnMap.item] || '').trim()).filter(Boolean))]
+      .filter(c => c.toLowerCase().includes(q)).sort();
+    if (!matches.length) { dropdownWU.classList.remove('open'); return; }
+    dropdownWU.innerHTML = matches.slice(0, 60).map(c => {
+      const hl = c.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>');
+      return `<div class="dropdown-item" data-val="${c.replace(/"/g,'&quot;')}">${hl}</div>`;
+    }).join('');
+    dropdownWU.classList.add('open');
+    dropdownWU.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        wuSearch.value = el.dataset.val;
+        dropdownWU.classList.remove('open');
+        showWhereUsed(el.dataset.val);
+      });
+    });
+  });
+
+  wuSearch.addEventListener('focus', () => wuSearch.dispatchEvent(new Event('input')));
+  wuSearch.addEventListener('keydown', e => { if (e.key === 'Enter') { dropdownWU.classList.remove('open'); showWhereUsed(wuSearch.value.trim()); } });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#wuSearch') && !e.target.closest('#dropdownWU')) dropdownWU.classList.remove('open');
+  });
+
+  function showWhereUsed(itemCode) {
+    if (!itemCode) return;
+    const code = itemCode.trim();
+
+    // Find all rows where this item appears
+    const found = allData.filter(r => String(r[columnMap.item] || '').trim().toLowerCase() === code.toLowerCase());
+
+    document.getElementById('wuCode').textContent = code;
+    document.getElementById('wuResults').style.display = found.length ? 'block' : 'none';
+    document.getElementById('wuEmpty').style.display = found.length ? 'none' : 'block';
+
+    if (!found.length) return;
+
+    // Show description if available
+    const descEl = document.getElementById('wuDesc');
+    const desc = String(found[0][columnMap.desc] || '').trim();
+    if (desc) {
+      descEl.textContent = '📝 ' + desc;
+      descEl.style.display = 'block';
+    } else {
+      descEl.style.display = 'none';
+    }
+
+    document.getElementById('wuBadge').textContent = `${found.length} estrutura${found.length !== 1 ? 's' : ''}`;
+
+    document.getElementById('wuBody').innerHTML = found.map((row, i) => {
+      const estrutura = String(row[columnMap.structure] || '').trim();
+      const qty  = String(row[columnMap.qty]  || '').trim();
+      const unit = String(row[columnMap.unit] || '').trim();
+      return `
+        <tr class="fade-in" style="animation-delay:${i*0.03}s">
+          <td style="color:var(--accent2);font-weight:500;">${estrutura}</td>
+          <td><span class="qty-pill">${qty || '—'}</span></td>
+          <td><span class="unit-text">${unit || '—'}</span></td>
+          <td>
+            <button class="btn-ghost" style="padding:3px 10px;font-size:0.75rem;" onclick="abrirEstrutura('${estrutura}')">
+              Ver estrutura →
+            </button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function abrirEstrutura(code) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('[data-tab="consultar"]').classList.add('active');
+    document.getElementById('tab-consultar').classList.add('active');
+    document.getElementById('searchInput').value = code;
+    showResults(code);
+  }
+
+  // EXPORT PDF
+  function exportPDF() {
+    if (!currentItems.length) return;
+    const code = document.getElementById('selectedCode').textContent || 'export';
+    const now = new Date().toLocaleString('pt-BR');
+
+    // Build table rows
+    const headerHtml = currentCols.map(c => `<th>${c.label}</th>`).join('');
+    const rowsHtml = currentItems.map((row, i) =>
+      `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">` +
+      currentCols.map(c => {
+        const val = row[c.key] ?? '';
+        if (c.key === columnMap.qty) return `<td><span class="qty-cell">${val}</span></td>`;
+        return `<td>${val}</td>`;
+      }).join('') +
+      `</tr>`
+    ).join('');
+
+    // Logo base64 (same as header)
+    const logoSrc = document.querySelector('.logo-box img').src;
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<title>SetupBoom · ${code}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: #f7fbf8;
+    color: #2d3e35;
+    padding: 2.5rem 3rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* HEADER */
+  .doc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #e8f5ec;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #c8e6ce;
+  }
+  .doc-header-left { display: flex; align-items: center; gap: 0.9rem; }
+  .logo-img { width: 40px; height: 40px; object-fit: contain; }
+  .brand-name { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; color: #1a3325; line-height: 1; }
+  .brand-name span { color: #2e9e5a; }
+  .brand-sub { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: #7aaa88; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 3px; }
+  .doc-header-right { text-align: right; font-family: 'DM Mono', monospace; font-size: 0.7rem; color: #7aaa88; line-height: 1.9; }
+  .doc-header-right strong { color: #2d3e35; font-size: 0.8rem; display: block; }
+
+  /* INFO BAR */
+  .info-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: #ffffff;
+    border: 1px solid #c8e6ce;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0.85rem 1.25rem;
+    flex: 1;
+    border-right: 1px solid #e4f2e8;
+  }
+  .info-item:last-child { border-right: none; }
+  .info-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: #7aaa88; }
+  .info-value { font-family: 'DM Mono', monospace; font-size: 0.88rem; font-weight: 500; color: #2d3e35; }
+  .info-value.accent { color: #2e9e5a; font-size: 1rem; font-weight: 700; }
+
+  /* TABLE */
+  .table-wrap {
+    background: #ffffff;
+    border: 1px solid #c8e6ce;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.79rem;
+  }
+  thead tr { background: #d6eedd; }
+  thead th {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-size: 0.63rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: #3a6b4a;
+    white-space: nowrap;
+    border-bottom: 1px solid #c8e6ce;
+  }
+  tbody tr.even { background: #ffffff; }
+  tbody tr.odd  { background: #f2faf4; }
+  tbody tr { border-bottom: 1px solid #e4f2e8; }
+  tbody tr:last-child { border-bottom: none; }
+  td {
+    padding: 0.6rem 1rem;
+    vertical-align: middle;
+    color: #2d3e35;
+  }
+  td:first-child { color: #2e9e5a; font-weight: 500; }
+  .qty-cell {
+    display: inline-block;
+    background: #e2f5e8;
+    color: #2e9e5a;
+    border: 1px solid #c8e6ce;
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-size: 0.74rem;
+  }
+
+  /* FOOTER */
+  .doc-footer {
+    margin-top: 1.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid #c8e6ce;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: #7aaa88;
+  }
+  .doc-footer strong { color: #2e9e5a; }
+
+  @media print {
+    body { padding: 1.2cm 1.8cm; background: #f7fbf8; }
+    @page { margin: 0; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <div class="doc-header-left">
+    <img class="logo-img" src="${logoSrc}" alt="SetupBoom Logo"/>
+    <div>
+      <div class="brand-name">Setup<span>Boom</span></div>
+      <div class="brand-sub">Estrutura de Materiais</div>
+    </div>
+  </div>
+  <div class="doc-header-right">
+    <strong>Relatório de BOM</strong>
+    <div>Gerado em ${now}</div>
+    <div>setupboom.com.br</div>
+  </div>
+</div>
+
+<div class="info-bar">
+  <div class="info-item">
+    <span class="info-label">Código da Estrutura</span>
+    <span class="info-value accent">${code}</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Total de Componentes</span>
+    <span class="info-value">${currentItems.length} item${currentItems.length !== 1 ? 's' : ''}</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Data de Exportação</span>
+    <span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>${headerHtml}</tr>
+    </thead>
+    <tbody>
+      ${rowsHtml}
+    </tbody>
+  </table>
+</div>
+
+<div class="doc-footer">
+  <div>SetupBoom © 2025 · <strong>Engenharia de precisão</strong> · Pedro Scherdien · (53) 98474-2332</div>
+  <div>Documento gerado automaticamente</div>
+</div>
+
+<script>
+  window.onload = function() { window.print(); };
+<\/script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (!win) showToast('Permita pop-ups para exportar PDF.', 'error');
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  // EXPORT
+  let currentItems = [];
+  let currentCols = [];
+
+  function exportCSV() {
+    if (!currentItems.length) return;
+    const header = currentCols.map(c => c.label).join(',');
+    const rows = currentItems.map(row =>
+      currentCols.map(c => {
+        const val = String(row[c.key] ?? '').replace(/"/g, '""');
+        return `"${val}"`;
+      }).join(',')
+    );
+    const csv = [header, ...rows].join('\n');
+    download('Setup-Boom-' + (document.getElementById('selectedCode').textContent || 'export') + '.csv', 'text/csv', csv);
+  }
+
+  function exportExcel() {
+    if (!currentItems.length) return;
+    const header = currentCols.map(c => c.label).join('\t');
+    const rows = currentItems.map(row =>
+      currentCols.map(c => String(row[c.key] ?? '')).join('\t')
+    );
+    const tsv = '\uFEFF' + [header, ...rows].join('\n');
+    download('Setup-Boom-' + (document.getElementById('selectedCode').textContent || 'export') + '.xls', 'application/vnd.ms-excel;charset=utf-8', tsv);
+  }
+
+  function download(filename, mime, content) {
+    const blob = new Blob([content], { type: mime + ';charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // TEMA CLARO/ESCURO
+  const themeToggle = document.getElementById('themeToggle');
+  let isDark = true;
+
+  themeToggle.addEventListener('click', () => {
+    isDark = !isDark;
+    document.body.classList.toggle('light', !isDark);
+    themeToggle.textContent = isDark ? '🌙 Escuro' : '☀️ Claro';
+    localStorage.setItem('sbTheme', isDark ? 'dark' : 'light');
+  });
+
+  // Restore theme
+  if (localStorage.getItem('sbTheme') === 'light') {
+    isDark = false;
+    document.body.classList.add('light');
+    themeToggle.textContent = '☀️ Claro';
+  }
+
+  // FAVORITOS
+  let favoritos = JSON.parse(localStorage.getItem('sbFavoritos') || '[]');
+  let codigoAtual = '';
+
+  function saveFavoritos() {
+    localStorage.setItem('sbFavoritos', JSON.stringify(favoritos));
+  }
+
+  function toggleFavorito() {
+    if (!codigoAtual) return;
+    const idx = favoritos.indexOf(codigoAtual);
+    if (idx === -1) {
+      favoritos.push(codigoAtual);
+      showToast('⭐ Adicionado aos favoritos!', 'success');
+    } else {
+      favoritos.splice(idx, 1);
+      showToast('Removido dos favoritos.', 'success');
+    }
+    saveFavoritos();
+    updateFavBtn();
+    renderFavoritos();
+  }
+
+  function updateFavBtn() {
+    const btn = document.getElementById('btnFavorito');
+    if (!btn) return;
+    const isFav = favoritos.includes(codigoAtual);
+    btn.textContent = isFav ? '⭐ Favoritado' : '⭐ Favoritar';
+    btn.classList.toggle('favoritado', isFav);
+  }
+
+  function renderFavoritos() {
+    const grid = document.getElementById('favGrid');
+    const vazia = document.getElementById('favListaVazia');
+    const lista = document.getElementById('favLista');
+    if (!favoritos.length) {
+      vazia.style.display = 'block';
+      lista.style.display = 'none';
+      return;
+    }
+    vazia.style.display = 'none';
+    lista.style.display = 'block';
+    grid.innerHTML = favoritos.map(code => {
+      const count = (structures[code] || []).length;
+      return `
+        <div class="fav-card" onclick="abrirFavorito('${code}')">
+          <button class="fav-remove" onclick="event.stopPropagation();removerFavorito('${code}')">✕</button>
+          <div class="fav-card-code">${code}</div>
+          <div class="fav-card-count">${count} componente${count !== 1 ? 's' : ''}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function abrirFavorito(code) {
+    // Switch to consultar tab and show results
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('[data-tab="consultar"]').classList.add('active');
+    document.getElementById('tab-consultar').classList.add('active');
+    document.getElementById('searchInput').value = code;
+    showResults(code);
+  }
+
+  function removerFavorito(code) {
+    favoritos = favoritos.filter(f => f !== code);
+    saveFavoritos();
+    renderFavoritos();
+    updateFavBtn();
+  }
+
+  renderFavoritos();
+
+
+  // ── CINTAS PARA POSTE ────────────────────────────────────────────────────
+  const CINTA_DATA = [
+    // poste       e1at          e2at          eptr          tang        enc1as22      enc2as22      ip    tel   tv
+    ['9/2 kN',  null,null,  null,null,  null,null,   150, 160,  150,150, 160,160,  180, 180, 190],
+    ['9/4 kN',  null,null,  null,null,  null,null,   170, 180,  170,170, 180,180,  200, 200, 210],
+    ['9/6 kN',  null,null,  null,null,  null,null,   190, 200,  190,190, 200,200,  220, 220, 220],
+    ['9/10 kN', null,null,  null,null,  null,null,   230, 250,  230,230, 250,250,  270, 270, 270],
+    ['10/2 kN', null,null,  null,null,  null,null,   150, 160,  150,150, 160,160,  180, 180, 190],
+    ['10/4 kN',  170,180,   180,190,    180,190,     170, 180,  170,170, 180,180,  200, 200, 210],
+    ['10/6 kN',  190,200,   200,210,    200,210,     190, 200,  190,190, 200,200,  220, 220, 230],
+    ['10/10 kN', 230,230,   250,250,    250,250,     230, 250,  230,230, 250,250,  250, 270, 270],
+    ['11/4 kN',  170,180,   180,190,    180,190,     210, 220,  210,220, 220,230,  250, 250, 250],
+    ['11/6 kN',  190,200,   200,210,    200,210,     230, 250,  230,230, 250,250,  270, 270, 270],
+    ['11/10 kN', 230,230,   250,250,    250,250,     270, 290,  270,290, 290,290,  290, 310, 310],
+    ['12/4 kN',  170,180,   180,190,    180,190,     210, 220,  210,220, 220,230,  250, 250, 250],
+    ['12/6 kN',  190,200,   200,210,    200,210,     230, 250,  230,230, 250,250,  270, 270, 270],
+    ['12/10 kN', 230,230,   250,250,    250,250,     270, 290,  270,290, 290,290,  290, 310, 310],
+  ];
+
+  const CINTA_COLS = {
+    estrut1_at_1:0, estrut1_at_2:1, estrut2_at_1:2, estrut2_at_2:3,
+    estrut_ptr_1:4, estrut_ptr_2:5,
+    tang_as22_1:6,  tang_as22_2:7,
+    encab_1as22_1:8,encab_1as22_2:9,encab_2as22_1:10,encab_2as22_2:11,
+    ip:12, tel:13, tv:14
+  };
+
+  const CINTA_TIPO_LABELS = {
+    estrut1_at_1:'1ª Estrut. AT col.1', estrut1_at_2:'1ª Estrut. AT col.2',
+    estrut2_at_1:'2ª Estrut. AT col.1', estrut2_at_2:'2ª Estrut. AT col.2',
+    estrut_ptr_1:'Estrut. p/TR col.1',  estrut_ptr_2:'Estrut. p/TR col.2',
+    tang_as22_1:'Tangente 1º as22',      tang_as22_2:'Tangente 2º as22',
+    encab_1as22_1:'Encab. 1º as22 c1',  encab_1as22_2:'Encab. 1º as22 c2',
+    encab_2as22_1:'Encab. 2º as22 c1',  encab_2as22_2:'Encab. 2º as22 c2',
+    ip:'IP', tel:'Tel', tv:'TV'
+  };
+
+  // Render reference table
+  (function renderCintaTabela() {
+    const tbody = document.getElementById('cinta_tbody');
+    if (!tbody) return;
+    tbody.innerHTML = CINTA_DATA.map(row => {
+      const poste = row[0];
+      const vals  = row.slice(1);
+      return `<tr id="cinta_row_${poste.replace(/[^a-z0-9]/gi,'_')}">
+        <td style="font-weight:600;color:var(--accent2);white-space:nowrap;">${poste}</td>
+        ${vals.map(v => `<td>${v !== null ? v : '<span style="color:var(--muted)">—</span>'}</td>`).join('')}
+      </tr>`;
+    }).join('');
+  })();
+
+  function calcularCinta() {
+    const poste = document.getElementById('cinta_poste').value;
+    const tipo  = document.getElementById('cinta_tipo').value;
+    const resDiv = document.getElementById('cinta_resultado');
+    const navDiv = document.getElementById('cinta_indisponivel');
+
+    resDiv.style.display = 'none';
+    navDiv.style.display = 'none';
+
+    // Reset highlights
+    document.querySelectorAll('#cinta_tbody tr').forEach(tr => tr.style.background = '');
+
+    if (!poste || !tipo) return;
+
+    const row = CINTA_DATA.find(r => r[0] === poste);
+    if (!row) return;
+
+    const colIdx = CINTA_COLS[tipo];
+    const val = row[1 + colIdx];
+
+    // Highlight row
+    const rowEl = document.getElementById('cinta_row_' + poste.replace(/[^a-z0-9]/gi,'_'));
+    if (rowEl) rowEl.style.background = 'rgba(0,230,118,0.07)';
+
+    if (val === null) {
+      navDiv.style.display = 'block';
+      return;
+    }
+
+    document.getElementById('cinta_res_poste').textContent = poste;
+    document.getElementById('cinta_res_tipo').textContent  = CINTA_TIPO_LABELS[tipo];
+    document.getElementById('cinta_res_val').textContent   = val + ' mm';
+    resDiv.style.display = 'block';
+  }
+  // ── FIM CINTAS ───────────────────────────────────────────────────────────
+
+  // ── CALCULADORA DE PARAFUSO ──────────────────────────────────────────────
+  let prfFace = 'A';
+  let prfCodigoAtual = null;
+
+  // Search dropdown for EQTL codes
+  const prfSearch = document.getElementById('prf_codigoSearch');
+  const prfDrop   = document.getElementById('prf_dropdown');
+
+  prfSearch.addEventListener('input', () => {
+    const q = prfSearch.value.trim().toLowerCase();
+    const matches = q ? dimCodes.filter(c => c.toLowerCase().includes(q)) : dimCodes;
+    if (!matches.length) { prfDrop.classList.remove('open'); return; }
+    prfDrop.innerHTML = matches.slice(0, 60).map(c => {
+      const hl = q ? c.replace(new RegExp('(' + q + ')', 'gi'), '<mark>$1</mark>') : c;
+      return `<div class="dropdown-item" data-code="${c}">${hl}</div>`;
+    }).join('');
+    prfDrop.classList.add('open');
+    prfDrop.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        prfSearch.value = el.dataset.code;
+        prfDrop.classList.remove('open');
+        prfSelecionarCodigo(el.dataset.code);
+      });
+    });
+  });
+  prfSearch.addEventListener('focus', () => prfSearch.dispatchEvent(new Event('input')));
+  document.addEventListener('click', e => { if (!e.target.closest('#prf_codigoSearch') && !e.target.closest('#prf_dropdown')) prfDrop.classList.remove('open'); });
+
+  function prfSelecionarCodigo(code) {
+    prfCodigoAtual = code;
+    const d = dimIndex[code];
+    if (!d) return;
+    document.getElementById('prf_faceRow').style.display = 'block';
+    document.getElementById('prf_estrutura_info').style.display = 'block';
+    document.getElementById('prf_info_codigo').textContent = code;
+    document.getElementById('prf_info_comp').textContent   = d.comprimento ? d.comprimento + ' m' : '—';
+    document.getElementById('prf_info_resA').textContent  = d.resA ? d.resA + ' daN' : '—';
+    document.getElementById('prf_info_resB').textContent  = d.resB ? d.resB + ' daN' : '—';
+    prfAplicarFace();
+  }
+
+  function prfSetFace(face) {
+    prfFace = face;
+    document.getElementById('prf_faceA').classList.toggle('active', face === 'A');
+    document.getElementById('prf_faceB').classList.toggle('active', face === 'B');
+    prfAplicarFace();
+  }
+
+  function prfAplicarFace() {
+    if (!prfCodigoAtual) return;
+    const d = dimIndex[prfCodigoAtual];
+    const topo = prfFace === 'A' ? d.topoA : d.topoB;
+    const base = prfFace === 'A' ? d.baseA : d.baseB;
+    const comp = parseFloat(d.comprimento) || 0;
+
+    document.getElementById('prf_info_topo').textContent = topo ? topo + ' mm' : '—';
+    document.getElementById('prf_info_base').textContent = base ? base + ' mm' : '—';
+
+    // Preenche os campos automaticamente
+    document.getElementById('prf_wtopo').value = topo || '';
+    document.getElementById('prf_wbase').value = base || '';
+    document.getElementById('prf_halt').value  = comp > 0 ? comp * 1000 : ''; // converte m -> mm
+    prfPreview();
+  }
+  const PRF_COMERCIAIS = [16,20,25,30,35,40,45,50,55,60,65,70,75,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300];
+
+  function prfLarguraEmX() {
+    const wTopo = parseFloat(document.getElementById('prf_wtopo').value) || 0;
+    const wBase = parseFloat(document.getElementById('prf_wbase').value) || 0;
+    const hAlt  = parseFloat(document.getElementById('prf_halt').value)  || 0;
+    const posX  = parseFloat(document.getElementById('prf_posX').value)  || 0;
+    if (!wTopo || !hAlt) return null;
+    const t = Math.min(posX, hAlt) / hAlt;
+    return wTopo + (wBase - wTopo) * t;
+  }
+
+  function prfPreview() {
+    const largura = prfLarguraEmX();
+    const preview = document.getElementById('prf_largura_preview');
+    if (largura !== null && largura > 0) {
+      document.getElementById('prf_largura_val').textContent = largura.toFixed(1) + ' mm';
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  function calcularParafuso() {
+    const wTopo = parseFloat(document.getElementById('prf_wtopo').value) || 0;
+    const wBase = parseFloat(document.getElementById('prf_wbase').value) || 0;
+    const hAlt  = parseFloat(document.getElementById('prf_halt').value)  || 0;
+    const posX  = parseFloat(document.getElementById('prf_posX').value)  || 0;
+    const arru  = parseFloat(document.getElementById('prf_arru').value)  || 0;
+    const folga = parseFloat(document.getElementById('prf_folga').value) || 0;
+
+    if (!wTopo || !wBase || !hAlt) {
+      showToast('Preencha Largura no Topo, na Base e Altura total.', 'error');
+      return;
+    }
+    if (posX > hAlt) {
+      showToast('A posição X não pode ser maior que a altura total.', 'error');
+      return;
+    }
+
+    const t        = posX / hAlt;
+    const larguraX = wTopo + (wBase - wTopo) * t;
+    const arruTotal = arru * 2;
+    const total     = larguraX + arruTotal + folga;
+    const comercial = PRF_COMERCIAIS.find(c => c >= total) || null;
+
+    // CARDS
+    document.getElementById('prf_cards').innerHTML = `
+      <div class="cabo-res-item"><span class="cabo-res-label">Posição X</span><span class="cabo-res-val">${posX.toFixed(0)} mm do topo</span></div>
+      <div class="cabo-res-item"><span class="cabo-res-label">Largura na posição</span><span class="cabo-res-val">${larguraX.toFixed(1)} mm</span></div>
+      <div class="cabo-res-item"><span class="cabo-res-label">Arruelas (2×${arru})</span><span class="cabo-res-val">${arruTotal.toFixed(1)} mm</span></div>
+      <div class="cabo-res-item"><span class="cabo-res-label">Folga porca</span><span class="cabo-res-val">${folga.toFixed(1)} mm</span></div>
+      <div class="cabo-res-item destaque"><span class="cabo-res-label">Comprimento mín.</span><span class="cabo-res-val">${total.toFixed(1)} mm</span></div>
+    `;
+
+    // DIAGRAM SVG — vista horizontal
+    const svgW = 260, svgH = 140;
+    const margin = 30;
+    const drawW  = svgW - 2 * margin;
+    const scaleX = drawW / total;
+    const yMid   = svgH / 2;
+    const halfH  = 28;
+
+    const larXP  = larguraX * scaleX;
+    const arruP  = arru * scaleX;
+    const folgaP = Math.max(folga * scaleX, 6);
+    const xStart = margin;
+
+    let parts = '';
+
+    // largura interna (duplo T)
+    parts += `<rect x="${xStart}" y="${yMid - halfH}" width="${larXP}" height="${halfH*2}" rx="2" fill="rgba(0,230,118,0.12)" stroke="rgba(0,230,118,0.3)" stroke-width="1"/>`;
+    // linha do parafuso
+    const xBoltL = xStart - (arru>0 ? arruP : 0) - 12;
+    const xBoltR = xStart + larXP + (arru>0 ? arruP : 0) + folgaP + 4;
+    parts += `<line x1="${xBoltL}" y1="${yMid}" x2="${xBoltR}" y2="${yMid}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.4"/>`;
+    // cabeça
+    parts += `<rect x="${xBoltL - 10}" y="${yMid - 7}" width="10" height="14" rx="2" fill="#69f0ae" opacity="0.9"/>`;
+    // arruela esquerda
+    if (arru > 0) {
+      parts += `<rect x="${xStart - arruP}" y="${yMid - 8}" width="${arruP}" height="16" rx="1" fill="#ffd166" opacity="0.9"/>`;
+      parts += `<rect x="${xStart + larXP}" y="${yMid - 8}" width="${arruP}" height="16" rx="1" fill="#ffd166" opacity="0.9"/>`;
+    }
+    // folga/porca
+    parts += `<rect x="${xStart + larXP + arruP}" y="${yMid - 9}" width="${folgaP}" height="18" rx="2" fill="#ff6b6b" opacity="0.8"/>`;
+
+    // cota embaixo
+    const cotaY = yMid + halfH + 16;
+    const cxL   = xStart - (arru > 0 ? arruP : 0);
+    const cxR   = xStart + larXP + (arru > 0 ? arruP : 0) + folgaP;
+    parts += `<line x1="${cxL}" y1="${cotaY}" x2="${cxR}" y2="${cotaY}" stroke="#555" stroke-width="1"/>`;
+    parts += `<line x1="${cxL}" y1="${cotaY-4}" x2="${cxL}" y2="${cotaY+4}" stroke="#555" stroke-width="1"/>`;
+    parts += `<line x1="${cxR}" y1="${cotaY-4}" x2="${cxR}" y2="${cotaY+4}" stroke="#555" stroke-width="1"/>`;
+    parts += `<text x="${(cxL+cxR)/2}" y="${cotaY+12}" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#888">${total.toFixed(1)} mm</text>`;
+
+    document.getElementById('prf_svg').setAttribute('width', svgW);
+    document.getElementById('prf_svg').setAttribute('height', svgH);
+    document.getElementById('prf_svg').setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+    document.getElementById('prf_svg').innerHTML = parts;
+
+    // LEGENDA
+    document.getElementById('prf_legend').innerHTML = [
+      { color:'#69f0ae',             label:'Cabeça do parafuso' },
+      { color:'rgba(0,230,118,0.4)', label:`Largura interna — ${larguraX.toFixed(1)} mm` },
+      ...(arru>0 ? [{ color:'#ffd166', label:`Arruelas × 2 — ${arruTotal.toFixed(1)} mm` }] : []),
+      { color:'#ff6b6b',             label:`Folga porca — ${folga.toFixed(1)} mm` },
+    ].map(i => `<div style="display:flex;align-items:center;gap:0.5rem;">
+      <div style="width:10px;height:10px;border-radius:2px;flex-shrink:0;background:${i.color}"></div>
+      <span style="color:var(--muted)">${i.label}</span>
+    </div>`).join('');
+
+    // BREAKDOWN
+    const brows = [
+      { color:'rgba(0,230,118,0.5)', label:`Largura interna na pos. X = ${posX} mm`, val: larguraX },
+      { color:'#ffd166',             label:`Arruelas (2 × ${arru} mm)`,              val: arruTotal },
+      { color:'#ff6b6b',             label:'Folga saída porca',                      val: folga },
+    ];
+    document.getElementById('prf_breakdown').innerHTML = brows.map(r =>
+      `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.82rem;">
+        <span style="color:var(--muted);display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:8px;height:8px;border-radius:2px;flex-shrink:0;background:${r.color};display:inline-block"></span>
+          ${r.label}
+        </span>
+        <span style="color:var(--text);font-weight:500;">${r.val.toFixed(1)} mm</span>
+      </div>`
+    ).join('') +
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 1rem;background:rgba(0,230,118,0.05);border-top:2px solid var(--border);font-family:'DM Mono',monospace;font-weight:700;">
+      <span style="color:var(--accent2);">Comprimento mínimo necessário</span>
+      <span style="color:var(--accent);font-size:1.05rem;">${total.toFixed(1)} mm</span>
+    </div>`;
+
+    // RECOMENDAÇÃO
+    if (comercial) {
+      const sobra = comercial - total;
+      document.getElementById('prf_recomendacao').innerHTML = `
+        <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.5rem;">✦ Recomendação comercial</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--text);line-height:1.7;">
+          Use um parafuso de <span style="color:var(--accent);font-weight:700;font-size:1rem;">${comercial} mm</span> — menor comprimento padrão que cobre o mínimo de <strong>${total.toFixed(1)} mm</strong>.<br>
+          <span style="color:var(--muted)">Sobra de rosca após a porca: <strong style="color:var(--text)">${sobra.toFixed(1)} mm</strong></span>
+          &nbsp;
+          <span style="font-family:'DM Mono',monospace;font-size:0.72rem;background:${sobra>10?'rgba(255,209,102,0.1)':'rgba(105,240,174,0.12)'};color:${sobra>10?'#ffd166':'var(--accent2)'};border:1px solid ${sobra>10?'rgba(255,209,102,0.25)':'rgba(105,240,174,0.25)'};border-radius:20px;padding:2px 10px;display:inline-block;">
+            ${sobra>10 ? '⚠ Parafuso longo' : '✓ OK'}
+          </span>
+        </div>`;
+    } else {
+      document.getElementById('prf_recomendacao').innerHTML = `
+        <div style="font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--danger);">
+          Comprimento (${total.toFixed(1)} mm) excede os comprimentos comerciais listados. Consulte um fornecedor especializado.
+        </div>`;
+    }
+
+    document.getElementById('prf_resultado').style.display = 'block';
+    document.getElementById('prf_resultado').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function limparParafuso() {
+    ['prf_wtopo','prf_wbase','prf_halt'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('prf_posX').value  = '0';
+    document.getElementById('prf_arru').value  = '3';
+    document.getElementById('prf_folga').value = '5';
+    document.getElementById('prf_resultado').style.display = 'none';
+    document.getElementById('prf_largura_preview').style.display = 'none';
+  }
+  // ── FIM CALCULADORA PARAFUSO ─────────────────────────────────────────────
+
+
+  // ── ELOS FUSÍVEIS ────────────────────────────────────────────────────────
+  const ELO_DATA = [
+    // [kVA, 11.4_in, 11.4_elo, 13.8_in, 13.8_elo, 22_in, 22_elo, 34.5_in, 34.5_elo]
+    [15,    0.76, '1H',  0.63, '0.5H', 0.39, '0.5H', 0.25, '0.5H'],
+    [30,    1.52, '2H',  1.26, '1H',   0.79, '1H',   0.50, '0.5H'],
+    [45,    2.28, '2H',  1.88, '2H',   1.18, '1H',   0.75, '1H'  ],
+    [75,    3.80, '3H',  3.14, '3H',   1.97, '2H',   1.26, '1H'  ],
+    [112.5, 5.70, '5H',  4.71, '5H',   2.95, '3H',   1.88, '2H'  ],
+    [150,   7.60, '8K',  6.28, '6K',   3.94, '5H',   2.51, '3H'  ],
+    [225,  11.40, '12K', 9.41, '10K',  5.90, '5H',   3.77, '5H'  ],
+    [300,  15.19, '15K',12.55, '12K',  7.87, '8K',   5.02, '5H'  ],
+    [400,  19.26, '20K',16.73, '15K', 10.50, '10K',  6.69, '6K'  ],
+    [500,  25.32, '25K',19.92, '25K', 13.12, '12K',  8.37, '10K' ],
+    [750,  37.98, '40K',31.38, '30K', 19.68, '20K', 12.55, '12K' ],
+    [1000,  null,  'x', 41.84, '40K', 26.24, '25K', 16.73, '15K' ],
+  ];
+
+  const ELO_TENSOES = ['11.4','13.8','22','34.5'];
+  const ELO_TENSAO_LABELS = {'11.4':'11,4 kV','13.8':'13,8 kV','22':'22 kV','34.5':'34,5 kV'};
+
+  // Renderiza tabela de referência
+  (function renderEloTabela() {
+    const tbody = document.getElementById('elo_tbody');
+    if (!tbody) return;
+    tbody.innerHTML = ELO_DATA.map(row => {
+      const kva = row[0];
+      const cells = [
+        [row[1], row[2]],
+        [row[3], row[4]],
+        [row[5], row[6]],
+        [row[7], row[8]],
+      ];
+      return `<tr>
+        <td style="font-weight:600;color:var(--accent2);">${kva}</td>
+        ${cells.map(([inn, elo]) => `
+          <td>${inn !== null ? inn : '<span style="color:var(--muted)">x</span>'}</td>
+          <td><span class="qty-pill">${elo}</span></td>
+        `).join('')}
+      </tr>`;
+    }).join('');
+  })();
+
+  function calcularElo() {
+    const pot    = document.getElementById('elo_potencia').value;
+    const tensao = document.getElementById('elo_tensao').value;
+    const resDiv = document.getElementById('elo_resultado');
+    const navDiv = document.getElementById('elo_indisponivel');
+
+    resDiv.style.display = 'none';
+    navDiv.style.display = 'none';
+
+    if (!pot || !tensao) return;
+
+    const row = ELO_DATA.find(r => String(r[0]) === pot);
+    if (!row) return;
+
+    const idx   = ELO_TENSOES.indexOf(tensao);
+    const inn   = row[1 + idx * 2];
+    const elo   = row[2 + idx * 2];
+
+    if (inn === null || elo === 'x') {
+      navDiv.style.display = 'block';
+      return;
+    }
+
+    document.getElementById('elo_res_pot').textContent = pot + ' kVA';
+    document.getElementById('elo_res_ten').textContent = ELO_TENSAO_LABELS[tensao];
+    document.getElementById('elo_res_in').textContent  = inn + ' A';
+    document.getElementById('elo_res_elo').textContent = elo;
+
+    // Highlight row in reference table
+    document.querySelectorAll('#elo_tbody tr').forEach((tr, i) => {
+      tr.style.background = String(ELO_DATA[i][0]) === pot ? 'rgba(0,230,118,0.07)' : '';
+    });
+
+    resDiv.style.display = 'block';
+  }
+  // ── FIM ELOS ─────────────────────────────────────────────────────────────
+
+  // ── CALCULADORA DE TRAÇÃO / DIMENSIONAMENTO DE POSTE E ESTAI ────────────
+  const TRC_DATA = {
+    "6CC":       { "45": 115,  "70": 111,  "140c": null, "140p": null },
+    "4CC":       { "45": 160,  "70": 175,  "140c": 246,  "140p": null },
+    "2CC":       { "45": 235,  "70": 284,  "140c": 386,  "140p": null },
+    "1/0CC":     { "45": 340,  "70": 452,  "140c": 607,  "140p": null },
+    "2/0CC":     { "45": 405,  "70": 570,  "140c": null, "140p": null },
+    "3/0CC":     { "45": 490,  "70": null, "140c": null, "140p": null },
+    "4/0CC":     { "45": 595,  "70": 907,  "140c": null, "140p": null },
+    "4CA":       { "45": 140,  "70": 64,   "140c": null, "140p": null },
+    "2CA":       { "45": 190,  "70": 101,  "140c": null, "140p": null },
+    "1/0CA":     { "45": 235,  "70": 162,  "140c": null, "140p": null },
+    "2/0CA":     { "45": 315,  "70": null, "140c": null, "140p": null },
+    "3/0CA":     { "45": 370,  "70": null, "140c": null, "140p": null },
+    "4/0CA":     { "45": 435,  "70": 321,  "140c": null, "140p": null },
+    "336.4CA":   { "45": 620,  "70": 512,  "140c": null, "140p": null },
+    "6CAA":      { "45": null, "70": 54,   "140c": null, "140p": null },
+    "4CAA":      { "45": 235,  "70": 87,   "140c": 191,  "140p": 340  },
+    "2CAA":      { "45": 365,  "70": 140,  "140c": 374,  "140p": 495  },
+    "1/0CAA":    { "45": 540,  "70": 222,  "140c": 599,  "140p": 705  },
+    "2/0CAA":    { "45": null, "70": 280,  "140c": null, "140p": null },
+    "3/0CAA":    { "45": null, "70": 353,  "140c": null, "140p": null },
+    "4/0CAA":    { "45": null, "70": 445,  "140c": null, "140p": null },
+    "336.4CAA":  { "45": null, "70": 799,  "140c": null, "140p": null },
+    "397.5CAA":  { "45": null, "70": 941,  "140c": null, "140p": null },
+    "XLPE-336.4":{ "45": null, "70": 543,  "140c": null, "140p": null },
+    "XLPE-1/0":  { "45": null, "70": 167,  "140c": null, "140p": null },
+  };
+
+  const TRC_CONDUTORES_OPTS = [
+    '','6CC','4CC','2CC','1/0CC','2/0CC','3/0CC','4/0CC',
+    '4CA','2CA','1/0CA','2/0CA','3/0CA','4/0CA','336.4CA',
+    '6CAA','4CAA','2CAA','1/0CAA','2/0CAA','3/0CAA','4/0CAA','336.4CAA','397.5CAA',
+    'XLPE-336.4','XLPE-1/0'
+  ];
+
+  // Tabela de poste (concreto) — esforço no topo → classe mínima
+  // Poste concreto padrão: 6, 8, 10, 15, 20, 30, 50 kN
+  const POSTE_CONC_CLASSES = [6, 8, 10, 15, 20, 30, 50];
+  // Madeira: 5, 10 kN — Ferro: 2, 4, 6, 10 kN
+  const POSTE_MAD_CLASSES  = [5, 10];
+  const POSTE_FER_CLASSES  = [2, 4, 6, 10];
+
+  // Estais (momento resultante no topo em kN·m → estai indicado)
+  // Limites aproximados CEEE/distribuidoras
+  const ESTAI_TABLE = [
+    { nome: 'Nenhum',         maxMom: 2.0  },
+    { nome: 'Esc. Subsolo',   maxMom: 4.0  },
+    { nome: 'Esc.Sub.Dupla',  maxMom: 7.0  },
+    { nome: 'Esc. 10 kN',     maxMom: 10.0 },
+    { nome: 'Estai1 - 6,35mm²', maxMom: 14.0 },
+    { nome: 'Estai2 - 7,94mm²', maxMom: 22.0 },
+    { nome: 'Estai3 - 9,53mm²', maxMom: 35.0 },
+    { nome: 'Base Concret.',  maxMom: Infinity },
+  ];
+
+  function trcCondOpts(selected) {
+    return TRC_CONDUTORES_OPTS.map(v =>
+      `<option value="${v}" ${v===selected?'selected':''}>${v===''?'— vazio —':v}</option>`
+    ).join('');
+  }
+
+  function trcNOpts(selected) {
+    return [1,2,3,4].map(n =>
+      `<option value="${n}" ${n==selected?'selected':''}>${n}</option>`
+    ).join('');
+  }
+
+  function trcTmrOpts(selected) {
+    const opts = [
+      {v:'1',      l:'Sem TMR'},
+      {v:'0.6667', l:'TMR 2/3'},
+      {v:'0.3333', l:'TMR 1/3'},
+    ];
+    return opts.map(o =>
+      `<option value="${o.v}" ${o.v===selected?'selected':''}>${o.l}</option>`
+    ).join('');
+  }
+
+  const TRC_DEFAULTS = [
+    { n1:3, c1:'1/0CA', n2:3, c2:'1/0CA', dist:0.2, ang:180, tmr:'1'    },
+    { n1:3, c1:'',      n2:1, c2:'',      dist:2.3, ang:0,   tmr:'1'    },
+    { n1:1, c1:'4CA',   n2:3, c2:'',      dist:2.3, ang:0,   tmr:'1'    },
+    { n1:3, c1:'2CA',   n2:3, c2:'',      dist:2.8, ang:0,   tmr:'1'    },
+  ];
+
+  function trcBuildLinhas() {
+    const cont = document.getElementById('trc_linhas');
+    if (!cont) return;
+    const rowStyle = 'display:grid;grid-template-columns:60px 1fr 60px 1fr 100px 90px 130px;gap:0;border-bottom:1px solid var(--border);align-items:center;';
+    const cellStyle = 'padding:0.35rem 0.4rem;';
+    const selStyle  = 'width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.3rem 0.4rem;font-family:"DM Mono",monospace;font-size:0.75rem;cursor:pointer;';
+    const inpStyle  = 'width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.3rem 0.4rem;font-family:"DM Mono",monospace;font-size:0.75rem;text-align:center;';
+
+    const colors = ['rgba(0,230,118,0.12)','rgba(78,168,222,0.08)','rgba(255,209,102,0.08)','rgba(249,115,22,0.08)'];
+
+    cont.innerHTML = TRC_DEFAULTS.map((d,i) => `
+      <div style="${rowStyle}background:${colors[i]};" id="trc_row_${i}">
+        <div style="${cellStyle}">
+          <select id="trc_n1_${i}" style="${selStyle}" onchange="calcularTracao()">${trcNOpts(d.n1)}</select>
+        </div>
+        <div style="${cellStyle}">
+          <select id="trc_c1_${i}" style="${selStyle}" onchange="calcularTracao()">${trcCondOpts(d.c1)}</select>
+        </div>
+        <div style="${cellStyle}">
+          <select id="trc_n2_${i}" style="${selStyle}" onchange="calcularTracao()">${trcNOpts(d.n2)}</select>
+        </div>
+        <div style="${cellStyle}">
+          <select id="trc_c2_${i}" style="${selStyle}" onchange="calcularTracao()">${trcCondOpts(d.c2)}</select>
+        </div>
+        <div style="${cellStyle}">
+          <input type="number" id="trc_dist_${i}" value="${d.dist}" min="0" step="0.1"
+            style="${inpStyle}" onchange="calcularTracao()" oninput="calcularTracao()"/>
+        </div>
+        <div style="${cellStyle}">
+          <input type="number" id="trc_ang_${i}" value="${d.ang}" min="0" max="360" step="1"
+            style="${inpStyle}" onchange="calcularTracao()" oninput="calcularTracao()"/>
+        </div>
+        <div style="${cellStyle}">
+          <select id="trc_tmr_${i}" style="${selStyle}" onchange="calcularTracao()">${trcTmrOpts(d.tmr)}</select>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function calcularTracao() {
+    const vao    = document.getElementById('trc_vao')?.value;
+    const hPoste = parseFloat(document.getElementById('trc_altPoste')?.value || 11);
+
+    // Coleta dados das 4 linhas
+    const linhas = [];
+    for (let i = 0; i < 4; i++) {
+      const c1   = document.getElementById(`trc_c1_${i}`)?.value || '';
+      const c2   = document.getElementById(`trc_c2_${i}`)?.value || '';
+      const n1   = parseInt(document.getElementById(`trc_n1_${i}`)?.value || 1);
+      const n2   = parseInt(document.getElementById(`trc_n2_${i}`)?.value || 1);
+      const dist = parseFloat(document.getElementById(`trc_dist_${i}`)?.value || 0);
+      const ang  = parseFloat(document.getElementById(`trc_ang_${i}`)?.value || 0);
+      const tmr  = parseFloat(document.getElementById(`trc_tmr_${i}`)?.value || 1);
+
+      // Tração lado 1
+      let T1 = 0;
+      if (c1 && TRC_DATA[c1]?.[vao]) T1 = TRC_DATA[c1][vao] * n1 * tmr;
+
+      // Tração lado 2 (oposto: ang + 180)
+      let T2 = 0;
+      if (c2 && TRC_DATA[c2]?.[vao]) T2 = TRC_DATA[c2][vao] * n2 * tmr;
+
+      linhas.push({ c1, c2, n1, n2, dist, ang, tmr, T1, T2 });
+    }
+
+    // Cálculo vetorial: ângulo 0° = esquerda (-X), 180° = direita (+X)
+    // Convenção da planilha: o condutor puxa na direção do ângulo
+    // Componentes: Fx = T * cos(ang_rad), Fy = T * sin(ang_rad)
+    // A tração do condutor oposto é T2 na direção (ang + 180°)
+    let sumFx = 0, sumFy = 0;
+    let momentoTopo = 0; // kN·m (resultante no topo)
+
+    linhas.forEach(l => {
+      const angRad1 = (l.ang * Math.PI) / 180;
+      const angRad2 = ((l.ang + 180) * Math.PI) / 180;
+
+      // Força em daN → kN (/100)
+      const fx1 = (l.T1 / 100) * Math.cos(angRad1);
+      const fy1 = (l.T1 / 100) * Math.sin(angRad1);
+      const fx2 = (l.T2 / 100) * Math.cos(angRad2);
+      const fy2 = (l.T2 / 100) * Math.sin(angRad2);
+
+      sumFx += fx1 + fx2;
+      sumFy += fy1 + fy2;
+    });
+
+    const resultanteF = Math.sqrt(sumFx * sumFx + sumFy * sumFy); // kN no topo
+    // Momento no pé do poste = F_topo * altura do poste (simplificado — ponto mais crítico)
+    const momResultante = resultanteF * hPoste; // kN·m
+
+    // ── Atualiza Poste — Esforço no Topo ────────────────────────────────
+    const esforcoEl = document.getElementById('trc_esforco_val');
+    if (esforcoEl) esforcoEl.textContent = resultanteF.toFixed(2);
+
+    // Poste Concreto mínimo
+    const concMin = POSTE_CONC_CLASSES.find(c => c >= resultanteF);
+    const madMin  = POSTE_MAD_CLASSES.find(c => c >= resultanteF);
+    const ferMin  = POSTE_FER_CLASSES.find(c => c >= resultanteF);
+
+    const okStyle  = 'color:var(--accent);font-weight:600;';
+    const nokStyle = 'color:var(--danger);font-weight:600;';
+
+    const pConcEl = document.getElementById('trc_p_conc');
+    const pMadEl  = document.getElementById('trc_p_mad');
+    const pFerEl  = document.getElementById('trc_p_fer');
+    if (pConcEl) { pConcEl.textContent = concMin ? `${concMin} kN` : 'N/D'; pConcEl.style.cssText = concMin ? okStyle : nokStyle; }
+    if (pMadEl)  { pMadEl.textContent  = madMin  ? `${madMin} kN`  : 'Não'; pMadEl.style.cssText  = madMin  ? okStyle : nokStyle; }
+    if (pFerEl)  { pFerEl.textContent  = ferMin  ? `${ferMin} kN`  : 'Não'; pFerEl.style.cssText  = ferMin  ? okStyle : nokStyle; }
+
+    // ── Resultante X e Y ────────────────────────────────────────────────
+    const rxEl = document.getElementById('trc_rx');
+    const ryEl = document.getElementById('trc_ry');
+    if (rxEl) rxEl.textContent = sumFx.toFixed(2) + ' kN';
+    if (ryEl) ryEl.textContent = sumFy.toFixed(2) + ' kN';
+
+    // ── Estais ──────────────────────────────────────────────────────────
+    const estaiCont = document.getElementById('trc_estais_lista');
+    if (estaiCont) {
+      estaiCont.innerHTML = ESTAI_TABLE.map(e => {
+        const sim = momResultante <= e.maxMom;
+        const pill = sim
+          ? `<span class="qty-pill">Sim</span>`
+          : `<span class="qty-pill" style="background:rgba(255,107,107,0.15);color:var(--danger);">Não</span>`;
+        return `<div style="display:grid;grid-template-columns:1fr auto;padding:0.32rem 0.85rem;border-bottom:1px solid rgba(26,51,37,0.5);font-family:'DM Mono',monospace;font-size:0.72rem;">
+          <span style="color:var(--muted);">${e.nome}</span>${pill}
+        </div>`;
+      }).join('');
+    }
+
+    // ── Diagrama vetorial SVG ────────────────────────────────────────────
+    const vetG = document.getElementById('trc_vetores');
+    const diagLeg = document.getElementById('trc_diag_legenda');
+    if (vetG) {
+      const scale = 55; // px por kN (normalizado)
+      const maxF  = Math.max(...linhas.map(l => Math.max(l.T1, l.T2) / 100), 0.1);
+      const norm  = scale / maxF;
+
+      const lineColors = ['#00e676','#69f0ae','#ffd166','#f97316'];
+      let svgLines = '';
+      let legLines = [];
+
+      linhas.forEach((l, i) => {
+        const col = lineColors[i];
+        if (l.T1 > 0) {
+          const rad = (l.ang * Math.PI) / 180;
+          const fx = (l.T1 / 100) * norm * Math.cos(rad);
+          const fy = -(l.T1 / 100) * norm * Math.sin(rad);
+          svgLines += `<line x1="0" y1="0" x2="${fx.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="${col}" stroke-width="2" opacity="0.85"/>
+            <circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="3" fill="${col}" opacity="0.85"/>`;
+          legLines.push(`<div style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:3px;background:${col};display:inline-block;border-radius:2px;"></span><span>Linha ${i+1} (${l.ang}° · ${(l.T1/100).toFixed(2)} kN)</span></div>`);
+        }
+        if (l.T2 > 0) {
+          const rad2 = ((l.ang + 180) * Math.PI) / 180;
+          const fx2 = (l.T2 / 100) * norm * Math.cos(rad2);
+          const fy2 = -(l.T2 / 100) * norm * Math.sin(rad2);
+          svgLines += `<line x1="0" y1="0" x2="${fx2.toFixed(1)}" y2="${fy2.toFixed(1)}" stroke="${col}" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.6"/>`;
+        }
+      });
+
+      // Resultante
+      if (resultanteF > 0.001) {
+        const rfx =  sumFx * norm;
+        const rfy = -sumFy * norm;
+        const rfMag = Math.sqrt(rfx*rfx + rfy*rfy);
+        const rfxN = rfMag > 0 ? (rfx/rfMag)*Math.min(rfMag,55) : 0;
+        const rfyN = rfMag > 0 ? (rfy/rfMag)*Math.min(rfMag,55) : 0;
+        svgLines += `<line x1="0" y1="0" x2="${rfxN.toFixed(1)}" y2="${rfyN.toFixed(1)}" stroke="#fff" stroke-width="2.5" opacity="0.9"/>
+          <circle cx="${rfxN.toFixed(1)}" cy="${rfyN.toFixed(1)}" r="4" fill="#fff" opacity="0.9"/>`;
+        legLines.push(`<div style="display:flex;align-items:center;gap:0.4rem;color:var(--text);font-weight:600;"><span style="width:10px;height:3px;background:#fff;display:inline-block;border-radius:2px;"></span><span>Resultante: ${resultanteF.toFixed(2)} kN</span></div>`);
+      }
+
+      vetG.innerHTML = svgLines;
+      if (diagLeg) diagLeg.innerHTML = legLines.length ? legLines.join('') : 'Sem tração configurada.';
+    }
+  }
+
+  // Inicializa as linhas da tabela ao carregar a aba
+  document.addEventListener('DOMContentLoaded', () => {
+    trcBuildLinhas();
+    // Recalcula quando a aba é aberta
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'tracao') {
+          if (!document.getElementById('trc_c1_0')) trcBuildLinhas();
+          calcularTracao();
+        }
+      });
+    });
+  });
+  // ── FIM CALCULADORA DE TRAÇÃO ────────────────────────────────────────────
+
+  // INIT: loadFromSheets é chamado pelo Firebase após login
+  // loadFromSheets();
+</script>
+</div><!-- fim appContent -->
+</body>
+</html>

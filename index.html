@@ -34,11 +34,11 @@ const firebaseConfig = {
 
       if (user) {
         loginScreen.style.display = 'none';
-        appContent.style.display  = 'block';
+        appContent.style.display  = 'flex';
         userInfo.innerHTML = `
-          <img src="${user.photoURL || ''}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'"/>
-          <span style="font-size:0.8rem;color:var(--muted);font-family:'DM Mono',monospace;">${user.email}</span>
-          <button class="btn-ghost" onclick="window._fbSignOut()" style="font-size:0.75rem;padding:0.3rem 0.75rem;">Sair</button>
+          <img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/>
+          <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${user.email}</span>
+          <button class="btn-ghost" onclick="window._fbSignOut()" style="font-size:0.7rem;padding:0.25rem 0.6rem;width:100%;margin-top:0.25rem;">Sair</button>
         `;
         if (typeof loadFromSheets === 'function') loadFromSheets();
       } else {
@@ -91,28 +91,126 @@ const firebaseConfig = {
     }
     .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* ── LAYOUT SIDEBAR ───────────────────────────────────────────────── */
     body {
-      position: relative;
       font-family: 'Syne', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 2rem;
-    }
-
-    header {
       display: flex;
-      align-items: flex-end;
-      gap: 1rem;
-      margin-bottom: 2rem;
+      overflow-x: hidden;
     }
 
-    .logo-box {
-      width: 48px; height: 48px;
-      background: transparent;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
+    /* SIDEBAR */
+    .sidebar {
+      width: 230px;
+      min-width: 230px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: fixed;
+      left: 0; top: 0;
+      z-index: 200;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .sidebar-brand {
+      padding: 1.4rem 1.25rem 1.1rem;
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
+    }
+
+    .sidebar-brand h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--text);
+    }
+    .sidebar-brand h1 span { color: var(--accent); }
+
+    .sidebar-brand .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--muted);
+      margin-top: 5px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* NAV ITEMS */
+    .sidebar-nav {
+      flex: 1;
+      padding: 0.6rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      color: rgba(240,240,240,0.55);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.6rem 0.85rem;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    body.light .tab { color: rgba(13,31,20,0.5); }
+    .tab:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    body.light .tab:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+    .tab.active {
+      background: rgba(0,230,118,0.12);
+      color: var(--accent);
+    }
+    body.light .tab.active { background: rgba(0,168,84,0.10); color: var(--accent); }
+
+    .tab-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* SIDEBAR FOOTER */
+    .sidebar-footer {
+      padding: 0.85rem 1.1rem;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 230px;
+      flex: 1;
+      padding: 1.75rem 2rem;
+      min-height: 100vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* TOPBAR inside main */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-bottom: 0;
+    }
+    .topbar:has(.mob-menu-btn:not([style*="display:none"])) {
+      margin-bottom: 1rem;
     }
 
     h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
@@ -127,31 +225,28 @@ const firebaseConfig = {
       text-transform: uppercase;
     }
 
-    .tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tab {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 0.6rem 1rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      transition: color 0.2s, border-color 0.2s;
-    }
-    .tab:hover { color: var(--text); }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+
+    /* Mobile sidebar */
+    @media (max-width: 700px) {
+      .sidebar { width: 200px; min-width: 200px; transform: translateX(-100%); transition: transform 0.25s; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .mob-menu-btn { display: flex !important; }
+    }
+
+    .mob-menu-btn {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    /* ── FIM SIDEBAR ───────────────────────────────────────────────────── */
 
     .sheets-status {
       display: flex;
@@ -724,17 +819,9 @@ const firebaseConfig = {
     .fade-in { animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ── MOBILE RESPONSIVO ───────────────────────────────────────────── */
-    @media (max-width: 600px) {
+    /* ── MOBILE RESPONSIVO (sidebar-aware) ──────────────────────────── */
+    @media (max-width: 700px) {
       .tracao-grid { grid-template-columns: 1fr !important; }
-      body { padding: 1rem 0.85rem; }
-      header { margin-bottom: 1.25rem; }
-      header > div:first-child { display: flex; align-items: center; gap: 0.75rem; }
-      h1 { font-size: 1.35rem; }
-      body > header > div[style*="absolute"] { position: static !important; margin-top: 0.5rem; }
-      .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0; padding-bottom: 2px; }
-      .tabs::-webkit-scrollbar { display: none; }
-      .tab { font-size: 0.78rem; padding: 0.55rem 0.7rem; white-space: nowrap; flex-shrink: 0; }
       .map-grid { grid-template-columns: 1fr 1fr !important; }
       .busca-grid { grid-template-columns: 1fr !important; }
       .cabo-res-row { grid-template-columns: 1fr 1fr !important; }
@@ -978,32 +1065,37 @@ const firebaseConfig = {
 <!-- ========== CONTEÚDO DO APP ========== -->
 <div id="appContent" style="display:none;">
 
-<header>
-  <div style="position:absolute;top:1.5rem;right:2rem;display:flex;gap:0.5rem;align-items:center;" id="headerRight">
-    <div id="userInfo" style="display:flex;align-items:center;gap:0.5rem;"></div>
-    <button class="theme-toggle" id="themeToggle">🌙 Escuro</button>
-  </div>
-
-  <div class="logo-box"><img src="data:image/png;base64,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FRTVDd5pBwc09QW9xBHVbCuGeRpCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgAQhCABCEIAEIQgD/2Q==" style="width:36px;height:36px;object-fit:contain;" /></div>
-  <div>
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
     <h1>Setup<span>Boom</span></h1>
-    <p class="subtitle">Estrutura de Materiais · Google Sheets</p>
+    <p class="subtitle">Estrutura de Materiais</p>
   </div>
-</header>
+  <div class="sidebar-nav">
+    <button class="tab active" data-tab="consultar"><span class="tab-icon">🔍</span> Consultar</button>
+    <button class="tab" data-tab="buscar"><span class="tab-icon">🔎</span> Buscar Item</button>
+    <button class="tab" data-tab="whereused"><span class="tab-icon">📌</span> Onde é Usado</button>
+    <button class="tab" data-tab="cabos"><span class="tab-icon">🔌</span> Cabos m→kg</button>
+    <button class="tab" data-tab="favoritos"><span class="tab-icon">⭐</span> Favoritos</button>
+    <button class="tab" data-tab="parafuso"><span class="tab-icon">🔩</span> Parafuso</button>
+    <button class="tab" data-tab="elos"><span class="tab-icon">⚡</span> Elos</button>
+    <button class="tab" data-tab="tracao"><span class="tab-icon">📐</span> Tração Postes</button>
+    <button class="tab" data-tab="cintas"><span class="tab-icon">🔗</span> Cintas</button>
+    <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
+    <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
+  </div>
+  <div class="sidebar-footer">
+    <div id="userInfo" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;"></div>
+    <button class="theme-toggle" id="themeToggle" style="width:100%;justify-content:center;">🌙 Escuro</button>
+  </div>
+</nav>
 
-<div class="tabs">
-  <button class="tab active" data-tab="consultar">🔍 Consultar</button>
-  <button class="tab" data-tab="buscar">🔎 Buscar Item</button>
-  <button class="tab" data-tab="whereused">📌 Onde é Usado</button>
-  <button class="tab" data-tab="cabos">🔌 Cabos m→kg</button>
-  <button class="tab" data-tab="favoritos">⭐ Favoritos</button>
-  <button class="tab" data-tab="parafuso">🔩 Parafuso</button>
-  <button class="tab" data-tab="elos">⚡ Elos</button>
-  <button class="tab" data-tab="tracao">📐 Tração Postes</button>
-  <button class="tab" data-tab="cintas">🔗 Cintas</button>
-  <button class="tab" data-tab="atualizar">⬆️ Atualizar Dados</button>
-  <button class="tab" data-tab="kanban">📋 Kanban</button>
-</div>
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <div class="topbar">
+    <button class="mob-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+  </div>
+
 
 <!-- TAB: CONSULTAR -->
 <div class="tab-panel active" id="tab-consultar">
@@ -2264,6 +2356,7 @@ document.querySelectorAll('.tab').forEach(btn=>{btn.addEventListener('click',()=
 document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 </script>
 
+  </div><!-- fim main-content -->
 </div><!-- fim appContent -->
 </body>
 </html>

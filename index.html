@@ -3273,10 +3273,7 @@ function qsSend() {
   if(!_qsN){ if(typeof showToast==='function') showToast('Selecione uma nota primeiro!','error'); return; }
   var t = (document.getElementById('qs_txt')||{}).value || '';
   var s = ''; for(var i=0;i<_qsN;i++) s += String.fromCodePoint(11088);
-  var m = encodeURIComponent('*Feedback SetupBoom*
-
-*Avaliacao:* '+s+' ('+_qsN+'/5)
-*Comentario:* '+(t.trim()||'Sem comentario.'));
+  var m = encodeURIComponent('*Feedback SetupBoom*\n\n*Avaliacao:* '+s+' ('+_qsN+'/5)\n*Comentario:* '+(t.trim()||'Sem comentario.'));
   window.open('https://wa.me/5553984742332?text='+m,'_blank');
   document.getElementById('qs_form').style.display='none';
   document.getElementById('qs_ok').style.display='block';

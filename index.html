@@ -3539,7 +3539,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 </s:Envelope>`;
 
     try {
-      const resp = await fetch('http://10.63.79.103:9090/PosteService.svc/ws', {
+      const resp = await fetch('http://localhost:3030/PosteService.svc/ws', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/soap+xml; charset=utf-8',

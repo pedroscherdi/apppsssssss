@@ -3521,66 +3521,76 @@ document.querySelectorAll('.tab').forEach(btn => {
     statusEl.className = 'mapa-status';
     infoEl.classList.remove('visible');
 
-    // Monta envelope SOAP para GetByBarramento
-    const soap = `<?xml version="1.0" encoding="utf-8"?>
+    // Função auxiliar para chamar o proxy
+    async function soapCall(action, bodyXml) {
+      const envelope = `<?xml version="1.0" encoding="utf-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
   <s:Header>
-    <a:Action s:mustUnderstand="1">http://tempuri.org/IPosteService/GetByBarramento</a:Action>
+    <a:Action s:mustUnderstand="1">${action}</a:Action>
     <a:To s:mustUnderstand="1">http://10.63.79.103:9090/PosteService.svc/ws</a:To>
   </s:Header>
-  <s:Body>
-    <GetByBarramento xmlns="http://tempuri.org/">
-      <id>${num}</id>
-    </GetByBarramento>
-  </s:Body>
+  <s:Body>${bodyXml}</s:Body>
 </s:Envelope>`;
-
-    try {
       const resp = await fetch('http://localhost:3030/PosteService.svc/ws', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/soap+xml; charset=utf-8',
-          'SOAPAction': 'http://tempuri.org/IPosteService/GetByBarramento'
-        },
-        body: soap
+        headers: { 'Content-Type': 'application/soap+xml; charset=utf-8', 'SOAPAction': action },
+        body: envelope
       });
-
       if (!resp.ok) throw new Error('Servidor retornou erro ' + resp.status);
+      const text = await resp.text();
+      return new DOMParser().parseFromString(text, 'text/xml');
+    }
 
-      const text = await resp.text(); console.log('XML G2M:', text.substring(0, 3000));
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(text, 'text/xml');
+    try {
+      // Passo 1: busca Id interno pelo número do barramento
+      const xml1 = await soapCall(
+        'http://tempuri.org/IPosteService/GetByBarramento',
+        `<GetByBarramento xmlns="http://tempuri.org/"><id>${num}</id></GetByBarramento>`
+      );
+      const get1 = tag => { const el = xml1.querySelector(tag); return el ? el.textContent.trim() : null; };
+      const idInterno = get1('Id');
+      if (!idInterno) throw new Error('Poste não encontrado no servidor.');
 
-      // Extrai campos do XML
-      const get = tag => { const el = xml.querySelector(tag); return el ? el.textContent.trim() : null; };
+      // Passo 2: busca dados completos com coordenadas pelo Id interno
+      const xml2 = await soapCall(
+        'http://tempuri.org/IPosteService/GetConsulta',
+        `<GetConsulta xmlns="http://tempuri.org/"><id>${idInterno}</id></GetConsulta>`
+      );
+      console.log('XML GetConsulta:', new XMLSerializer().serializeToString(xml2).substring(0, 3000));
+      const get2 = tag => { const el = xml2.querySelector(tag); return el && el.getAttribute('i:nil') !== 'true' ? el.textContent.trim() : null; };
 
-      const x = parseFloat(get('X'));
-      const y = parseFloat(get('Y'));
-      const barramento = get('Barramento') || num;
-      const logradouro = get('NomeExtenso') || get('Logradouro') || '—';
-      const bairro = get('BairroNome') || '—';
-      const municipio = get('MunicipioDescricao') || get('MunNome') || '—';
+      // Tenta extrair coordenadas de Geometry (X,Y) ou de Ponto
+      const allX = [...xml2.querySelectorAll('X')].map(e => parseFloat(e.textContent)).filter(v => !isNaN(v) && v !== 0);
+      const allY = [...xml2.querySelectorAll('Y')].map(e => parseFloat(e.textContent)).filter(v => !isNaN(v) && v !== 0);
+      console.log('Todos X:', allX, 'Todos Y:', allY);
+
+      const x = allX[0];
+      const y = allY[0];
+      const barramento = get1('Barramento') || num;
+      const logradouro = get2('NomeExtenso') || get2('NomeAbreviado') || '—';
+      const bairro = get2('BairroNome') || get2('Nome') || '—';
+      const municipio = get2('MunNome') || get2('MunicipioDescricao') || '—';
 
       if (!x || !y || isNaN(x) || isNaN(y)) {
-        statusEl.textContent = 'Poste encontrado, mas sem coordenadas geográficas no servidor.';
+        statusEl.textContent = 'Poste encontrado (Id: ' + idInterno + '), mas sem coordenadas no servidor.';
         statusEl.className = 'mapa-status erro';
         return;
       }
 
-      // Coordenadas: o G2M usa sistema de projeção — tenta detectar
-      // Se X > 1000, provavelmente é UTM; senão é lat/lng direto
+      // Detecta se é lat/lng ou UTM
       let lat, lng;
-      if (Math.abs(x) > 180) {
-        // UTM aproximado para lat/lng (conversão simples para RS)
-        // Zona 22S — conversão básica
-        lat = y / 111320;
-        lng = x / (111320 * Math.cos(lat * Math.PI / 180));
-        // fallback: mostra aviso
-        statusEl.textContent = 'Coordenadas em projeção UTM. Posição aproximada.';
-        statusEl.className = 'mapa-status';
+      if (Math.abs(x) > 180 || Math.abs(y) > 90) {
+        // Provavelmente UTM zona 22S
+        // Conversão aproximada: divide por fator de escala
+        // UTM Sul: Y ~ 6.000.000 a 7.000.000, X ~ 300.000 a 800.000
+        const utmX = x, utmY = y;
+        // Conversão simples para RS (zona 22S, datum WGS84)
+        lng = -54 + (utmX - 500000) / (111320 * Math.cos(-30 * Math.PI / 180));
+        lat = -56 + utmY / 110540;
+        statusEl.textContent = 'Poste localizado! (coordenadas UTM convertidas)';
+        statusEl.className = 'mapa-status ok';
       } else {
-        lat = y;
-        lng = x;
+        lat = y; lng = x;
         statusEl.textContent = 'Poste localizado com sucesso!';
         statusEl.className = 'mapa-status ok';
       }
@@ -3590,7 +3600,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       document.getElementById('mi-logradouro').textContent = logradouro;
       document.getElementById('mi-bairro').textContent = bairro;
       document.getElementById('mi-municipio').textContent = municipio;
-      document.getElementById('mi-coords').textContent = y.toFixed(6) + ', ' + x.toFixed(6);
+      document.getElementById('mi-coords').textContent = y.toFixed(2) + ', ' + x.toFixed(2);
       infoEl.classList.add('visible');
 
       // Plota no mapa

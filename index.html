@@ -3547,7 +3547,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 
       if (!resp.ok) throw new Error('Servidor retornou erro ' + resp.status);
 
-      const text = await resp.text();
+      const text = await resp.text(); console.log('XML G2M:', text.substring(0, 3000));
       const parser = new DOMParser();
       const xml = parser.parseFromString(text, 'text/xml');
 

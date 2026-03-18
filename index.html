@@ -3032,9 +3032,173 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         Mapa de <span style="color:var(--accent)">Postes</span>
       </h1>
       <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
-        Consulta via G2M · Rede interna · 10.63.79.103
+        Consulta rápida via Planilha (Google Sheets)
       </p>
     </div>
+
+    <div class="mapa-search-wrap">
+      <input type="text" id="mapa-input" placeholder="Número do poste (ex: 514077)" autocomplete="off" />
+      <button class="btn" onclick="window.mapaBuscarPoste()">🔍 Localizar</button>
+    </div>
+
+    <div class="mapa-status" id="mapa-status">Digite o número do poste e clique em Localizar.</div>
+
+    <div class="mapa-info-card" id="mapa-info">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;">
+        <div>
+          <div class="mi-label">Barramento</div>
+          <div class="mi-val accent" id="mi-barramento">—</div>
+        </div>
+        <div>
+          <div class="mi-label">Latitude</div>
+          <div class="mi-val" id="mi-lat">—</div>
+        </div>
+        <div>
+          <div class="mi-label">Longitude</div>
+          <div class="mi-val" id="mi-lng">—</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <a id="mi-maps-link" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.4rem 1rem;font-size:0.75rem;">Abrir no Google Maps ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="mapa-leaflet"></div>
+
+  </div>
+</div>```
+
+### 2º Passo: Atualizar o Motor de Busca (JavaScript)
+Role até o **final do arquivo**. Você vai encontrar o último bloco de `<script>` (que começa com `// Carrega Leaflet CSS e JS dinamicamente`). 
+
+Apague esse script inteiro e **substitua por este novo script**:
+
+```javascript
+<script>
+(function() {
+  let leafletLoaded = false;
+  let mapaMap = null;
+  let mapaMarker = null;
+
+  function carregarLeaflet(cb) {
+    if (leafletLoaded) { cb(); return; }
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    script.onload = () => { leafletLoaded = true; cb(); };
+    document.head.appendChild(script);
+  }
+
+  function initMapa() {
+    if (mapaMap) return;
+    const el = document.getElementById('mapa-leaflet');
+    if (!el) return;
+    // Posição inicial no RS (Pelotas)
+    mapaMap = L.map('mapa-leaflet').setView([-31.7654, -52.3376], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+    }).addTo(mapaMap);
+  }
+
+  window.mapaBuscarPoste = function() {
+    const num = document.getElementById('mapa-input').value.trim().toLowerCase();
+    const statusEl = document.getElementById('mapa-status');
+    const infoEl = document.getElementById('mapa-info');
+    
+    if (!num) { 
+      statusEl.textContent = 'Digite o número do poste.'; 
+      statusEl.className = 'mapa-status erro'; 
+      return; 
+    }
+
+    // Verifica se os dados da planilha já foram carregados pelo sistema principal
+    if (typeof rawRows === 'undefined' || rawRows.length === 0) {
+      statusEl.textContent = 'Aguarde a planilha carregar ou verifique sua conexão.';
+      statusEl.className = 'mapa-status erro';
+      return;
+    }
+
+    statusEl.textContent = 'Procurando na planilha...';
+    statusEl.className = 'mapa-status';
+    infoEl.classList.remove('visible');
+
+    // MÁGICA AQUI: Procura o número do poste na Coluna A (índice 0 da rawRows)
+    const row = rawRows.find(r => String(r[0]).trim().toLowerCase() === num);
+
+    if (!row) {
+      statusEl.textContent = `Poste ${num} não encontrado na planilha.`;
+      statusEl.className = 'mapa-status erro';
+      return;
+    }
+
+    const barramento = String(row[0]).trim().toUpperCase();
+    let lat = null, lng = null;
+
+    // Pega a Latitude na Coluna B (índice 1) e Longitude na Coluna C (índice 2)
+    const colB = String(row[1] || '').trim();
+    const colC = String(row[2] || '').trim();
+
+    // Prevenção: Se a pessoa colocou Lat e Long juntos na Coluna B com vírgula (ex: -31.76, -52.33)
+    if (colB.includes(',') && !colC) {
+      const parts = colB.split(',');
+      lat = parseFloat(parts[0].trim());
+      lng = parseFloat(parts[1].trim());
+    } else {
+      // Caso normal: Col B = Lat, Col C = Long
+      lat = parseFloat(colB.replace(',', '.')); // Garante que lê ponto e vírgula
+      lng = parseFloat(colC.replace(',', '.'));
+    }
+
+    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+      statusEl.textContent = `Poste ${barramento} encontrado, mas as células de latitude/longitude estão vazias ou incorretas.`;
+      statusEl.className = 'mapa-status erro';
+      return;
+    }
+
+    statusEl.textContent = 'Poste localizado com sucesso!';
+    statusEl.className = 'mapa-status ok';
+
+    // Preenche o Info Card com os dados
+    document.getElementById('mi-barramento').textContent = barramento;
+    document.getElementById('mi-lat').textContent = lat.toFixed(6);
+    document.getElementById('mi-lng').textContent = lng.toFixed(6);
+    document.getElementById('mi-maps-link').href = `https://maps.google.com/?q=$${lat},${lng}`;
+    infoEl.classList.add('visible');
+
+    // Apaga pino anterior e coloca o novo no mapa
+    if (mapaMarker) mapaMap.removeLayer(mapaMarker);
+    mapaMarker = L.marker([lat, lng]).addTo(mapaMap)
+      .bindPopup(`<b style="color:var(--accent);font-family:'DM Mono',monospace;">⚡ Poste ${barramento}</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`)
+      .openPopup();
+    
+    // Voa até o poste
+    mapaMap.setView([lat, lng], 17);
+  };
+
+  // Inicializa mapa quando a aba for aberta
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'mapa') {
+          carregarLeaflet(() => {
+            setTimeout(initMapa, 80);
+          });
+        }
+      });
+    });
+  });
+
+  // Enter no input
+  window.addEventListener('load', () => {
+    const inp = document.getElementById('mapa-input');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') window.mapaBuscarPoste(); });
+  });
+})();
+</script>
 
     <!-- Barra de busca -->
     <div class="mapa-search-wrap">

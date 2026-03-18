@@ -3518,7 +3518,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (mapaCarregado) return;
     setStatusMapa('loading', 'Carregando postes da planilha...');
     try {
-      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_SHEET_NAME)}!A:C?key=${API_KEY}`;
+      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_SHEET_NAME)}!A:D?key=${API_KEY}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.error) throw new Error(json.error.message);
@@ -3534,8 +3534,8 @@ document.querySelectorAll('.tab').forEach(btn => {
       mapaPostes = dataRows
         .map(r => ({
           num: String(r[0] || '').trim(),
-          lat: parseFloat(String(r[1] || '').replace(',','.')),
-          lng: parseFloat(String(r[2] || '').replace(',','.'))
+          lat: parseFloat(String(r[2] || '').replace(',','.')),
+          lng: parseFloat(String(r[3] || '').replace(',','.'))
         }))
         .filter(p => p.num && !isNaN(p.lat) && !isNaN(p.lng) && p.lat !== 0 && p.lng !== 0);
 

@@ -2517,12 +2517,26 @@ const firebaseConfig = {
   }
 
   let imgIndex = {};
+  function toImgUrl(val) {
+    if (!val) return '';
+    val = val.trim();
+    if (val.startsWith('http')) {
+      // Extrai ID de URLs do Drive e padroniza para uc?export=view
+      const m = val.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+      if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+      const m2 = val.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+      if (m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
+      return val;
+    }
+    // Se é só o ID bruto
+    return `https://drive.google.com/uc?export=view&id=${val}`;
+  }
   function buildImgIndex() {
     imgIndex = {};
     allData.forEach(row => {
       const code = String(row['__O'] || '').trim();
       const link = String(row['__P'] || '').trim();
-      if (code && link) imgIndex[code.toUpperCase()] = link;
+      if (code && link) imgIndex[code.toUpperCase()] = toImgUrl(link);
     });
   }
 

@@ -3465,11 +3465,17 @@ document.querySelectorAll('.tab').forEach(btn => {
 <!-- ══════════════════════════════════════════════════════ -->
 <script>
 (function() {
-  const MAPA_SHEET_NAME = 'Mapa Postes';
+  const MAPA_ABA = 'Mapa Postes';
+  // Blocos de colunas (índices base-0): A=0,C=2,D=3 | L=11,N=13,O=14 | U=20,W=22,X=23
+  const BLOCOS = [
+    { nome: 0,  lat: 2,  lng: 3  },
+    { nome: 11, lat: 13, lng: 14 },
+    { nome: 20, lat: 22, lng: 23 },
+  ];
   let leafletLoaded = false;
   let mapaMap = null;
   let mapaMarker = null;
-  let mapaPostes = []; // [{num, lat, lng}]
+  let mapaPostes = [];
   let mapaCarregado = false;
 
   // ── Carrega Leaflet dinamicamente ──────────────────────
@@ -3497,34 +3503,34 @@ document.querySelectorAll('.tab').forEach(btn => {
     }).addTo(mapaMap);
   }
 
-  // ── Carrega postes da aba "Mapa Postes" da planilha ────
+  // ── Carrega postes — 3 blocos de colunas na mesma aba ────
   async function carregarPostes() {
     if (mapaCarregado) return;
     setStatusMapa('loading', 'Carregando postes da planilha...');
     try {
-      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_SHEET_NAME)}!A:D?key=${API_KEY}`;
+      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_ABA)}!A:X?key=${API_KEY}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.error) throw new Error(json.error.message);
       const rows = json.values || [];
-      // Ignora cabeçalho (linha 1 pode ser header ou já dado)
-      const dataRows = rows.filter((r, i) => {
-        if (i === 0) {
-          // Checa se primeira linha é cabeçalho (contém texto não-numérico na col A)
-          return !isNaN(parseFloat(String(r[1] || '').replace(',','.')));
+      const todosPostes = [];
+      rows.forEach((row, rowIdx) => {
+        if (rowIdx === 0) {
+          const v = String(row[BLOCOS[0].nome] || '').trim();
+          if (v !== '' && isNaN(parseFloat(v))) return;
         }
-        return true;
+        BLOCOS.forEach(bloco => {
+          const num = String(row[bloco.nome] || '').trim();
+          const lat = parseFloat(String(row[bloco.lat] || '').replace(',', '.'));
+          const lng = parseFloat(String(row[bloco.lng] || '').replace(',', '.'));
+          if (num && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+            todosPostes.push({ num, lat, lng });
+          }
+        });
       });
-      mapaPostes = dataRows
-        .map(r => ({
-          num: String(r[0] || '').trim(),
-          lat: parseFloat(String(r[2] || '').replace(',','.')),
-          lng: parseFloat(String(r[3] || '').replace(',','.'))
-        }))
-        .filter(p => p.num && !isNaN(p.lat) && !isNaN(p.lng) && p.lat !== 0 && p.lng !== 0);
-
+      mapaPostes = todosPostes;
       mapaCarregado = true;
-      setStatusMapa('ok', `✔ ${mapaPostes.length} postes carregados · Digite para buscar`);
+      setStatusMapa('ok', `✔ ${mapaPostes.length.toLocaleString('pt-BR')} postes carregados · Digite para buscar`);
     } catch(e) {
       setStatusMapa('erro', 'Erro ao carregar planilha: ' + e.message);
     }

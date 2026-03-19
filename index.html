@@ -1593,6 +1593,7 @@ const firebaseConfig = {
       </table>
     </div>
   </div>
+  <div id="estrutura-img-wrap" style="display:none;"></div>
 
   <!-- ── ACESSO RÁPIDO ── -->
   <div style="margin-top:2.5rem;border-top:1px solid var(--border);padding-top:2rem;">
@@ -2265,7 +2266,7 @@ const firebaseConfig = {
         return obj;
       });
       columnMap = { structure: '__D', item: '__E', desc: '__F', unit: '__G', qty: '__H' };
-      buildStructures(); buildItemIndex(); buildCabosIndex(); buildDimIndex();
+      buildStructures(); buildItemIndex(); buildCabosIndex(); buildDimIndex(); buildImgIndex();
       const amostra = [...new Set(allData.slice(0,5).map(r=>r['__D']).filter(Boolean))].join(', ') || '(vazio)';
       const ts = new Date().toLocaleTimeString('pt-BR');
       setStatus('ok', `<strong>${allCodes.length} estruturas</strong> · ${allData.length} linhas · ${ts} <span style="color:var(--accent2);font-size:0.72rem"> | Col D: ${amostra}</span>`);
@@ -2334,6 +2335,29 @@ const firebaseConfig = {
     currentItems = items; currentCols = cols; codigoAtual = code;
     updateFavBtn();
     document.getElementById('results').classList.add('visible', 'fade-in');
+
+    // ── Imagem da estrutura ──
+    const imgLink = imgIndex[code.toUpperCase()] || '';
+    const imgDiv = document.getElementById('estrutura-img-wrap');
+    if (imgDiv) {
+      if (imgLink) {
+        imgDiv.innerHTML = `
+          <div style="margin-top:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+            <div style="padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;">
+              <span>🖼️ Desenho da Estrutura — <strong style="color:var(--accent)">${code}</strong></span>
+              <a href="${imgLink}" target="_blank" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);text-decoration:none;">Abrir ↗</a>
+            </div>
+            <div style="padding:1rem;text-align:center;">
+              <img src="${imgLink}" alt="${code}" style="max-width:100%;max-height:520px;object-fit:contain;border-radius:6px;"
+                onerror="this.parentElement.innerHTML='<div style=\'padding:2rem;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.82rem;\'>⚠️ Sem imagem cadastrada para esta estrutura. <a href=\'${imgLink}\' target=\'_blank\' style=\'color:var(--accent)\'>Abrir no Drive ↗</a></div>'" />
+            </div>
+          </div>`;
+        imgDiv.style.display = 'block';
+      } else {
+        imgDiv.innerHTML = '';
+        imgDiv.style.display = 'none';
+      }
+    }
   }
 
   const uploadZone = document.getElementById('uploadZone');
@@ -2490,6 +2514,16 @@ const firebaseConfig = {
     }).join('');
     ddEl.classList.add('open');
     ddEl.querySelectorAll('.dropdown-item').forEach(el => el.addEventListener('click', () => onSelect(el.dataset.val)));
+  }
+
+  let imgIndex = {};
+  function buildImgIndex() {
+    imgIndex = {};
+    allData.forEach(row => {
+      const code = String(row['__O'] || '').trim();
+      const link = String(row['__P'] || '').trim();
+      if (code && link) imgIndex[code.toUpperCase()] = link;
+    });
   }
 
   let cabosIndex = {};

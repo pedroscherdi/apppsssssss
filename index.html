@@ -2337,19 +2337,21 @@ const firebaseConfig = {
     document.getElementById('results').classList.add('visible', 'fade-in');
 
     // ── Imagem da estrutura ──
-    const imgLink = imgIndex[code.toUpperCase()] || '';
+    const imgRaw = imgIndex[code.toUpperCase()] || '';
     const imgDiv = document.getElementById('estrutura-img-wrap');
     if (imgDiv) {
-      if (imgLink) {
+      if (imgRaw) {
+        const thumbUrl = toThumbUrl(imgRaw);
+        const driveUrl = toDriveUrl(imgRaw);
         imgDiv.innerHTML = `
           <div style="margin-top:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
             <div style="padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;">
               <span>🖼️ Desenho da Estrutura — <strong style="color:var(--accent)">${code}</strong></span>
-              <a href="${imgLink}" target="_blank" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);text-decoration:none;">Abrir ↗</a>
+              <a href="${driveUrl}" target="_blank" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);text-decoration:none;">Abrir ↗</a>
             </div>
             <div style="padding:1rem;text-align:center;">
-              <img src="${imgLink}" alt="${code}" style="max-width:100%;max-height:520px;object-fit:contain;border-radius:6px;"
-                onerror="this.parentElement.innerHTML='<div style=\'padding:2rem;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.82rem;\'>⚠️ Sem imagem cadastrada para esta estrutura. <a href=\'${imgLink}\' target=\'_blank\' style=\'color:var(--accent)\'>Abrir no Drive ↗</a></div>'" />
+              <img src="${thumbUrl}" alt="${code}" style="max-width:100%;max-height:520px;object-fit:contain;border-radius:6px;"
+                onerror="this.src='';this.parentElement.innerHTML='<div style=\'padding:2rem;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.82rem;\'>⚠️ Imagem não disponível. Verifique se o arquivo está público no Drive. <a href=\'${driveUrl}\' target=\'_blank\' style=\'color:var(--accent)\'>Abrir no Drive ↗</a></div>'" />
             </div>
           </div>`;
         imgDiv.style.display = 'block';
@@ -2517,26 +2519,32 @@ const firebaseConfig = {
   }
 
   let imgIndex = {};
-  function toImgUrl(val) {
+  function extractDriveId(val) {
     if (!val) return '';
     val = val.trim();
-    if (val.startsWith('http')) {
-      // Extrai ID de URLs do Drive e padroniza para uc?export=view
-      const m = val.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-      if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
-      const m2 = val.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
-      if (m2) return `https://drive.google.com/uc?export=view&id=${m2[1]}`;
-      return val;
-    }
-    // Se é só o ID bruto
-    return `https://drive.google.com/uc?export=view&id=${val}`;
+    if (!val.startsWith('http')) return val;
+    const m1 = val.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+    if (m1) return m1[1];
+    const m2 = val.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+    if (m2) return m2[1];
+    return val;
+  }
+  function toThumbUrl(val) {
+    const id = extractDriveId(val);
+    if (!id) return '';
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+  }
+  function toDriveUrl(val) {
+    const id = extractDriveId(val);
+    if (!id) return val;
+    return `https://drive.google.com/file/d/${id}/view`;
   }
   function buildImgIndex() {
     imgIndex = {};
     allData.forEach(row => {
       const code = String(row['__O'] || '').trim();
       const link = String(row['__P'] || '').trim();
-      if (code && link) imgIndex[code.toUpperCase()] = toImgUrl(link);
+      if (code && link) imgIndex[code.toUpperCase()] = link;
     });
   }
 

@@ -2117,6 +2117,60 @@ const firebaseConfig = {
     </div>
   </div>
   <div id="cinta_indisponivel" style="display:none;font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--muted);padding:0.75rem 0;">— Não aplicável para este poste.</div>
+
+  <!-- ── SELETOR 2: Por altura de montagem ─────────────────────────── -->
+  <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:1rem;">
+      📐 Por altura de montagem
+    </div>
+    <div class="map-grid" style="margin-bottom:1rem;">
+      <div class="map-field">
+        <label>Poste <span style="color:var(--accent)">*</span></label>
+        <select id="cinta2_poste" class="cabo-input" onchange="calcularCinta2()">
+          <option value="">— selecione —</option>
+          <option>9m / 200 daN</option><option>9m / 400 daN</option><option>9m / 600 daN</option>
+          <option>9m / 1000 daN</option><option>9m / 1500 daN</option>
+          <option>10m / 200 daN</option><option>10m / 400 daN</option><option>10m / 600 daN</option>
+          <option>10m / 1000 daN</option>
+          <option>11m / 200 daN</option><option>11m / 400 daN</option><option>11m / 600 daN</option>
+          <option>11m / 1000 daN</option><option>11m / 1200 daN</option><option>11m / 1500 daN</option>
+          <option>12m / 200 daN</option><option>12m / 400 daN</option><option>12m / 600 daN</option>
+          <option>12m / 1000 daN</option><option>12m / 1200 daN</option><option>12m / 1500 daN</option>
+          <option>13m / 200 daN</option><option>13m / 400 daN</option><option>13m / 600 daN</option>
+          <option>13m / 1000 daN</option>
+        </select>
+      </div>
+      <div class="map-field">
+        <label>Altura de montagem (m) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="cinta2_altura" min="0" step="0.1" placeholder="ex: 2.5"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0.5rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.82rem;outline:none;transition:border-color 0.2s;"
+          oninput="calcularCinta2()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div class="map-field">
+        <label>Referência <span style="color:var(--accent)">*</span></label>
+        <div style="display:flex;gap:0.5rem;margin-top:2px;">
+          <button id="cinta2_btn_topo" onclick="setCinta2Ref('topo')"
+            style="flex:1;padding:0.45rem 0.5rem;border-radius:6px;font-family:'DM Mono',monospace;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;background:var(--accent);color:#060f0a;border:1px solid var(--accent);">
+            Do topo
+          </button>
+          <button id="cinta2_btn_solo" onclick="setCinta2Ref('solo')"
+            style="flex:1;padding:0.45rem 0.5rem;border-radius:6px;font-family:'DM Mono',monospace;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;background:none;color:var(--muted);border:1px solid var(--border);">
+            Do solo
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="cinta2_resultado" style="display:none;" class="cabo-resultado">
+      <div class="cabo-res-row">
+        <div class="cabo-res-item"><span class="cabo-res-label">Poste</span><span class="cabo-res-val" id="cinta2_res_poste">—</span></div>
+        <div class="cabo-res-item"><span class="cabo-res-label">Altura</span><span class="cabo-res-val" id="cinta2_res_altura">—</span></div>
+        <div class="cabo-res-item"><span class="cabo-res-label">Ø estimado</span><span class="cabo-res-val" id="cinta2_res_diam">—</span></div>
+        <div class="cabo-res-item destaque"><span class="cabo-res-label">Cinta</span><span class="cabo-res-val" id="cinta2_res_cinta">—</span></div>
+      </div>
+    </div>
+    <div id="cinta2_erro" style="display:none;font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--danger);padding:0.75rem 0;"></div>
+  </div>
+
   <div style="margin-top:1.5rem;">
     <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem;">Tabela completa de referência</div>
     <div class="table-wrap">
@@ -2742,6 +2796,85 @@ const firebaseConfig = {
     document.getElementById('cinta_res_tipo').textContent=CINTA_TIPO_LABELS[tipo];
     document.getElementById('cinta_res_val').textContent=val+' mm';
     resDiv.style.display='block';
+  }
+
+  // ── Calculadora 2: Por altura de montagem ──────────────────────────
+  const CINTA2_POSTES = [
+    { label:'9m / 200 daN',  comp:9,  topo:150, base:330 },
+    { label:'9m / 400 daN',  comp:9,  topo:170, base:350 },
+    { label:'9m / 600 daN',  comp:9,  topo:190, base:370 },
+    { label:'9m / 1000 daN', comp:9,  topo:230, base:410 },
+    { label:'9m / 1500 daN', comp:9,  topo:290, base:470 },
+    { label:'10m / 200 daN', comp:10, topo:150, base:350 },
+    { label:'10m / 400 daN', comp:10, topo:170, base:370 },
+    { label:'10m / 600 daN', comp:10, topo:190, base:390 },
+    { label:'10m / 1000 daN',comp:10, topo:230, base:430 },
+    { label:'11m / 200 daN', comp:11, topo:150, base:370 },
+    { label:'11m / 400 daN', comp:11, topo:170, base:390 },
+    { label:'11m / 600 daN', comp:11, topo:190, base:410 },
+    { label:'11m / 1000 daN',comp:11, topo:230, base:450 },
+    { label:'11m / 1200 daN',comp:11, topo:260, base:480 },
+    { label:'11m / 1500 daN',comp:11, topo:290, base:510 },
+    { label:'12m / 200 daN', comp:12, topo:150, base:390 },
+    { label:'12m / 400 daN', comp:12, topo:170, base:410 },
+    { label:'12m / 600 daN', comp:12, topo:190, base:430 },
+    { label:'12m / 1000 daN',comp:12, topo:230, base:470 },
+    { label:'12m / 1200 daN',comp:12, topo:260, base:500 },
+    { label:'12m / 1500 daN',comp:12, topo:290, base:530 },
+    { label:'13m / 200 daN', comp:13, topo:150, base:410 },
+    { label:'13m / 400 daN', comp:13, topo:170, base:430 },
+    { label:'13m / 600 daN', comp:13, topo:190, base:450 },
+    { label:'13m / 1000 daN',comp:13, topo:230, base:490 },
+  ];
+  const CINTA2_CINTAS = [150,160,170,180,190,200,210,220,230,250,270,290,310];
+  let cinta2Ref = 'topo';
+
+  function setCinta2Ref(ref) {
+    cinta2Ref = ref;
+    const btnT = document.getElementById('cinta2_btn_topo');
+    const btnS = document.getElementById('cinta2_btn_solo');
+    if (ref === 'topo') {
+      btnT.style.cssText += ';background:var(--accent);color:#060f0a;border-color:var(--accent);';
+      btnS.style.cssText += ';background:none;color:var(--muted);border-color:var(--border);';
+    } else {
+      btnS.style.cssText += ';background:var(--accent);color:#060f0a;border-color:var(--accent);';
+      btnT.style.cssText += ';background:none;color:var(--muted);border-color:var(--border);';
+    }
+    calcularCinta2();
+  }
+
+  function calcularCinta2() {
+    const posteLabel = document.getElementById('cinta2_poste').value;
+    const alturaVal  = document.getElementById('cinta2_altura').value;
+    const resDiv  = document.getElementById('cinta2_resultado');
+    const erroDiv = document.getElementById('cinta2_erro');
+    resDiv.style.display = 'none'; erroDiv.style.display = 'none';
+
+    if (!posteLabel || alturaVal === '') return;
+    const altura = parseFloat(alturaVal);
+    if (isNaN(altura) || altura < 0) { erroDiv.textContent = 'Digite uma altura válida.'; erroDiv.style.display = 'block'; return; }
+
+    const poste = CINTA2_POSTES.find(p => p.label === posteLabel);
+    if (!poste) return;
+
+    // distância a partir do topo
+    const distTopo = cinta2Ref === 'topo' ? altura : (poste.comp - altura);
+    if (distTopo < 0 || distTopo > poste.comp) {
+      erroDiv.textContent = `Altura ${altura}m fora do comprimento do poste (${poste.comp}m).`;
+      erroDiv.style.display = 'block'; return;
+    }
+
+    // interpolação linear do diâmetro
+    const diam = Math.round(poste.topo + (poste.base - poste.topo) * (distTopo / poste.comp));
+    // menor cinta >= diam
+    const cinta = CINTA2_CINTAS.find(c => c >= diam);
+    if (!cinta) { erroDiv.textContent = `Diâmetro estimado (${diam}mm) excede o catálogo de cintas (máx 310mm).`; erroDiv.style.display = 'block'; return; }
+
+    document.getElementById('cinta2_res_poste').textContent  = posteLabel;
+    document.getElementById('cinta2_res_altura').textContent = `${altura}m ${cinta2Ref === 'topo' ? 'do topo' : 'do solo'}`;
+    document.getElementById('cinta2_res_diam').textContent   = diam + ' mm';
+    document.getElementById('cinta2_res_cinta').textContent  = cinta + ' mm';
+    resDiv.style.display = 'block';
   }
 
   let prfFace = 'A'; let prfCodigoAtual = null;

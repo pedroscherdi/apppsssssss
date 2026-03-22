@@ -1420,6 +1420,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="elos"><span class="tab-icon">⚡</span> Elos</button>
     <button class="tab" data-tab="tracao"><span class="tab-icon">📐</span> Tração Postes</button>
     <button class="tab" data-tab="cintas"><span class="tab-icon">🔗</span> Cintas</button>
+    <button class="tab" data-tab="conectores"><span class="tab-icon">🔌</span> Conectores</button>
     <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
     <button class="tab" data-tab="campo"><span class="tab-icon">📎</span> Campo</button>
@@ -2243,6 +2244,7 @@ const firebaseConfig = {
     'elos':        'Elos',
     'tracao':      'Tração Postes',
     'cintas':      'Cintas',
+    'conectores':  'Conectores',
     'inicio':      'Início',
     'atualizar':   'Atualizar Dados',
     'kanban':      'Kanban',
@@ -3006,6 +3008,147 @@ const firebaseConfig = {
     vetG.innerHTML=svgLines; if(diagLeg)diagLeg.innerHTML=legLines.length?legLines.join(''):'Sem tração configurada.';}
   }
   document.addEventListener('DOMContentLoaded', () => { trcBuildLinhas(); document.querySelectorAll('.tab').forEach(btn => { btn.addEventListener('click', () => { if (btn.dataset.tab==='tracao') { if(!document.getElementById('trc_c1_0'))trcBuildLinhas(); calcularTracao(); } }); }); });
+</script>
+
+<!-- TAB: CONECTORES -->
+<div class="tab-panel" id="tab-conectores">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Cunha de Alumínio</div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:10px;padding:20px 20px 16px;margin-bottom:24px;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Selecione os cabos</div>
+    <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;min-width:170px;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Cabo de origem</div>
+        <select id="cn_selA" onchange="cnSelecionarA()" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0.5rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.82rem;outline:none;transition:border-color 0.2s;appearance:none;">
+          <option value="">— selecione —</option>
+        </select>
+      </div>
+      <div style="color:var(--muted);font-size:1.3rem;padding-bottom:10px;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:170px;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Conecta com</div>
+        <select id="cn_selB" onchange="cnSelecionarB()" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0.5rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.82rem;outline:none;transition:border-color 0.2s;appearance:none;">
+          <option value="">— selecione —</option>
+        </select>
+      </div>
+      <button onclick="cnLimpar()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:0.5rem 1rem;font-family:'Syne',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;transition:border-color 0.2s,color 0.2s;flex-shrink:0;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Limpar</button>
+    </div>
+  </div>
+  <div id="cn_results">
+    <div style="text-align:center;padding:40px 20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;">
+      ⚡ selecione o cabo de origem
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const CN_DATA = [
+    { item:1,  cartucho:"VERMELHO", codigo:"124000037", tipo:"CN 12", condutores:"2-6 AWG CA/CAA X 6 AWG CA/CAA; 4 AWG CA/CAA X 4 AWG CA/CAA", a:null, b:null, c:null, d:null },
+    { item:2,  cartucho:"VERMELHO", codigo:"124000038", tipo:"CN 13", condutores:"1/0 AWG CA/CAA X 4 AWG CA/CAA; 1/0 AWG CA/CAA X 2 AWG CA/CAA; 2 AWG CA/CAA X 2 AWG CA/CAA; 35 mm² CA X 35 mm² CA; 50 mm² CA X 35 mm² CA; 50 mm² CA X 50 mm² CA; 2 AWG CA/CAA X 35 mm² CA", a:41, b:32, c:40, d:9 },
+    { item:3,  cartucho:"VERMELHO", codigo:"124000039", tipo:"CN 14", condutores:"1/0 AWG CA/CAA X 6 AWG CA/CAA; 2 AWG CA/CAA X 4 AWG CA/CAA", a:null, b:null, c:null, d:null },
+    { item:4,  cartucho:"AZUL",     codigo:"124000034", tipo:"CN 1",  condutores:"336,4 CAA MCM X 336,4 CA MCM; 336,4 CAA MCM X 336,4 CAA MCM; 35 mm² CA X 35 mm²; 185 mm² CA X 150 mm² CA; 394,5 CAL MCM X 394,5 CAL MCM (CANTON)", a:71, b:50, c:54, d:15 },
+    { item:5,  cartucho:"AZUL",     codigo:"124000035", tipo:"CN 10", condutores:"4/0 AWG CA/CAA X 6 AWG CA/CAA; 4/0 AWG CA/CAA X 4 AWG CA/CAA; 3/0 AWG CA/CAA X 6 AWG CA/CAA; 3/0 AWG CA/CAA X 4 AWG CA/CAA; 3/0 AWG CA/CAA X 2 AWG CA/CAA; 2/0 AWG CA/CAA X 4 AWG CA/CAA; 2/0 AWG CA/CAA X 2 AWG CA/CAA; 2/0 AWG CA/CAA X 1/0 AWG CA/CAA; 1/0 AWG CA/CAA X 2/0 AWG CA/CAA; 1/0 AWG CA/CAA X 2 AWG CA/CAA; 70 mm² CA X 35 mm²; 70 mm² CA X 50mm²; 70 mm² CA X 70 mm²; 3/0 AWG CA/CAA X 35mm² CA; 2/0 AWG CA/CAA X 35-50 mm² CA; 1/0 AWG CA/CAA X 35-50mm² CA; 155,4 CAL MCM X 155,4 CAL MCM (ANAHEIM)", a:66, b:41, c:51, d:13 },
+    { item:6,  cartucho:"AZUL",     codigo:"124000036", tipo:"CN 11", condutores:"2/0 AWG CA/CAA X 6 AWG CA/CAA", a:64, b:42, c:51, d:13 },
+    { item:7,  cartucho:"AZUL",     codigo:"124000040", tipo:"CN 15", condutores:"4/0 AWG CA/CAA X 3/0 AWG CA/CAA; 4/0 AWG CA/CAA X 4/0 AWG CA/CAA; 246,9 CAL MCM X 246,9 CAL MCM (ALLIENCE)", a:67, b:42, c:51, d:13 },
+    { item:8,  cartucho:"AZUL",     codigo:"124000041", tipo:"CN 16", condutores:"336,4 CAA X 3/0 AWG CA/CAA; 336,4 CAA X 4/0 AWG CA/CAA", a:71, b:50, c:54, d:15 },
+    { item:9,  cartucho:"AZUL",     codigo:"124000042", tipo:"CN 17", condutores:"336,4 CAA X 2 AWG CA/CAA; 336,4 CAA X 1/0 AWG CA/CAA; 336,4 CAA X 2/0 AWG CA/CAA", a:71, b:50, c:54, d:15 },
+    { item:10, cartucho:"AZUL",     codigo:"124000043", tipo:"CN 18", condutores:"336,4 CAA X 6 AWG CA/CAA; 336,4 CAA X 4 AWG CA/CAA", a:71, b:50, c:54, d:15 },
+    { item:11, cartucho:"AZUL",     codigo:"124000044", tipo:"CN 2",  condutores:"336,4 MCM CA X 336,4 MCM CA; 150 mm² CA X 150 mm² CA; 185 mm² CA X 185 mm² CA; 336,4 MCM CA X 150-185 mm² CA", a:null, b:null, c:null, d:null },
+    { item:12, cartucho:"AZUL",     codigo:"124000045", tipo:"CN 3",  condutores:"336,4 MCM CA X 2/0 AWG CA/CAA; 336,4 MCM CA X 3/0 AWG CA/CAA; 336,4 MCM CA X 4/0 AWG CA/CAA", a:null, b:null, c:null, d:null },
+    { item:13, cartucho:"AZUL",     codigo:"124000046", tipo:"CN 4",  condutores:"336,4 MCM CA X 2 AWG CA/CAA; 336,4 MCM CA X 1/0 AWG CA/CAA; 150 mm² CA X 70 mm²; 185 mm² CA X 35 mm²; 185 mm² CA X 50 mm²; 185 mm² CA X 70 mm²; 336,4 MCM CA X 35-50-70 mm² CA", a:68, b:51, c:54, d:15 },
+    { item:14, cartucho:"AZUL",     codigo:"124000047", tipo:"CN 5",  condutores:"336,4 MCM CA X 6 AWG CA/CAA; 336,4 MCM CA X 4 AWG CA/CAA", a:null, b:null, c:null, d:null },
+    { item:15, cartucho:"AZUL",     codigo:"124000048", tipo:"CN 6",  condutores:"4/0 AWG CA/CAA X 2 AWG CA/CAA; 4/0 AWG CA/CAA X 1/0 AWG CA/CAA; 4/0 AWG CA/CAA X 2/0 AWG CA/CAA; 3/0 AWG CA/CAA X 1/0 AWG CA/CAA; 3/0 AWG CA/CAA X 2 AWG CA/CAA; 3/0 AWG CA/CAA X 3/0 AWG CA/CAA; 150 mm² CA X 35 mm²; 150 mm² CA X 50 mm²; 4/0 AWG CA/CAA X 35-50-70 mm²", a:67, b:42, c:51, d:13 },
+    { item:16, cartucho:"AMARELO",  codigo:"124000049", tipo:"CN 7",  condutores:"477 MCM CAA X 4-2 AWG CA/CAA; 477 MCM CAA X 1/0 AWG CA/CAA; 477 MCM CAA X 2/0 AWG CA/CAA", a:null, b:null, c:null, d:null },
+    { item:17, cartucho:"AMARELO",  codigo:"124000091", tipo:"CN 8",  condutores:"477 MCM CAA X 3/0 AWG CA/CAA; 477 MCM CAA X 4/0 AWG CA/CAA", a:null, b:null, c:null, d:null },
+    { item:18, cartucho:"AMARELO",  codigo:"124000051", tipo:"CN 9",  condutores:"477 MCM CAA X 336,4 MCM CA/CAA; 477 MCM CAA X 477 MCM CAA", a:null, b:null, c:null, d:null },
+    { item:19, cartucho:"AMARELO",  codigo:"124000065", tipo:"CN 50", condutores:"636 MCM CAA X 636 MCM CAA; RAIL X CANTON", a:100, b:74, c:90, d:21 },
+    { item:20, cartucho:"AMARELO",  codigo:"124000086", tipo:"CN 49", condutores:"795 MCM CAA X 336,4 MCM CA; 636 MCM CAA X 336,4 MCM CA", a:null, b:null, c:null, d:null },
+    { item:21, cartucho:"AMARELO",  codigo:"124000089", tipo:"CN 51", condutores:"927,2 MCM CAA X 927,2 MCM CAL; 954 MCM CA/CAA X 954 MCM CA/CAA; RAIL X FLINT", a:null, b:null, c:null, d:null },
+    { item:22, cartucho:"AMARELO",  codigo:"124000144", tipo:"CN 42", condutores:"266,8 MCM CAA X 2/0 AWG CAA; 336,4 MCM CA X 2/0 AWG CA/CAA; 336,4 MCM CAA X 4/0 AWG CA/CAA; 150 mm² CA X 150 mm² CA", a:null, b:null, c:null, d:null },
+  ];
+
+  function cnParsePairs(cond) {
+    return cond.split(';').map(s=>s.trim()).filter(Boolean).map(pair=>{
+      const p = pair.split(' X '); return { a:p[0]?.trim(), b:p[1]?.trim(), raw:pair };
+    });
+  }
+  function cnNorm(s){ return (s||'').toLowerCase().replace(/\s+/g,' ').replace(/[²]/g,'2').trim(); }
+  function cnSort(s){ return s.includes('AWG')?'0'+s:s.includes('MCM')?'1'+s:(s.includes('mm²')||s.includes('mm2'))?'2'+s:'3'+s; }
+
+  const cnTodosCabos = new Set();
+  CN_DATA.forEach(c => cnParsePairs(c.condutores).forEach(({a,b})=>{ if(a)cnTodosCabos.add(a); if(b)cnTodosCabos.add(b); }));
+  const cnCabosOrd = [...cnTodosCabos].sort((a,b)=>cnSort(a).localeCompare(cnSort(b)));
+
+  const cnSelA = document.getElementById('cn_selA');
+  const cnSelB = document.getElementById('cn_selB');
+
+  cnCabosOrd.forEach(cabo=>{
+    [cnSelA, cnSelB].forEach(sel=>{ const o=document.createElement('option'); o.value=cabo; o.textContent=cabo; sel.appendChild(o); });
+  });
+
+  function cnSelecionarA(){ cnRender(); }
+  function cnSelecionarB(){ cnRender(); }
+
+  function cnRender(){
+    const caboA = cnSelA.value;
+    const caboB = cnSelB.value;
+    const el = document.getElementById('cn_results');
+    if (!caboA && !caboB){ el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;">⚡ selecione o cabo de origem</div>`; return; }
+    const normA = cnNorm(caboA), normB = cnNorm(caboB);
+    const badgeStyle = { VERMELHO:'background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)', AZUL:'background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)', AMARELO:'background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)' };
+
+    const matches = [];
+    CN_DATA.forEach(c=>{
+      const pares = cnParsePairs(c.condutores).filter(({a,b})=>{
+        const na=cnNorm(a), nb=cnNorm(b);
+        if (caboA && caboB) return (na===normA&&nb===normB)||(na===normB&&nb===normA);
+        if (caboA) return na===normA||nb===normA;
+        if (caboB) return na===normB||nb===normB;
+        return false;
+      });
+      if (pares.length) matches.push({c, pares});
+    });
+
+    if (!matches.length){ el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.8rem;">Nenhum conector encontrado para esta combinação</div>`; return; }
+
+    el.innerHTML = `
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+        <span style="color:var(--accent)">${caboA||'—'}</span>
+        ${caboB?`<span>×</span><span style="color:var(--accent)">${caboB}</span>`:''}
+        <span style="margin-left:4px;">${matches.length} conector${matches.length!==1?'es':''}</span>
+        <span style="flex:1;height:1px;background:var(--border);display:block;"></span>
+      </div>
+      <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Tipo / Cód.</th>
+          <th>Cartucho</th>
+          <th>Par</th>
+          <th>Dim (mm)</th>
+        </tr></thead>
+        <tbody>
+          ${matches.map(({c, pares})=>{
+            const bs = badgeStyle[c.cartucho]||'';
+            const dims = (c.a||c.b||c.c||c.d)
+              ? ['a','b','c','d'].map(l=>`<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:'DM Mono',monospace;font-size:0.72rem;">${l.toUpperCase()} <strong>${c[l]}</strong></span>`).join(' ')
+              : `<span style="color:var(--muted);font-size:0.72rem;font-family:'DM Mono',monospace;">N/D</span>`;
+            const rows = pares.map(({raw})=>`<div style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--text);padding:2px 0;">→ ${raw}</div>`).join('');
+            return `<tr>
+              <td><div style="font-weight:700;font-size:1rem;color:var(--accent)">${c.tipo}</div><div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-top:2px;">${c.codigo}</div></td>
+              <td><span style="display:inline-block;border-radius:4px;padding:3px 9px;font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:700;letter-spacing:1px;${bs}">${c.cartucho}</span></td>
+              <td>${rows}</td>
+              <td>${dims}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>`;
+  }
+
+  window.cnSelecionarA = cnSelecionarA;
+  window.cnSelecionarB = cnSelecionarB;
+  window.cnLimpar = function(){ cnSelA.value=''; cnSelB.value=''; cnRender(); };
+})();
 </script>
 
 <!-- TAB: KANBAN -->

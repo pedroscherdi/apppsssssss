@@ -161,9 +161,11 @@ const firebaseConfig = {
         loginScreen.style.display = 'none';
         appContent.style.display  = 'flex';
         userInfo.innerHTML = `
-          <img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/>
-          <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${user.email}</span>
-          <button class="btn-ghost" onclick="window._fbSignOut()" style="font-size:0.7rem;padding:0.25rem 0.6rem;width:100%;margin-top:0.25rem;">Sair</button>
+          <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;">${user.displayName || user.email}</span>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/>
+            <button class="btn-ghost" onclick="window._fbSignOut()" style="font-size:0.7rem;padding:0.25rem 0.6rem;flex:1;">Sair</button>
+          </div>
         `;
         if (typeof loadFromSheets === 'function') loadFromSheets();
       } else {
@@ -418,7 +420,7 @@ const firebaseConfig = {
       .main-content {
         margin-left: 0;
         padding: 1rem 0.9rem;
-        padding-top: env(safe-area-inset-top, 0px);
+        padding-top: max(1rem, env(safe-area-inset-top, 1rem));
       }
       .mob-menu-btn { display: flex !important; }
       .mob-topbar-inner { display: flex !important; }
@@ -1283,7 +1285,10 @@ const firebaseConfig = {
     /* ══ FIM TAB: CAMPO ══════════════════════════════════════════════ */
 
     /* ══ TAB: MAPA POSTES ════════════════════════════════════════════ */
-    #mapa-leaflet { width:100%; height:500px; border-radius:var(--radius); border:1px solid var(--border); }
+    #mapa-leaflet, #equip-leaflet { width:100%; height:500px; border-radius:var(--radius); border:1px solid var(--border); }
+    @media (max-width: 700px) {
+      #mapa-leaflet, #equip-leaflet { height:320px; }
+    }
     .mapa-search-wrap { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
     .mapa-search-wrap input {
       flex:1; min-width:180px;
@@ -1443,7 +1448,7 @@ const firebaseConfig = {
       <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0119 12.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.56 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
       Modo offline
     </div>
-    <div id="userInfo" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;"></div>
+    <div id="userInfo" style="display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.5rem;"></div>
     <button class="theme-toggle" id="themeToggle" style="width:100%;justify-content:center;">🌙 Escuro</button>
   </div>
 </nav>
@@ -4027,7 +4032,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 
     <!-- Mapa Leaflet equipamentos -->
     <div id="equip-mapa-wrap" style="display:none;margin-top:1.25rem;">
-      <div id="equip-leaflet" style="height:340px;border-radius:var(--radius);border:1px solid var(--border);"></div>
+      <div id="equip-leaflet" style="height:500px;border-radius:var(--radius);border:1px solid var(--border);"></div>
     </div>
 
     <!-- Tabela múltiplos resultados -->

@@ -239,7 +239,8 @@ const firebaseConfig = {
       height: 100vh;
       position: fixed;
       left: 0; top: 0;
-      z-index: 200;
+      z-index: 2000;
+      isolation: isolate;
       overflow-y: auto;
       overflow-x: hidden;
     }
@@ -403,7 +404,7 @@ const firebaseConfig = {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.55);
-      z-index: 199;
+      z-index: 1999;
       backdrop-filter: blur(2px);
     }
     .sidebar-overlay.open { display: block; }
@@ -1286,6 +1287,28 @@ const firebaseConfig = {
 
     /* ══ TAB: MAPA POSTES ════════════════════════════════════════════ */
     #mapa-leaflet, #equip-leaflet { width:100%; height:500px; border-radius:var(--radius); border:1px solid var(--border); }
+    #mapa-leaflet .leaflet-pane,
+    #equip-leaflet .leaflet-pane { z-index: auto; }
+    #mapa-leaflet .leaflet-top,
+    #mapa-leaflet .leaflet-bottom,
+    #equip-leaflet .leaflet-top,
+    #equip-leaflet .leaflet-bottom { z-index: 400; }
+    /* Força todos os elementos do Leaflet abaixo do sidebar */
+    .leaflet-container,
+    .leaflet-pane,
+    .leaflet-tile-pane,
+    .leaflet-overlay-pane,
+    .leaflet-shadow-pane,
+    .leaflet-marker-pane,
+    .leaflet-tooltip-pane,
+    .leaflet-popup-pane,
+    .leaflet-top,
+    .leaflet-bottom,
+    .leaflet-control-container { z-index: auto !important; }
+    .leaflet-top.leaflet-left,
+    .leaflet-top.leaflet-right,
+    .leaflet-bottom.leaflet-left,
+    .leaflet-bottom.leaflet-right { z-index: 400 !important; }
     @media (max-width: 700px) {
       #mapa-leaflet, #equip-leaflet { height:320px; }
     }
@@ -3826,7 +3849,26 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.head.appendChild(link);
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-    script.onload = () => { leafletLoaded = true; cb(); };
+    script.onload = () => {
+      leafletLoaded = true;
+      // Override z-indexes do Leaflet para não tapar a sidebar
+      if (!document.getElementById('leaflet-zindex-fix')) {
+        const s = document.createElement('style');
+        s.id = 'leaflet-zindex-fix';
+        s.textContent = `
+          .leaflet-pane { z-index: auto !important; }
+          .leaflet-tile-pane { z-index: 200 !important; }
+          .leaflet-overlay-pane { z-index: 300 !important; }
+          .leaflet-shadow-pane { z-index: 400 !important; }
+          .leaflet-marker-pane { z-index: 500 !important; }
+          .leaflet-tooltip-pane { z-index: 550 !important; }
+          .leaflet-popup-pane { z-index: 600 !important; }
+          .leaflet-top, .leaflet-bottom { z-index: 700 !important; }
+        `;
+        document.head.appendChild(s);
+      }
+      cb();
+    };
     document.head.appendChild(script);
   }
 
@@ -4078,7 +4120,25 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.head.appendChild(link);
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-    script.onload = () => { equipLeafletLoaded = true; cb(); };
+    script.onload = () => {
+      equipLeafletLoaded = true;
+      if (!document.getElementById('leaflet-zindex-fix')) {
+        const s = document.createElement('style');
+        s.id = 'leaflet-zindex-fix';
+        s.textContent = `
+          .leaflet-pane { z-index: auto !important; }
+          .leaflet-tile-pane { z-index: 200 !important; }
+          .leaflet-overlay-pane { z-index: 300 !important; }
+          .leaflet-shadow-pane { z-index: 400 !important; }
+          .leaflet-marker-pane { z-index: 500 !important; }
+          .leaflet-tooltip-pane { z-index: 550 !important; }
+          .leaflet-popup-pane { z-index: 600 !important; }
+          .leaflet-top, .leaflet-bottom { z-index: 700 !important; }
+        `;
+        document.head.appendChild(s);
+      }
+      cb();
+    };
     document.head.appendChild(script);
   }
 

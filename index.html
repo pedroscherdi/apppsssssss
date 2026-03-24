@@ -4026,6 +4026,11 @@ document.querySelectorAll('.tab').forEach(btn => {
       </div>
     </div>
 
+    <!-- Mapa Leaflet equipamentos -->
+    <div id="equip-mapa-wrap" style="display:none;margin-top:1.25rem;">
+      <div id="equip-leaflet" style="height:340px;border-radius:var(--radius);border:1px solid var(--border);"></div>
+    </div>
+
     <!-- Tabela múltiplos resultados -->
     <div id="equip-tabela-wrap" style="display:none;margin-top:1.25rem;">
       <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;" id="equip-tabela-label"></div>
@@ -4053,12 +4058,35 @@ document.querySelectorAll('.tab').forEach(btn => {
 <script>
 (function() {
   const EQUIP_ABA = 'EQUIPAMENTOS';
-  // Colunas: A=Alimentador(0), B=?(1), C=ITEM(2), D=NOME(3), E=?(4), F=LAT(5), G=LONG(6)
-  // Vamos usar: D=número, A=alimentador, C=icone/tipo, D=nome (col D é NOME, C é ITEM)
-  // Estrutura real da planilha: A=alimentador, B=?, C=ITEM(iconeFACA...), D=NOME(número/id), E=tipo(Ponto), F=LAT, G=LONG
 
   let equipDados = [];
   let equipCarregado = false;
+  let equipLeafletLoaded = false;
+  let equipMap = null;
+  let equipMarker = null;
+
+  function carregarEquipLeaflet(cb) {
+    if (equipLeafletLoaded) { cb(); return; }
+    if (typeof L !== 'undefined') { equipLeafletLoaded = true; cb(); return; }
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    script.onload = () => { equipLeafletLoaded = true; cb(); };
+    document.head.appendChild(script);
+  }
+
+  function initEquipMapa() {
+    if (equipMap) return;
+    const el = document.getElementById('equip-leaflet');
+    if (!el) return;
+    equipMap = L.map('equip-leaflet').setView([-31.7654, -52.3376], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(equipMap);
+  }
 
   function tipoLabel(icone) {
     if (!icone) return { label: 'Desconhecido', emoji: '❓' };
@@ -4078,7 +4106,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       const url = `${BASE_URL}/values/${encodeURIComponent(EQUIP_ABA)}!A:G?key=${API_KEY}`;
       const res = await fetch(url);
       const json = await res.json();
-      const rows = (json.values || []).slice(1); // pula cabeçalho
+      const rows = (json.values || []).slice(1);
       equipDados = rows.map(r => ({
         alimentador: (r[0] || '').trim(),
         icone:       (r[2] || '').trim(),
@@ -4101,25 +4129,27 @@ document.querySelectorAll('.tab').forEach(btn => {
     const dd = document.getElementById('equip-dropdown');
     document.getElementById('equip-card').style.display = 'none';
     document.getElementById('equip-tabela-wrap').style.display = 'none';
+    document.getElementById('equip-mapa-wrap').style.display = 'none';
     if (!val || val.length < 2) { dd.style.display = 'none'; return; }
     const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val)).slice(0, 12);
     if (!matches.length) { dd.style.display = 'none'; return; }
     dd.innerHTML = matches.map(e => {
       const t = tipoLabel(e.icone);
-      return `<div onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}', '${e.alimentador.replace(/'/g,"\\'")}', '${e.icone.replace(/'/g,"\\'")}', '${e.tipo.replace(/'/g,"\\'")}')"`
-        + ` style="padding:0.5rem 0.9rem;cursor:pointer;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.8rem;display:flex;gap:0.6rem;align-items:center;">`
-        + `<span>${t.emoji}</span>`
-        + `<span style="color:var(--accent);font-weight:700;">${e.nome}</span>`
-        + `<span style="color:var(--muted);font-size:0.72rem;">${e.alimentador} · ${t.label}</span>`
-        + `</div>`;
+      return `<div onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}','${e.lat}','${e.lng}')"
+        style="padding:0.5rem 0.9rem;cursor:pointer;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.8rem;display:flex;gap:0.6rem;align-items:center;"
+        onmouseover="this.style.background='rgba(0,230,118,0.08)'" onmouseout="this.style.background=''">
+        <span>${t.emoji}</span>
+        <span style="color:var(--accent);font-weight:700;">${e.nome}</span>
+        <span style="color:var(--muted);font-size:0.72rem;">${e.alimentador} · ${t.label}</span>
+      </div>`;
     }).join('');
     dd.style.display = 'block';
   };
 
-  window.equipSelecionar = function(nome, alim, icone, tipo) {
+  window.equipSelecionar = function(nome, alim, icone, tipo, lat, lng) {
     document.getElementById('equip-input').value = nome;
     document.getElementById('equip-dropdown').style.display = 'none';
-    mostrarCard(nome, alim, icone, tipo);
+    mostrarCard(nome, alim, icone, tipo, lat, lng);
   };
 
   window.equipBuscar = function() {
@@ -4127,6 +4157,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('equip-dropdown').style.display = 'none';
     document.getElementById('equip-card').style.display = 'none';
     document.getElementById('equip-tabela-wrap').style.display = 'none';
+    document.getElementById('equip-mapa-wrap').style.display = 'none';
     if (!val) return;
     const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val));
     if (!matches.length) {
@@ -4137,13 +4168,13 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('equip-status').textContent = '';
     if (matches.length === 1) {
       const e = matches[0];
-      mostrarCard(e.nome, e.alimentador, e.icone, e.tipo);
+      mostrarCard(e.nome, e.alimentador, e.icone, e.tipo, e.lat, e.lng);
     } else {
       mostrarTabela(matches);
     }
   };
 
-  function mostrarCard(nome, alim, icone, tipo) {
+  function mostrarCard(nome, alim, icone, tipo, lat, lng) {
     const t = tipoLabel(icone);
     document.getElementById('equip-num').textContent  = nome;
     document.getElementById('equip-alim').textContent = alim || '—';
@@ -4151,32 +4182,66 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('equip-nome').textContent = tipo || '—';
     document.getElementById('equip-card').style.display = 'block';
     document.getElementById('equip-tabela-wrap').style.display = 'none';
+
+    // Mapa
+    const latN = parseFloat(String(lat).replace(',', '.'));
+    const lngN = parseFloat(String(lng).replace(',', '.'));
+    if (!isNaN(latN) && !isNaN(lngN) && latN !== 0 && lngN !== 0) {
+      document.getElementById('equip-mapa-wrap').style.display = 'block';
+      carregarEquipLeaflet(() => {
+        setTimeout(() => {
+          initEquipMapa();
+          equipMap.invalidateSize();
+          if (equipMarker) equipMap.removeLayer(equipMarker);
+          const popup = `<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;
+          equipMarker = L.marker([latN, lngN]).addTo(equipMap).bindPopup(popup).openPopup();
+          equipMap.setView([latN, lngN], 17);
+        }, 80);
+      });
+    } else {
+      document.getElementById('equip-mapa-wrap').style.display = 'none';
+    }
   }
 
   function mostrarTabela(lista) {
-    document.getElementById('equip-tabela-label').textContent = `${lista.length} equipamentos encontrados:`;
-    const tbody = document.getElementById('equip-tbody');
-    tbody.innerHTML = lista.map(e => {
-      const t = tipoLabel(e.icone);
-      return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}')">
-        <td style="padding:0.55rem 0.9rem;color:var(--accent);font-weight:700;">${e.nome}</td>
-        <td style="padding:0.55rem 0.9rem;">${e.alimentador || '—'}</td>
-        <td style="padding:0.55rem 0.9rem;">${t.emoji} ${t.label}</td>
-        <td style="padding:0.55rem 0.9rem;color:var(--muted);font-size:0.8rem;">${e.tipo || '—'}</td>
-      </tr>`;
-    }).join('');
-    document.getElementById('equip-tabela-wrap').style.display = 'block';
+    const wrap = document.getElementById('equip-tabela-wrap');
+    wrap.innerHTML = `
+      <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;">${lista.length} equipamentos encontrados:</div>
+      <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+          <thead>
+            <tr style="background:var(--surface);">
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Número</th>
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Alimentador</th>
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Tipo</th>
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Nome</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${lista.map(e => {
+              const t = tipoLabel(e.icone);
+              return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}','${e.lat}','${e.lng}')"
+                onmouseover="this.style.background='rgba(0,230,118,0.05)'" onmouseout="this.style.background=''">
+                <td style="padding:0.55rem 0.9rem;color:var(--accent);font-weight:700;">${e.nome}</td>
+                <td style="padding:0.55rem 0.9rem;">${e.alimentador || '—'}</td>
+                <td style="padding:0.55rem 0.9rem;">${t.emoji} ${t.label}</td>
+                <td style="padding:0.55rem 0.9rem;color:var(--muted);font-size:0.8rem;">${e.tipo || '—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    wrap.style.display = 'block';
     document.getElementById('equip-card').style.display = 'none';
+    document.getElementById('equip-mapa-wrap').style.display = 'none';
   }
 
-  // Carrega quando a aba for aberta
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.dataset.tab === 'equipamentos') carregarEquip();
       });
     });
-    // Fecha dropdown ao clicar fora
     document.addEventListener('click', e => {
       const dd = document.getElementById('equip-dropdown');
       const inp = document.getElementById('equip-input');
@@ -4184,7 +4249,6 @@ document.querySelectorAll('.tab').forEach(btn => {
         dd.style.display = 'none';
       }
     });
-    // Enter no input
     const inp = document.getElementById('equip-input');
     if (inp) inp.addEventListener('keydown', e => {
       if (e.key === 'Enter') equipBuscar();

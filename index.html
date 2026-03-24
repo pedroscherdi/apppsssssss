@@ -1425,6 +1425,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
     <button class="tab" data-tab="campo"><span class="tab-icon">📎</span> Campo</button>
     <button class="tab" data-tab="mapa"><span class="tab-icon">🗺️</span> Mapa Postes</button>
+    <button class="tab" data-tab="equipamentos"><span class="tab-icon">⚙️</span> Equipamentos</button>
 
     <!-- Divisor -->
     <div style="height:1px;background:var(--border);margin:0.5rem 0.3rem;"></div>
@@ -2250,6 +2251,7 @@ const firebaseConfig = {
     'kanban':      'Kanban',
     'campo':       'Campo',
     'mapa':        'Mapa Postes',
+    'equipamentos':'Equipamentos',
     'quem-somos':  'Quem Somos',
   };
 
@@ -3961,6 +3963,232 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (inp) inp.addEventListener('keydown', e => {
       if (e.key === 'Enter') window.mapaBuscarPoste();
       if (e.key === 'Escape') document.getElementById('mapa-dropdown').style.display = 'none';
+    });
+  });
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: EQUIPAMENTOS                                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-equipamentos">
+  <div style="max-width:860px;margin:0 auto;">
+
+    <div style="margin-bottom:1.5rem;">
+      <h1 style="font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+        Consulta de <span style="color:var(--accent)">Equipamentos</span>
+      </h1>
+      <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+        Busca por número do equipamento · Google Sheets
+      </p>
+    </div>
+
+    <!-- Barra de busca -->
+    <div style="display:flex;gap:0.5rem;align-items:center;position:relative;">
+      <input type="text" id="equip-input"
+        placeholder="Digite o número do equipamento..."
+        autocomplete="off"
+        oninput="equipFiltrar()"
+        style="flex:1;padding:0.6rem 1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;"
+      />
+      <button class="btn" onclick="equipBuscar()">🔍 Buscar</button>
+      <div id="equip-dropdown"
+        style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:80px;
+               background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);
+               max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div id="equip-status" style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);">
+      Carregando equipamentos...
+    </div>
+
+    <!-- Card resultado -->
+    <div id="equip-card" style="display:none;margin-top:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Número</div>
+          <div id="equip-num" style="font-weight:700;font-size:1.1rem;color:var(--accent);">—</div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Alimentador</div>
+          <div id="equip-alim" style="font-weight:600;font-size:1rem;">—</div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Tipo</div>
+          <div id="equip-tipo" style="font-weight:600;font-size:1rem;display:flex;align-items:center;gap:0.4rem;">—</div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Nome</div>
+          <div id="equip-nome" style="font-weight:600;font-size:1rem;">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela múltiplos resultados -->
+    <div id="equip-tabela-wrap" style="display:none;margin-top:1.25rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;" id="equip-tabela-label"></div>
+      <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
+        <table id="equip-tabela" style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+          <thead>
+            <tr style="background:var(--surface);">
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Número</th>
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Alimentador</th>
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Tipo</th>
+              <th style="padding:0.6rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Nome</th>
+            </tr>
+          </thead>
+          <tbody id="equip-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
+      ⚙️ Dados carregados da aba "EQUIPAMENTOS" do Google Sheets
+    </div>
+  </div>
+</div><!-- /tab-equipamentos -->
+
+<script>
+(function() {
+  const EQUIP_ABA = 'EQUIPAMENTOS';
+  // Colunas: A=Alimentador(0), B=?(1), C=ITEM(2), D=NOME(3), E=?(4), F=LAT(5), G=LONG(6)
+  // Vamos usar: D=número, A=alimentador, C=icone/tipo, D=nome (col D é NOME, C é ITEM)
+  // Estrutura real da planilha: A=alimentador, B=?, C=ITEM(iconeFACA...), D=NOME(número/id), E=tipo(Ponto), F=LAT, G=LONG
+
+  let equipDados = [];
+  let equipCarregado = false;
+
+  function tipoLabel(icone) {
+    if (!icone) return { label: 'Desconhecido', emoji: '❓' };
+    const ic = icone.toUpperCase();
+    if (ic.includes('FACA'))   return { label: 'Faca',          emoji: '🔪' };
+    if (ic.includes('FUSIV') || ic.includes('FUSI')) return { label: 'Fusível', emoji: '⚡' };
+    if (ic.includes('TRANS'))  return { label: 'Transformador', emoji: '🔌' };
+    if (ic.includes('CHAVE'))  return { label: 'Chave',         emoji: '🔑' };
+    if (ic.includes('RELIGAD')) return { label: 'Religador',    emoji: '🔄' };
+    return { label: icone, emoji: '⚙️' };
+  }
+
+  async function carregarEquip() {
+    if (equipCarregado) return;
+    const status = document.getElementById('equip-status');
+    try {
+      const url = `${BASE_URL}/values/${encodeURIComponent(EQUIP_ABA)}!A:G?key=${API_KEY}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const rows = (json.values || []).slice(1); // pula cabeçalho
+      equipDados = rows.map(r => ({
+        alimentador: (r[0] || '').trim(),
+        icone:       (r[2] || '').trim(),
+        nome:        (r[3] || '').trim(),
+        tipo:        (r[4] || '').trim(),
+        lat:         (r[5] || '').trim(),
+        lng:         (r[6] || '').trim(),
+      })).filter(r => r.nome);
+      equipCarregado = true;
+      status.textContent = `${equipDados.length} equipamentos carregados. Digite para buscar.`;
+      status.style.color = 'var(--accent)';
+    } catch(e) {
+      status.textContent = 'Erro ao carregar equipamentos.';
+      status.style.color = '#e55';
+    }
+  }
+
+  window.equipFiltrar = function() {
+    const val = (document.getElementById('equip-input').value || '').trim().toUpperCase();
+    const dd = document.getElementById('equip-dropdown');
+    document.getElementById('equip-card').style.display = 'none';
+    document.getElementById('equip-tabela-wrap').style.display = 'none';
+    if (!val || val.length < 2) { dd.style.display = 'none'; return; }
+    const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val)).slice(0, 12);
+    if (!matches.length) { dd.style.display = 'none'; return; }
+    dd.innerHTML = matches.map(e => {
+      const t = tipoLabel(e.icone);
+      return `<div onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}', '${e.alimentador.replace(/'/g,"\\'")}', '${e.icone.replace(/'/g,"\\'")}', '${e.tipo.replace(/'/g,"\\'")}')"`
+        + ` style="padding:0.5rem 0.9rem;cursor:pointer;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.8rem;display:flex;gap:0.6rem;align-items:center;">`
+        + `<span>${t.emoji}</span>`
+        + `<span style="color:var(--accent);font-weight:700;">${e.nome}</span>`
+        + `<span style="color:var(--muted);font-size:0.72rem;">${e.alimentador} · ${t.label}</span>`
+        + `</div>`;
+    }).join('');
+    dd.style.display = 'block';
+  };
+
+  window.equipSelecionar = function(nome, alim, icone, tipo) {
+    document.getElementById('equip-input').value = nome;
+    document.getElementById('equip-dropdown').style.display = 'none';
+    mostrarCard(nome, alim, icone, tipo);
+  };
+
+  window.equipBuscar = function() {
+    const val = (document.getElementById('equip-input').value || '').trim().toUpperCase();
+    document.getElementById('equip-dropdown').style.display = 'none';
+    document.getElementById('equip-card').style.display = 'none';
+    document.getElementById('equip-tabela-wrap').style.display = 'none';
+    if (!val) return;
+    const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val));
+    if (!matches.length) {
+      document.getElementById('equip-status').textContent = 'Nenhum equipamento encontrado.';
+      document.getElementById('equip-status').style.color = '#e55';
+      return;
+    }
+    document.getElementById('equip-status').textContent = '';
+    if (matches.length === 1) {
+      const e = matches[0];
+      mostrarCard(e.nome, e.alimentador, e.icone, e.tipo);
+    } else {
+      mostrarTabela(matches);
+    }
+  };
+
+  function mostrarCard(nome, alim, icone, tipo) {
+    const t = tipoLabel(icone);
+    document.getElementById('equip-num').textContent  = nome;
+    document.getElementById('equip-alim').textContent = alim || '—';
+    document.getElementById('equip-tipo').innerHTML   = `${t.emoji} ${t.label}`;
+    document.getElementById('equip-nome').textContent = tipo || '—';
+    document.getElementById('equip-card').style.display = 'block';
+    document.getElementById('equip-tabela-wrap').style.display = 'none';
+  }
+
+  function mostrarTabela(lista) {
+    document.getElementById('equip-tabela-label').textContent = `${lista.length} equipamentos encontrados:`;
+    const tbody = document.getElementById('equip-tbody');
+    tbody.innerHTML = lista.map(e => {
+      const t = tipoLabel(e.icone);
+      return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}')">
+        <td style="padding:0.55rem 0.9rem;color:var(--accent);font-weight:700;">${e.nome}</td>
+        <td style="padding:0.55rem 0.9rem;">${e.alimentador || '—'}</td>
+        <td style="padding:0.55rem 0.9rem;">${t.emoji} ${t.label}</td>
+        <td style="padding:0.55rem 0.9rem;color:var(--muted);font-size:0.8rem;">${e.tipo || '—'}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('equip-tabela-wrap').style.display = 'block';
+    document.getElementById('equip-card').style.display = 'none';
+  }
+
+  // Carrega quando a aba for aberta
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'equipamentos') carregarEquip();
+      });
+    });
+    // Fecha dropdown ao clicar fora
+    document.addEventListener('click', e => {
+      const dd = document.getElementById('equip-dropdown');
+      const inp = document.getElementById('equip-input');
+      if (dd && inp && !inp.contains(e.target) && !dd.contains(e.target)) {
+        dd.style.display = 'none';
+      }
+    });
+    // Enter no input
+    const inp = document.getElementById('equip-input');
+    if (inp) inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') equipBuscar();
+      if (e.key === 'Escape') document.getElementById('equip-dropdown').style.display = 'none';
     });
   });
 })();

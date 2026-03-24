@@ -4050,35 +4050,30 @@ document.querySelectorAll('.tab').forEach(btn => {
       Carregando equipamentos...
     </div>
 
-    <!-- Card resultado -->
-    <div id="equip-card" style="display:none;margin-top:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+    <!-- Card resultado (igual ao mapa-info-card do Mapa Postes) -->
+    <div class="mapa-info-card" id="equip-card">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">
         <div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Número</div>
-          <div id="equip-num" style="font-weight:700;font-size:1.1rem;color:var(--accent);">—</div>
+          <div class="mi-label">Número</div>
+          <div class="mi-val accent" id="equip-num">—</div>
         </div>
         <div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Alimentador</div>
-          <div id="equip-alim" style="font-weight:600;font-size:1rem;">—</div>
+          <div class="mi-label">Alimentador</div>
+          <div class="mi-val" id="equip-alim">—</div>
         </div>
         <div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Tipo</div>
-          <div id="equip-tipo" style="font-weight:600;font-size:1rem;display:flex;align-items:center;gap:0.4rem;">—</div>
+          <div class="mi-label">Tipo</div>
+          <div class="mi-val" id="equip-tipo">—</div>
         </div>
         <div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem;">Nome</div>
-          <div id="equip-nome" style="font-weight:600;font-size:1rem;">—</div>
+          <div class="mi-label">Nome</div>
+          <div class="mi-val" id="equip-nome">—</div>
         </div>
       </div>
     </div>
 
-    <!-- Mapa Leaflet equipamentos -->
-    <div id="equip-mapa-wrap" style="display:none;margin-top:1.25rem;">
-      <div id="equip-leaflet" style="height:500px;border-radius:var(--radius);border:1px solid var(--border);"></div>
-    </div>
-
     <!-- Tabela múltiplos resultados -->
-    <div id="equip-tabela-wrap" style="display:none;margin-top:1.25rem;">
+    <div id="equip-tabela-wrap" style="display:none;margin-bottom:1.25rem;">
       <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;" id="equip-tabela-label"></div>
       <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
         <table id="equip-tabela" style="width:100%;border-collapse:collapse;font-size:0.85rem;">
@@ -4095,8 +4090,11 @@ document.querySelectorAll('.tab').forEach(btn => {
       </div>
     </div>
 
-    <div style="margin-top:1rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
-      ⚙️ Dados carregados da aba "EQUIPAMENTOS" do Google Sheets
+    <!-- Mapa Leaflet equipamentos — sempre visível -->
+    <div id="equip-leaflet"></div>
+
+    <div style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
+      ⚙️ Mapa via OpenStreetMap · Dados carregados da aba "EQUIPAMENTOS" do Google Sheets
     </div>
   </div>
 </div><!-- /tab-equipamentos -->
@@ -4164,6 +4162,11 @@ document.querySelectorAll('.tab').forEach(btn => {
   }
 
   async function carregarEquip() {
+    // Inicializa mapa ao abrir a aba (mesmo sem busca)
+    carregarEquipLeaflet(() => {
+      initEquipMapa();
+      if (equipMap) setTimeout(() => equipMap.invalidateSize(), 100);
+    });
     if (equipCarregado) return;
     const status = document.getElementById('equip-status');
     try {
@@ -4191,9 +4194,8 @@ document.querySelectorAll('.tab').forEach(btn => {
   window.equipFiltrar = function() {
     const val = (document.getElementById('equip-input').value || '').trim().toUpperCase();
     const dd = document.getElementById('equip-dropdown');
-    document.getElementById('equip-card').style.display = 'none';
+    document.getElementById('equip-card').classList.remove('visible');
     document.getElementById('equip-tabela-wrap').style.display = 'none';
-    document.getElementById('equip-mapa-wrap').style.display = 'none';
     if (!val || val.length < 2) { dd.style.display = 'none'; return; }
     const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val)).slice(0, 12);
     if (!matches.length) { dd.style.display = 'none'; return; }
@@ -4219,9 +4221,8 @@ document.querySelectorAll('.tab').forEach(btn => {
   window.equipBuscar = function() {
     const val = (document.getElementById('equip-input').value || '').trim().toUpperCase();
     document.getElementById('equip-dropdown').style.display = 'none';
-    document.getElementById('equip-card').style.display = 'none';
+    document.getElementById('equip-card').classList.remove('visible');
     document.getElementById('equip-tabela-wrap').style.display = 'none';
-    document.getElementById('equip-mapa-wrap').style.display = 'none';
     if (!val) return;
     const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val));
     if (!matches.length) {
@@ -4245,26 +4246,18 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('equip-alim').textContent = alim || '—';
     document.getElementById('equip-tipo').innerHTML   = `${t.emoji} ${t.label}`;
     document.getElementById('equip-nome').textContent = tipo || '—';
-    document.getElementById('equip-card').style.display = 'block';
+    document.getElementById('equip-card').classList.add('visible');
     document.getElementById('equip-tabela-wrap').style.display = 'none';
 
-    // Mapa
     const latN = parseFloat(String(lat).replace(',', '.'));
     const lngN = parseFloat(String(lng).replace(',', '.'));
     if (!isNaN(latN) && !isNaN(lngN) && latN !== 0 && lngN !== 0) {
-      document.getElementById('equip-mapa-wrap').style.display = 'block';
-      carregarEquipLeaflet(() => {
-        setTimeout(() => {
-          initEquipMapa();
-          equipMap.invalidateSize();
-          if (equipMarker) equipMap.removeLayer(equipMarker);
-          const popup = `<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;
-          equipMarker = L.marker([latN, lngN]).addTo(equipMap).bindPopup(popup).openPopup();
-          equipMap.setView([latN, lngN], 17);
-        }, 80);
-      });
-    } else {
-      document.getElementById('equip-mapa-wrap').style.display = 'none';
+      if (equipMap) {
+        if (equipMarker) equipMap.removeLayer(equipMarker);
+        const popup = `<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;
+        equipMarker = L.marker([latN, lngN]).addTo(equipMap).bindPopup(popup).openPopup();
+        equipMap.setView([latN, lngN], 17);
+      }
     }
   }
 
@@ -4297,8 +4290,7 @@ document.querySelectorAll('.tab').forEach(btn => {
         </table>
       </div>`;
     wrap.style.display = 'block';
-    document.getElementById('equip-card').style.display = 'none';
-    document.getElementById('equip-mapa-wrap').style.display = 'none';
+    document.getElementById('equip-card').classList.remove('visible');
   }
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -967,10 +967,17 @@ const firebaseConfig = {
       padding-top: 1.25rem;
       border-top: 1px solid var(--border);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-start;
       gap: 0.5rem;
+    }
+
+    @media (min-width: 600px) {
+      footer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
     }
 
     .footer-name {
@@ -1052,7 +1059,7 @@ const firebaseConfig = {
       .sheets-status { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
       .results-header { flex-direction: column; align-items: flex-start; }
       .results-header > div:last-child { flex-wrap: wrap; }
-      footer { flex-direction: column; gap: 0.5rem; text-align: center; align-items: center; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: left; align-items: flex-start; }
       .info-card { font-size: 0.82rem; }
       .toast { left: 1rem; right: 1rem; bottom: 1rem; max-width: 100%; }
       .mapper { padding: 1rem; }
@@ -2243,14 +2250,13 @@ const firebaseConfig = {
   <div>
     <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Criado por</div>
     <span class="footer-name">Pedro Scherdien</span>
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:3px;">
+      SetupBoom © 2025 · <span style="color:var(--accent);letter-spacing:0.05em;">Técnico PCP 2</span>
+    </div>
   </div>
   <div class="footer-contact">
     <span>📱</span>
     <a href="https://wa.me/5553984742332" target="_blank">(53) 98474-2332</a>
-  </div>
-  <div style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);text-align:right;line-height:1.6;">
-    SetupBoom © 2025<br/>
-    <span style="color:var(--accent);letter-spacing:0.05em;">Técnico PCP 2 </span>
   </div>
 </footer>
 

@@ -355,6 +355,9 @@ const firebaseConfig = {
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+    @media (max-width: 700px) {
+      .tab-panel.active { padding-top: 0.5rem; }
+    }
 
     /* ── MOBILE TOPBAR ────────────────────────────────────────────────── */
     .mob-menu-btn {
@@ -1312,9 +1315,9 @@ const firebaseConfig = {
     @media (max-width: 700px) {
       #mapa-leaflet, #equip-leaflet { height:320px; }
     }
-    .mapa-search-wrap { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
+    .mapa-search-wrap { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:nowrap; }
     .mapa-search-wrap input {
-      flex:1; min-width:180px;
+      flex:1; min-width:0;
       background:var(--surface); border:1px solid var(--border);
       color:var(--text); border-radius:var(--radius);
       padding:0.7rem 1rem; font-family:'DM Mono',monospace; font-size:0.9rem;
@@ -3374,7 +3377,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   <div style="max-width:860px;margin:0 auto;">
 
     <div style="margin-bottom:1.5rem;">
-      <h1 style="font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
         Mapa de <span style="color:var(--accent)">Postes</span>
       </h1>
       <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
@@ -3384,7 +3387,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
     <!-- Barra de busca com autocomplete -->
     <div class="mapa-search-wrap" style="position:relative;">
-      <input type="text" id="mapa-input" placeholder="Digite o número do poste..." autocomplete="off" oninput="window.mapaFiltrar()" />
+      <input type="text" id="mapa-input" placeholder="Nº do poste..." autocomplete="off" oninput="window.mapaFiltrar()" />
       <button class="btn" onclick="window.mapaBuscarPoste()">🔍 Localizar</button>
       <div id="mapa-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
     </div>
@@ -4022,7 +4025,7 @@ document.querySelectorAll('.tab').forEach(btn => {
   <div style="max-width:860px;margin:0 auto;">
 
     <div style="margin-bottom:1.5rem;">
-      <h1 style="font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
         Consulta de <span style="color:var(--accent)">Equipamentos</span>
       </h1>
       <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
@@ -4033,7 +4036,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     <!-- Barra de busca -->
     <div class="mapa-search-wrap" style="position:relative;">
       <input type="text" id="equip-input"
-        placeholder="Digite o número do equipamento..."
+        placeholder="Nº do equipamento..."
         autocomplete="off"
         oninput="equipFiltrar()"
       />

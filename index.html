@@ -3984,23 +3984,22 @@ document.querySelectorAll('.tab').forEach(btn => {
     </div>
 
     <!-- Barra de busca -->
-    <div style="display:flex;gap:0.5rem;align-items:center;position:relative;">
+    <div class="mapa-search-wrap" style="position:relative;">
       <input type="text" id="equip-input"
         placeholder="Digite o número do equipamento..."
         autocomplete="off"
         oninput="equipFiltrar()"
-        style="flex:1;padding:0.6rem 1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;outline:none;"
       />
       <button class="btn" onclick="equipBuscar()">🔍 Buscar</button>
       <div id="equip-dropdown"
-        style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:80px;
+        style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
                background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);
                max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
       </div>
     </div>
 
     <!-- Status -->
-    <div id="equip-status" style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);">
+    <div class="mapa-status" id="equip-status">
       Carregando equipamentos...
     </div>
 
@@ -4117,10 +4116,10 @@ document.querySelectorAll('.tab').forEach(btn => {
       })).filter(r => r.nome);
       equipCarregado = true;
       status.textContent = `${equipDados.length} equipamentos carregados. Digite para buscar.`;
-      status.style.color = 'var(--accent)';
+      status.className = 'mapa-status ok';
     } catch(e) {
       status.textContent = 'Erro ao carregar equipamentos.';
-      status.style.color = '#e55';
+      status.className = 'mapa-status erro';
     }
   }
 
@@ -4162,10 +4161,11 @@ document.querySelectorAll('.tab').forEach(btn => {
     const matches = equipDados.filter(e => e.nome.toUpperCase().includes(val));
     if (!matches.length) {
       document.getElementById('equip-status').textContent = 'Nenhum equipamento encontrado.';
-      document.getElementById('equip-status').style.color = '#e55';
+      document.getElementById('equip-status').className = 'mapa-status erro';
       return;
     }
     document.getElementById('equip-status').textContent = '';
+    document.getElementById('equip-status').className = 'mapa-status';
     if (matches.length === 1) {
       const e = matches[0];
       mostrarCard(e.nome, e.alimentador, e.icone, e.tipo, e.lat, e.lng);

@@ -4179,11 +4179,13 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (equipCarregado) return;
     const status = document.getElementById('equip-status');
     try {
-      const url = `${BASE_URL}/values/${encodeURIComponent(EQUIP_ABA)}!A:G?key=${API_KEY}`;
+      const url = `${BASE_URL}/values/${encodeURIComponent(EQUIP_ABA)}!A:U?key=${API_KEY}`;
       const res = await fetch(url);
       const json = await res.json();
       const rows = (json.values || []).slice(1);
-      equipDados = rows.map(r => ({
+
+      // 1º bloco: A(0) B(1) C(2) D(3) E(4) F(5) G(6)
+      const bloco1 = rows.map(r => ({
         alimentador: (r[0] || '').trim(),
         icone:       (r[2] || '').trim(),
         nome:        (r[3] || '').trim(),
@@ -4191,6 +4193,28 @@ document.querySelectorAll('.tab').forEach(btn => {
         lat:         (r[5] || '').trim(),
         lng:         (r[6] || '').trim(),
       })).filter(r => r.nome);
+
+      // 2º bloco: I(8)=alim J(9)=icone K(10)=nome L(11)=tipo M(12)=lat N(13)=lng
+      const bloco2 = rows.map(r => ({
+        alimentador: (r[8]  || '').trim(),
+        icone:       (r[9]  || '').trim(),
+        nome:        (r[10] || '').trim(),
+        tipo:        (r[11] || '').trim(),
+        lat:         (r[12] || '').trim(),
+        lng:         (r[13] || '').trim(),
+      })).filter(r => r.nome);
+
+      // 3º bloco: P(15)=alim Q(16)=icone R(17)=nome S(18)=tipo T(19)=lat U(20)=lng
+      const bloco3 = rows.map(r => ({
+        alimentador: (r[15] || '').trim(),
+        icone:       (r[16] || '').trim(),
+        nome:        (r[17] || '').trim(),
+        tipo:        (r[18] || '').trim(),
+        lat:         (r[19] || '').trim(),
+        lng:         (r[20] || '').trim(),
+      })).filter(r => r.nome);
+
+      equipDados = [...bloco1, ...bloco2, ...bloco3];
       equipCarregado = true;
       status.textContent = `${equipDados.length} equipamentos carregados. Digite para buscar.`;
       status.className = 'mapa-status ok';

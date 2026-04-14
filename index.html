@@ -3418,14 +3418,45 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           <div class="mi-label">Longitude</div>
           <div class="mi-val" id="mi-lng">—</div>
         </div>
-        <div style="display:flex;align-items:flex-end;">
+        <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
           <a id="mi-maps-link" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.4rem 1rem;font-size:0.75rem;">Abrir no Google Maps ↗</a>
+          <button class="btn" onclick="window.mapaMostrarProximos()" style="font-size:0.75rem;padding:0.4rem 1rem;">📡 Mostrar Próximos</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Controle de postes próximos -->
+    <div id="mapa-proximos-ctrl" style="display:none;margin-bottom:0.75rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;">
+        <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);white-space:nowrap;">📡 Raio:</span>
+        <input type="range" id="mapa-raio-slider" min="50" max="1000" step="50" value="200"
+          oninput="document.getElementById('mapa-raio-val').textContent=this.value+'m';window.mapaAtualizarProximos()"
+          style="flex:1;min-width:100px;accent-color:var(--accent);" />
+        <span id="mapa-raio-val" style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--accent);font-weight:700;min-width:48px;text-align:right;">200m</span>
+        <button class="btn-ghost" onclick="window.mapaMostrarProximos()" style="font-size:0.75rem;padding:0.3rem 0.85rem;white-space:nowrap;">🔄 Atualizar</button>
       </div>
     </div>
 
     <!-- Mapa Leaflet -->
     <div id="mapa-leaflet"></div>
+
+    <!-- Lista de postes próximos -->
+    <div id="mapa-proximos-wrap" style="display:none;margin-top:1rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;" id="mapa-proximos-label">Postes próximos</div>
+      <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="background:var(--surface);">
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Número</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Distância</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Lat</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Lng</th>
+            </tr>
+          </thead>
+          <tbody id="mapa-proximos-tbody"></tbody>
+        </table>
+      </div>
+    </div>
 
     <div style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
       🗺️ Mapa via OpenStreetMap · Dados carregados da aba "Mapa Postes" do Google Sheets
@@ -3990,6 +4021,100 @@ document.querySelectorAll('.tab').forEach(btn => {
       .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ Poste ${poste.num}</b><br>Lat: ${poste.lat.toFixed(6)}<br>Lng: ${poste.lng.toFixed(6)}`)
       .openPopup();
     mapaMap.setView([poste.lat, poste.lng], 17);
+
+    // Mostra controle de raio
+    document.getElementById('mapa-proximos-ctrl').style.display = 'block';
+    // Limpa proximos anteriores
+    document.getElementById('mapa-proximos-wrap').style.display = 'none';
+    // Limpa marcadores de proximos
+    _limparProximos();
+  };
+
+  // ── Haversine distance (meters) ───────────────────────
+  function _haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  let _proximosMarkers = [];
+  let _proximosCircle = null;
+
+  function _limparProximos() {
+    _proximosMarkers.forEach(m => { if (mapaMap) mapaMap.removeLayer(m); });
+    _proximosMarkers = [];
+    if (_proximosCircle && mapaMap) { mapaMap.removeLayer(_proximosCircle); _proximosCircle = null; }
+  }
+
+  window.mapaAtualizarProximos = function() {
+    if (document.getElementById('mapa-proximos-wrap').style.display !== 'none') {
+      window.mapaMostrarProximos();
+    }
+  };
+
+  window.mapaMostrarProximos = function() {
+    const num = document.getElementById('mapa-input').value.trim();
+    if (!num || !mapaCarregado) return;
+    const poste = mapaPostes.find(p => p.num.toLowerCase() === num.toLowerCase());
+    if (!poste) return;
+
+    const raio = parseInt(document.getElementById('mapa-raio-slider').value) || 200;
+    _limparProximos();
+
+    // Desenha círculo
+    _proximosCircle = L.circle([poste.lat, poste.lng], {
+      radius: raio,
+      color: '#00e676',
+      fillColor: '#00e676',
+      fillOpacity: 0.06,
+      weight: 1.5,
+      dashArray: '6,4'
+    }).addTo(mapaMap);
+
+    // Filtra postes dentro do raio
+    const proximos = mapaPostes
+      .filter(p => p.num !== poste.num)
+      .map(p => ({ ...p, dist: _haversine(poste.lat, poste.lng, p.lat, p.lng) }))
+      .filter(p => p.dist <= raio)
+      .sort((a, b) => a.dist - b.dist);
+
+    // Ícone menor para os vizinhos
+    const smallIcon = L.divIcon({
+      html: `<div style="width:10px;height:10px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 6px rgba(0,230,118,0.7);"></div>`,
+      className: '',
+      iconAnchor: [5,5]
+    });
+
+    proximos.forEach(p => {
+      const m = L.marker([p.lat, p.lng], { icon: smallIcon })
+        .addTo(mapaMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ ${p.num}</b><br>Distância: ${Math.round(p.dist)}m<br>Lat: ${p.lat.toFixed(6)}<br>Lng: ${p.lng.toFixed(6)}`);
+      _proximosMarkers.push(m);
+    });
+
+    // Popula tabela
+    const tbody = document.getElementById('mapa-proximos-tbody');
+    const wrap = document.getElementById('mapa-proximos-wrap');
+    document.getElementById('mapa-proximos-label').textContent =
+      proximos.length > 0 ? `${proximos.length} poste${proximos.length !== 1 ? 's' : ''} dentro de ${raio}m` : `Nenhum poste em ${raio}m`;
+    tbody.innerHTML = proximos.map(p => `
+      <tr style="border-bottom:1px solid var(--border);cursor:pointer;"
+        onclick="window.mapaEscolherPoste('${p.num.replace(/'/g,"\\'")}') "
+        onmouseover="this.style.background='rgba(0,230,118,0.05)'" onmouseout="this.style.background=''">
+        <td style="padding:0.5rem 0.9rem;color:var(--accent);font-weight:700;font-family:'DM Mono',monospace;">${p.num}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;">${Math.round(p.dist)}m</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${p.lat.toFixed(6)}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${p.lng.toFixed(6)}</td>
+      </tr>`).join('');
+    wrap.style.display = 'block';
+
+    // Ajusta zoom para mostrar todos
+    if (proximos.length > 0) {
+      const allPoints = [[poste.lat, poste.lng], ...proximos.map(p => [p.lat, p.lng])];
+      mapaMap.fitBounds(L.latLngBounds(allPoints).pad(0.15));
+    }
   };
 
   // ── Inicializa quando a aba mapa for aberta ────────────
@@ -4078,6 +4203,9 @@ document.querySelectorAll('.tab').forEach(btn => {
           <div class="mi-label">Nome</div>
           <div class="mi-val" id="equip-nome">—</div>
         </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn" onclick="window.equipMostrarProximos()" style="font-size:0.75rem;padding:0.4rem 1rem;">📡 Mostrar Próximos</button>
+        </div>
       </div>
     </div>
 
@@ -4099,8 +4227,38 @@ document.querySelectorAll('.tab').forEach(btn => {
       </div>
     </div>
 
+    <!-- Controle de equipamentos próximos -->
+    <div id="equip-proximos-ctrl" style="display:none;margin-bottom:0.75rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;">
+        <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);white-space:nowrap;">📡 Raio:</span>
+        <input type="range" id="equip-raio-slider" min="50" max="1000" step="50" value="200"
+          oninput="document.getElementById('equip-raio-val').textContent=this.value+'m';window.equipAtualizarProximos()"
+          style="flex:1;min-width:100px;accent-color:var(--accent);" />
+        <span id="equip-raio-val" style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--accent);font-weight:700;min-width:48px;text-align:right;">200m</span>
+        <button class="btn-ghost" onclick="window.equipMostrarProximos()" style="font-size:0.75rem;padding:0.3rem 0.85rem;white-space:nowrap;">🔄 Atualizar</button>
+      </div>
+    </div>
+
     <!-- Mapa Leaflet equipamentos — sempre visível -->
     <div id="equip-leaflet"></div>
+
+    <!-- Lista de equipamentos próximos -->
+    <div id="equip-proximos-wrap" style="display:none;margin-top:1rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;" id="equip-proximos-label">Equipamentos próximos</div>
+      <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="background:var(--surface);">
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Número</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Tipo</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Distância</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Alimentador</th>
+            </tr>
+          </thead>
+          <tbody id="equip-proximos-tbody"></tbody>
+        </table>
+      </div>
+    </div>
 
     <div style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
       ⚙️ Mapa via OpenStreetMap · Dados carregados da aba "EQUIPAMENTOS" do Google Sheets
@@ -4273,6 +4431,93 @@ document.querySelectorAll('.tab').forEach(btn => {
     }
   };
 
+  let _equipAtual = null; // equip selecionado para proximidade
+  let _equipProxMarkers = [];
+  let _equipProxCircle = null;
+
+  function _equipHaversine(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function _equipLimparProximos() {
+    _equipProxMarkers.forEach(m => { if (equipMap) equipMap.removeLayer(m); });
+    _equipProxMarkers = [];
+    if (_equipProxCircle && equipMap) { equipMap.removeLayer(_equipProxCircle); _equipProxCircle = null; }
+  }
+
+  window.equipAtualizarProximos = function() {
+    if (document.getElementById('equip-proximos-wrap').style.display !== 'none') {
+      window.equipMostrarProximos();
+    }
+  };
+
+  window.equipMostrarProximos = function() {
+    if (!_equipAtual || !equipCarregado || !equipMap) return;
+    const raio = parseInt(document.getElementById('equip-raio-slider').value) || 200;
+    _equipLimparProximos();
+
+    _equipProxCircle = L.circle([_equipAtual.latN, _equipAtual.lngN], {
+      radius: raio,
+      color: '#00e676',
+      fillColor: '#00e676',
+      fillOpacity: 0.06,
+      weight: 1.5,
+      dashArray: '6,4'
+    }).addTo(equipMap);
+
+    const proximos = equipDados
+      .filter(e => e.nome !== _equipAtual.nome)
+      .map(e => {
+        const la = parseFloat(String(e.lat).replace(',', '.'));
+        const ln = parseFloat(String(e.lng).replace(',', '.'));
+        if (isNaN(la) || isNaN(ln) || la === 0 || ln === 0) return null;
+        return { ...e, latN: la, lngN: ln, dist: _equipHaversine(_equipAtual.latN, _equipAtual.lngN, la, ln) };
+      })
+      .filter(e => e && e.dist <= raio)
+      .sort((a, b) => a.dist - b.dist);
+
+    const smallIcon = L.divIcon({
+      html: `<div style="width:10px;height:10px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 6px rgba(0,230,118,0.7);"></div>`,
+      className: '',
+      iconAnchor: [5,5]
+    });
+
+    proximos.forEach(e => {
+      const t = tipoLabel(e.icone);
+      const m = L.marker([e.latN, e.lngN], { icon: smallIcon })
+        .addTo(equipMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${e.nome}</b><br>${t.label}<br>${e.alimentador}<br>Distância: ${Math.round(e.dist)}m`);
+      _equipProxMarkers.push(m);
+    });
+
+    document.getElementById('equip-proximos-label').textContent =
+      proximos.length > 0 ? `${proximos.length} equipamento${proximos.length !== 1 ? 's' : ''} dentro de ${raio}m` : `Nenhum equipamento em ${raio}m`;
+
+    document.getElementById('equip-proximos-tbody').innerHTML = proximos.map(e => {
+      const t = tipoLabel(e.icone);
+      return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;"
+        onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}','${e.lat}','${e.lng}')"
+        onmouseover="this.style.background='rgba(0,230,118,0.05)'" onmouseout="this.style.background=''">
+        <td style="padding:0.5rem 0.9rem;color:var(--accent);font-weight:700;font-family:'DM Mono',monospace;">${e.nome}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;">${t.emoji} ${t.label}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;">${Math.round(e.dist)}m</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${e.alimentador || '—'}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('equip-proximos-wrap').style.display = 'block';
+    document.getElementById('equip-proximos-ctrl').style.display = 'block';
+
+    if (proximos.length > 0) {
+      const allPoints = [[_equipAtual.latN, _equipAtual.lngN], ...proximos.map(e => [e.latN, e.lngN])];
+      equipMap.fitBounds(L.latLngBounds(allPoints).pad(0.15));
+    }
+  };
+
   function mostrarCard(nome, alim, icone, tipo, lat, lng) {
     const t = tipoLabel(icone);
     document.getElementById('equip-num').textContent  = nome;
@@ -4284,7 +4529,15 @@ document.querySelectorAll('.tab').forEach(btn => {
 
     const latN = parseFloat(String(lat).replace(',', '.'));
     const lngN = parseFloat(String(lng).replace(',', '.'));
+
+    // Reset proximos ao trocar equipamento
+    _equipLimparProximos();
+    document.getElementById('equip-proximos-wrap').style.display = 'none';
+    document.getElementById('equip-proximos-ctrl').style.display = 'none';
+
     if (!isNaN(latN) && !isNaN(lngN) && latN !== 0 && lngN !== 0) {
+      _equipAtual = { nome, latN, lngN };
+      document.getElementById('equip-proximos-ctrl').style.display = 'block';
       if (equipMap) {
         if (equipMarker) equipMap.removeLayer(equipMarker);
         const popup = `<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;

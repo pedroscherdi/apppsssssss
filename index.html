@@ -2362,14 +2362,21 @@ const firebaseConfig = {
         const lg=L.layerGroup().addTo(alimMap);
         const totalPts = a.segs.reduce((s,seg)=>s+seg.length,0);
         a.segs.forEach(seg => {
-          L.polyline(seg.map(p=>[p[1],p[0]]),{
+          const pl = L.polyline(seg.map(p=>[p[1],p[0]]),{
             color:a.color,weight:2.5,opacity:0.85,smoothFactor:1
-          }).addTo(lg).bindPopup(
-            `<div style="font-family:'DM Mono',monospace;">
-              <b style="color:${a.color}">⚡ ${a.name.replace(' -','').trim()}</b><br>
-              <span style="color:#888">${a.segs.length} segmentos · ${totalPts} pontos</span>
-            </div>`
-          );
+          }).addTo(lg);
+          pl.on('click', function(e) {
+            L.DomEvent.stopPropagation(e);
+            const sel = document.getElementById('alim-select');
+            sel.value = a.name;
+            alimentadorSelecionar(a.name);
+          });
+          pl.on('mouseover', function() {
+            if(alimSelected !== a.name) pl.setStyle({weight:5,opacity:1});
+          });
+          pl.on('mouseout', function() {
+            if(alimSelected !== a.name) pl.setStyle({weight:2.5,opacity:0.85});
+          });
         });
         alimLayers[a.name]=lg;
       });

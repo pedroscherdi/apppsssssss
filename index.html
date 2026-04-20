@@ -1465,6 +1465,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="mapa"><span class="tab-icon">🗺️</span> Mapa Postes</button>
     <button class="tab" data-tab="equipamentos"><span class="tab-icon">⚙️</span> Equipamentos</button>
     <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
+    <button class="tab" data-tab="rebaixadores"><span class="tab-icon">🔻</span> Rebaixadores</button>
 
     <!-- Divisor -->
     <div style="height:1px;background:var(--border);margin:0.5rem 0.3rem;"></div>
@@ -2555,6 +2556,7 @@ const firebaseConfig = {
     'equipamentos':'Equipamentos',
     'quem-somos':  'Quem Somos',
     'alimentadores':'Alimentadores',
+    'rebaixadores': 'Rebaixadores',
   };
 
   // Abre aba Início por padrão
@@ -3729,6 +3731,148 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
   </div>
 </div><!-- /tab-mapa -->
+
+<div class="tab-panel" id="tab-rebaixadores">
+  <style>
+    #tab-rebaixadores .rb-table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    #tab-rebaixadores .rb-table-title {
+      padding: 0.85rem 1.2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #tab-rebaixadores .rb-table-title::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    #tab-rebaixadores table { width: 100%; border-collapse: collapse; }
+    #tab-rebaixadores thead th {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      padding: 0.65rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    #tab-rebaixadores thead th:not(:first-child) { border-left: 1px solid var(--border); }
+    #tab-rebaixadores tbody tr {
+      border-bottom: 1px solid rgba(26,51,37,0.6);
+      transition: background 0.15s;
+    }
+    #tab-rebaixadores tbody tr:last-child { border-bottom: none; }
+    #tab-rebaixadores tbody tr:hover { background: rgba(0,230,118,0.04); }
+    #tab-rebaixadores tbody tr.rb-elevador { background: rgba(255,107,107,0.06); }
+    #tab-rebaixadores tbody tr.rb-elevador:hover { background: rgba(255,107,107,0.10); }
+    #tab-rebaixadores td {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      padding: 0.6rem 1rem;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    #tab-rebaixadores td:not(:first-child) { border-left: 1px solid rgba(26,51,37,0.5); }
+    #tab-rebaixadores .rb-sub { font-weight: 500; color: var(--accent2); }
+    #tab-rebaixadores .rb-alim { font-weight: 600; color: var(--accent); }
+    #tab-rebaixadores .rb-inst { color: var(--muted); font-size: 0.73rem; }
+    #tab-rebaixadores .rb-postes { color: var(--muted); font-size: 0.72rem; }
+    #tab-rebaixadores .rb-postes span { color: var(--text); font-size: 0.75rem; }
+    #tab-rebaixadores .rb-badge {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      font-family: 'DM Mono', monospace;
+    }
+    #tab-rebaixadores .rb-badge-25 {
+      background: rgba(0,230,118,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(0,230,118,0.25);
+    }
+    #tab-rebaixadores .rb-badge-15 {
+      background: rgba(255,107,107,0.13);
+      color: #ff8a80;
+      border: 1px solid rgba(255,107,107,0.28);
+    }
+    #tab-rebaixadores .rb-footer {
+      margin-top: 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.63rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    #tab-rebaixadores .rb-footer-item { display: flex; align-items: center; gap: 0.4rem; }
+    #tab-rebaixadores .rb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    #tab-rebaixadores .rb-dot-green { background: var(--accent); }
+    #tab-rebaixadores .rb-dot-red { background: #ff8a80; }
+  </style>
+
+  <p style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;">14 alimentadores · rebaixador / elevador de tensão</p>
+
+  <div class="rb-table-wrap">
+    <div class="rb-table-title">⚡ Rebaixador / Elevador de Tensão</div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Subestação</th>
+            <th>Alimentador</th>
+            <th>Instalação</th>
+            <th>Tensão do AL</th>
+            <th>Tensão Após Equip.</th>
+            <th>Postes Ref G2M</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="rb-sub">CGU</td><td class="rb-alim">10</td><td class="rb-inst">26002</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes"><span>759099</span></td></tr>
+          <tr><td class="rb-sub">MOS</td><td class="rb-alim">4</td><td class="rb-inst">94005</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes">—</td></tr>
+          <tr><td class="rb-sub">MRE</td><td class="rb-alim">1</td><td class="rb-inst">26003</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes"><span>076449</span></td></tr>
+          <tr><td class="rb-sub">MRE</td><td class="rb-alim">2</td><td class="rb-inst">26056</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes"><span>756038</span></td></tr>
+          <tr><td class="rb-sub">MRE</td><td class="rb-alim">4</td><td class="rb-inst">26166</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes"><span>781024</span></td></tr>
+          <tr class="rb-elevador"><td class="rb-sub">PEL3</td><td class="rb-alim">33</td><td class="rb-inst">26004</td><td><span class="rb-badge rb-badge-15">15KV</span></td><td><span class="rb-badge rb-badge-25">25KV</span></td><td class="rb-postes"><span>184350</span></td></tr>
+          <tr class="rb-elevador"><td class="rb-sub">PEL3</td><td class="rb-alim">36</td><td class="rb-inst">PEL3-TR9</td><td><span class="rb-badge rb-badge-15">15KV</span></td><td><span class="rb-badge rb-badge-25">25KV</span></td><td class="rb-postes">—</td></tr>
+          <tr><td class="rb-sub">RGR3</td><td class="rb-alim">35</td><td class="rb-inst">5052</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes">—</td></tr>
+          <tr><td class="rb-sub">SÃO</td><td class="rb-alim">5</td><td class="rb-inst">94000</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes"><span>416044</span></td></tr>
+          <tr><td class="rb-sub">SLO</td><td class="rb-alim">5</td><td class="rb-inst">6049</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes">—</td></tr>
+          <tr><td class="rb-sub">SVP</td><td class="rb-alim">5</td><td class="rb-inst">2750</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes">—</td></tr>
+          <tr><td class="rb-sub">SVP</td><td class="rb-alim">6</td><td class="rb-inst">5684</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes"><span>40015.1</span></td></tr>
+          <tr><td class="rb-sub">TOR</td><td class="rb-alim">5</td><td class="rb-inst">215094002</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes">—</td></tr>
+          <tr><td class="rb-sub">VIA1</td><td class="rb-alim">16</td><td class="rb-inst">26106</td><td><span class="rb-badge rb-badge-25">25KV</span></td><td><span class="rb-badge rb-badge-15">15KV</span></td><td class="rb-postes">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rb-footer">
+    <div class="rb-footer-item"><div class="rb-dot rb-dot-green"></div>Rebaixador 25KV → 15KV</div>
+    <div class="rb-footer-item"><div class="rb-dot rb-dot-red"></div>Elevador 15KV → 25KV</div>
+    <div class="rb-footer-item">14 registros</div>
+  </div>
+</div>
 
 <div class="tab-panel" id="tab-quem-somos">
 

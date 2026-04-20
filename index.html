@@ -2343,42 +2343,75 @@ const firebaseConfig = {
     if(alimLoaded) return;
     alimLoaded = true;
 
-    alimMap = L.map('alim-map',{center:[-31.77,-52.33],zoom:13,preferCanvas:true});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-      attribution:'© OpenStreetMap © CartoDB',subdomains:'abcd',maxZoom:19
-    }).addTo(alimMap);
+    function _doInit() {
+      alimMap = L.map('alim-map',{center:[-31.77,-52.33],zoom:13,preferCanvas:true});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+        attribution:'© OpenStreetMap © CartoDB',subdomains:'abcd',maxZoom:19
+      }).addTo(alimMap);
 
-    // Preencher select
-    const sel = document.getElementById('alim-select');
-    ALIM_DATA.forEach(a => {
-      const opt=document.createElement('option');
-      opt.value=a.name; opt.textContent=a.name.replace(' -','').trim();
-      sel.appendChild(opt);
-    });
-
-    // Criar layers
-    ALIM_DATA.forEach(a => {
-      const lg=L.layerGroup().addTo(alimMap);
-      const totalPts = a.segs.reduce((s,seg)=>s+seg.length,0);
-      a.segs.forEach(seg => {
-        L.polyline(seg.map(p=>[p[1],p[0]]),{
-          color:a.color,weight:2.5,opacity:0.85,smoothFactor:1
-        }).addTo(lg).bindPopup(
-          `<div style="font-family:'DM Mono',monospace;">
-            <b style="color:${a.color}">⚡ ${a.name.replace(' -','').trim()}</b><br>
-            <span style="color:#888">${a.segs.length} segmentos · ${totalPts} pontos</span>
-          </div>`
-        );
+      // Preencher select
+      const sel = document.getElementById('alim-select');
+      ALIM_DATA.forEach(a => {
+        const opt=document.createElement('option');
+        opt.value=a.name; opt.textContent=a.name.replace(' -','').trim();
+        sel.appendChild(opt);
       });
-      alimLayers[a.name]=lg;
-    });
 
-    // Fit bounds
-    const allPts=ALIM_DATA.flatMap(a=>a.segs.flatMap(s=>s));
-    alimMap.fitBounds([
-      [Math.min(...allPts.map(p=>p[1])),Math.min(...allPts.map(p=>p[0]))],
-      [Math.max(...allPts.map(p=>p[1])),Math.max(...allPts.map(p=>p[0]))]
-    ]);
+      // Criar layers
+      ALIM_DATA.forEach(a => {
+        const lg=L.layerGroup().addTo(alimMap);
+        const totalPts = a.segs.reduce((s,seg)=>s+seg.length,0);
+        a.segs.forEach(seg => {
+          L.polyline(seg.map(p=>[p[1],p[0]]),{
+            color:a.color,weight:2.5,opacity:0.85,smoothFactor:1
+          }).addTo(lg).bindPopup(
+            `<div style="font-family:'DM Mono',monospace;">
+              <b style="color:${a.color}">⚡ ${a.name.replace(' -','').trim()}</b><br>
+              <span style="color:#888">${a.segs.length} segmentos · ${totalPts} pontos</span>
+            </div>`
+          );
+        });
+        alimLayers[a.name]=lg;
+      });
+
+      // Fit bounds
+      const allPts=ALIM_DATA.flatMap(a=>a.segs.flatMap(s=>s));
+      alimMap.fitBounds([
+        [Math.min(...allPts.map(p=>p[1])),Math.min(...allPts.map(p=>p[0]))],
+        [Math.max(...allPts.map(p=>p[1])),Math.max(...allPts.map(p=>p[0]))]
+      ]);
+      setTimeout(()=>alimMap.invalidateSize(),150);
+    }
+
+    // Carregamento independente do Leaflet
+    if(typeof L !== 'undefined') {
+      _doInit();
+      return;
+    }
+    // CSS
+    if(!document.getElementById('alim-leaflet-css')) {
+      const lnk=document.createElement('link');
+      lnk.id='alim-leaflet-css';
+      lnk.rel='stylesheet';
+      lnk.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(lnk);
+    }
+    // JS — verificar se já está sendo carregado por outro módulo
+    const existingScript = document.querySelector('script[src*="leaflet.min.js"]');
+    if(existingScript) {
+      // já está carregando — aguardar L ficar disponível
+      let tries=0;
+      const wait=setInterval(()=>{
+        tries++;
+        if(typeof L !== 'undefined') { clearInterval(wait); _doInit(); }
+        else if(tries>100) clearInterval(wait);
+      }, 50);
+    } else {
+      const scr=document.createElement('script');
+      scr.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      scr.onload=_doInit;
+      document.head.appendChild(scr);
+    }
   }
 
   window.alimentadorSelecionar = function(name) {
@@ -2460,10 +2493,7 @@ const firebaseConfig = {
     document.querySelectorAll('.tab').forEach(btn=>{
       btn.addEventListener('click',()=>{
         if(btn.dataset.tab==='alimentadores') {
-          setTimeout(()=>{
-            initAlimMap();
-            if(alimMap) alimMap.invalidateSize();
-          },80);
+          setTimeout(initAlimMap, 80);
         }
       });
     });

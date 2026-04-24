@@ -3692,6 +3692,10 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     <div class="mapa-search-wrap" style="position:relative;">
       <input type="text" id="mapa-input" placeholder="Nº do poste..." autocomplete="off" oninput="window.mapaFiltrar()" />
       <button class="btn" onclick="window.mapaBuscarPoste()">🔍 Localizar</button>
+      <button class="btn-ghost" id="mapa-gps-btn" onclick="window.mapaMeLocalizar()" title="Usar minha localização GPS" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        <span id="mapa-gps-label">Me localizar</span>
+      </button>
       <div id="mapa-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
     </div>
 
@@ -4447,6 +4451,9 @@ document.querySelectorAll('.tab').forEach(btn => {
 
     setStatusMapa('ok', '⚡ Poste localizado com sucesso!');
 
+    // Reseta estado GPS ao buscar poste manualmente
+    _mapaGpsAtual = null;
+
     // Preenche info card
     document.getElementById('mi-barramento').textContent = poste.num;
     document.getElementById('mi-lat').textContent = poste.lat.toFixed(6);
@@ -4553,6 +4560,170 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (proximos.length > 0) {
       const allPoints = [[poste.lat, poste.lng], ...proximos.map(p => [p.lat, p.lng])];
       mapaMap.fitBounds(L.latLngBounds(allPoints).pad(0.15));
+    }
+  };
+
+  // ── Me Localizar (GPS) ────────────────────────────────
+  let _mapaGpsMarker = null;
+  let _mapaGpsAtual = null; // posição GPS atual para cálculo de proximos
+
+  window.mapaMeLocalizar = function() {
+    if (!navigator.geolocation) {
+      if (typeof showToast === 'function') showToast('GPS não suportado neste dispositivo.', 'error');
+      return;
+    }
+    const btn = document.getElementById('mapa-gps-btn');
+    const lbl = document.getElementById('mapa-gps-label');
+    btn.disabled = true;
+    lbl.textContent = 'Localizando...';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        btn.disabled = false;
+        lbl.textContent = 'Me localizar';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+
+        // Garante que o mapa está pronto
+        carregarLeaflet(() => {
+          initMapa();
+          if (mapaMap) setTimeout(() => mapaMap.invalidateSize(), 100);
+
+          // Remove marcador GPS anterior
+          if (_mapaGpsMarker && mapaMap) {
+            mapaMap.removeLayer(_mapaGpsMarker);
+            _mapaGpsMarker = null;
+          }
+
+          // Ícone de posição atual pulsante (azul)
+          const gpsIcon = L.divIcon({
+            html: `<div style="width:18px;height:18px;border-radius:50%;background:#2979ff;border:3px solid #fff;box-shadow:0 0 0 4px rgba(41,121,255,0.3);animation:gps-pulse 1.5s ease-in-out infinite;"></div>`,
+            className: '',
+            iconAnchor: [9, 9]
+          });
+
+          // Adiciona estilo de animação se ainda não existir
+          if (!document.getElementById('gps-pulse-style')) {
+            const s = document.createElement('style');
+            s.id = 'gps-pulse-style';
+            s.textContent = `@keyframes gps-pulse{0%,100%{box-shadow:0 0 0 4px rgba(41,121,255,0.3)}50%{box-shadow:0 0 0 10px rgba(41,121,255,0.08)}}`;
+            document.head.appendChild(s);
+          }
+
+          _mapaGpsMarker = L.marker([lat, lng], { icon: gpsIcon })
+            .addTo(mapaMap)
+            .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#2979ff;">📍 Você está aqui</b><br><span style="font-size:0.78rem;color:#888;">Precisão: ±${acc}m</span>`)
+            .openPopup();
+
+          // Guarda posição GPS como origem para proximidade
+          _mapaGpsAtual = { lat, lng };
+
+          // Centraliza mapa
+          mapaMap.setView([lat, lng], 15);
+
+          // Oculta info card de poste e mostra controle de raio para GPS
+          document.getElementById('mapa-info').classList.remove('visible');
+          document.getElementById('mapa-proximos-wrap').style.display = 'none';
+          _limparProximos();
+          document.getElementById('mapa-proximos-ctrl').style.display = 'block';
+
+          // Dispara busca de postes próximos à minha localização
+          const dispararProximos = () => {
+            if (mapaCarregado) {
+              window.mapaProximosDaLocalizacao(lat, lng);
+            } else {
+              setTimeout(dispararProximos, 300);
+            }
+          };
+          dispararProximos();
+
+          if (typeof showToast === 'function') showToast(`📍 Localização obtida · precisão ±${acc}m`, 'success');
+        });
+      },
+      (err) => {
+        btn.disabled = false;
+        lbl.textContent = 'Me localizar';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        const msgs = {
+          1: 'Permissão de localização negada.',
+          2: 'Posição não disponível. Verifique o GPS.',
+          3: 'Tempo esgotado ao obter localização.',
+        };
+        if (typeof showToast === 'function') showToast(msgs[err.code] || 'Erro ao obter localização.', 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // ── Postes próximos a partir de uma coordenada GPS ────
+  window.mapaProximosDaLocalizacao = function(lat, lng) {
+    const raio = parseInt(document.getElementById('mapa-raio-slider').value) || 200;
+    _limparProximos();
+
+    _proximosCircle = L.circle([lat, lng], {
+      radius: raio,
+      color: '#2979ff',
+      fillColor: '#2979ff',
+      fillOpacity: 0.06,
+      weight: 1.5,
+      dashArray: '6,4'
+    }).addTo(mapaMap);
+
+    const proximos = mapaPostes
+      .map(p => ({ ...p, dist: _haversine(lat, lng, p.lat, p.lng) }))
+      .filter(p => p.dist <= raio)
+      .sort((a, b) => a.dist - b.dist);
+
+    const smallIcon = L.divIcon({
+      html: `<div style="width:10px;height:10px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 6px rgba(0,230,118,0.7);"></div>`,
+      className: '',
+      iconAnchor: [5,5]
+    });
+
+    proximos.forEach(p => {
+      const m = L.marker([p.lat, p.lng], { icon: smallIcon })
+        .addTo(mapaMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ ${p.num}</b><br>Distância: ${Math.round(p.dist)}m<br>Lat: ${p.lat.toFixed(6)}<br>Lng: ${p.lng.toFixed(6)}`);
+      _proximosMarkers.push(m);
+    });
+
+    document.getElementById('mapa-proximos-label').textContent =
+      proximos.length > 0 ? `${proximos.length} poste${proximos.length !== 1 ? 's' : ''} dentro de ${raio}m da sua localização` : `Nenhum poste em ${raio}m da sua localização`;
+
+    document.getElementById('mapa-proximos-tbody').innerHTML = proximos.map(p => `
+      <tr style="border-bottom:1px solid var(--border);cursor:pointer;"
+        onclick="window.mapaEscolherPoste('${p.num.replace(/'/g,"\\'")}') "
+        onmouseover="this.style.background='rgba(0,230,118,0.05)'" onmouseout="this.style.background=''">
+        <td style="padding:0.5rem 0.9rem;color:var(--accent);font-weight:700;font-family:'DM Mono',monospace;">${p.num}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;">${Math.round(p.dist)}m</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${p.lat.toFixed(6)}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${p.lng.toFixed(6)}</td>
+      </tr>`).join('');
+
+    document.getElementById('mapa-proximos-wrap').style.display = 'block';
+
+    if (proximos.length > 0) {
+      const allPoints = [[lat, lng], ...proximos.map(p => [p.lat, p.lng])];
+      mapaMap.fitBounds(L.latLngBounds(allPoints).pad(0.15));
+    }
+  };
+
+  // Sobrescreve mapaAtualizarProximos para também suportar GPS
+  const _mapaAtualizarProximosOriginal = window.mapaAtualizarProximos;
+  window.mapaAtualizarProximos = function() {
+    if (document.getElementById('mapa-proximos-wrap').style.display !== 'none') {
+      if (_mapaGpsAtual) {
+        window.mapaProximosDaLocalizacao(_mapaGpsAtual.lat, _mapaGpsAtual.lng);
+      } else {
+        window.mapaMostrarProximos();
+      }
     }
   };
 

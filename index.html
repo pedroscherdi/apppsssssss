@@ -4611,6 +4611,10 @@ document.querySelectorAll('.tab').forEach(btn => {
         oninput="equipFiltrar()"
       />
       <button class="btn" onclick="equipBuscar()">🔍 Buscar</button>
+      <button class="btn-ghost" id="equip-gps-btn" onclick="equipMeLocalizar()" title="Usar minha localização GPS" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        <span id="equip-gps-label">Me localizar</span>
+      </button>
       <div id="equip-dropdown"
         style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
                background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);
@@ -4868,6 +4872,102 @@ document.querySelectorAll('.tab').forEach(btn => {
     } else {
       mostrarTabela(matches);
     }
+  };
+
+  let _equipGpsMarker = null;
+
+  window.equipMeLocalizar = function() {
+    if (!navigator.geolocation) {
+      if (typeof showToast === 'function') showToast('GPS não suportado neste dispositivo.', 'error');
+      return;
+    }
+    const btn = document.getElementById('equip-gps-btn');
+    const lbl = document.getElementById('equip-gps-label');
+    btn.disabled = true;
+    lbl.textContent = 'Localizando...';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        btn.disabled = false;
+        lbl.textContent = 'Me localizar';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+
+        // Garante que o mapa está pronto
+        carregarEquipLeaflet(() => {
+          initEquipMapa();
+          if (equipMap) setTimeout(() => equipMap.invalidateSize(), 100);
+
+          // Remove marcador GPS anterior
+          if (_equipGpsMarker && equipMap) {
+            equipMap.removeLayer(_equipGpsMarker);
+            _equipGpsMarker = null;
+          }
+
+          // Ícone de posição atual pulsante
+          const gpsIcon = L.divIcon({
+            html: `<div style="width:18px;height:18px;border-radius:50%;background:#2979ff;border:3px solid #fff;box-shadow:0 0 0 4px rgba(41,121,255,0.3);animation:gps-pulse 1.5s ease-in-out infinite;"></div>`,
+            className: '',
+            iconAnchor: [9, 9]
+          });
+
+          // Adiciona estilo de animação se ainda não existir
+          if (!document.getElementById('gps-pulse-style')) {
+            const s = document.createElement('style');
+            s.id = 'gps-pulse-style';
+            s.textContent = `@keyframes gps-pulse{0%,100%{box-shadow:0 0 0 4px rgba(41,121,255,0.3)}50%{box-shadow:0 0 0 10px rgba(41,121,255,0.08)}}`;
+            document.head.appendChild(s);
+          }
+
+          _equipGpsMarker = L.marker([lat, lng], { icon: gpsIcon })
+            .addTo(equipMap)
+            .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#2979ff;">📍 Você está aqui</b><br><span style="font-size:0.78rem;color:#888;">Precisão: ±${acc}m</span>`)
+            .openPopup();
+
+          // Define como origem para cálculo de proximidade
+          _equipAtual = { nome: '📍 Minha localização', latN: lat, lngN: lng };
+
+          // Centraliza mapa e mostra raio
+          equipMap.setView([lat, lng], 15);
+
+          // Mostra controle de raio e dispara busca de próximos
+          document.getElementById('equip-proximos-ctrl').style.display = 'block';
+          document.getElementById('equip-card').classList.remove('visible');
+          document.getElementById('equip-tabela-wrap').style.display = 'none';
+
+          // Aguarda dados carregarem se necessário
+          const dispararProximos = () => {
+            if (equipCarregado) {
+              window.equipMostrarProximos();
+            } else {
+              setTimeout(dispararProximos, 300);
+            }
+          };
+          dispararProximos();
+
+          if (typeof showToast === 'function') showToast(`📍 Localização obtida · precisão ±${acc}m`, 'success');
+        });
+      },
+      (err) => {
+        btn.disabled = false;
+        lbl.textContent = 'Me localizar';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        const msgs = {
+          1: 'Permissão de localização negada.',
+          2: 'Posição não disponível. Verifique o GPS.',
+          3: 'Tempo esgotado ao obter localização.',
+        };
+        if (typeof showToast === 'function') showToast(msgs[err.code] || 'Erro ao obter localização.', 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   let _equipAtual = null; // equip selecionado para proximidade

@@ -190,6 +190,36 @@ const firebaseConfig = {
       --radius: 10px;
     }
 
+    /* TEMAS DE CORES */
+    body[data-theme="blue"] {
+      --accent: #00b0ff;
+      --accent2: #40c4ff;
+      --border: #102a43;
+      --surface: #102a43;
+      --bg: #05101a;
+    }
+    body[data-theme="orange"] {
+      --accent: #ff9100;
+      --accent2: #ffab40;
+      --border: #3e2723;
+      --surface: #3e2723;
+      --bg: #1a0f0d;
+    }
+    body[data-theme="purple"] {
+      --accent: #d500f9;
+      --accent2: #e040fb;
+      --border: #311b92;
+      --surface: #311b92;
+      --bg: #0f0a1a;
+    }
+    body[data-theme="red"] {
+      --accent: #ff1744;
+      --accent2: #ff5252;
+      --border: #3e1010;
+      --surface: #3e1010;
+      --bg: #1a0a0a;
+    }
+
     body.light {
       --bg: #f4faf6;
       --surface: #ffffff;
@@ -201,6 +231,29 @@ const firebaseConfig = {
       --danger: #e53935;
       --success: #00c853;
     }
+    
+    body.light[data-theme="blue"] { --accent: #0070f3; --accent2: #0056b3; --bg: #f0f7ff; --border: #d0e0f0; }
+    body.light[data-theme="orange"] { --accent: #e65100; --accent2: #bf360c; --bg: #fff8f0; --border: #f0e0d0; }
+    body.light[data-theme="purple"] { --accent: #7b1fa2; --accent2: #4a148c; --bg: #f8f0ff; --border: #e0d0f0; }
+    body.light[data-theme="red"] { --accent: #d50000; --accent2: #b71c1c; --bg: #fff0f0; --border: #f0d0d0; }
+
+    .theme-selector {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .theme-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s;
+    }
+    .theme-dot:hover { transform: scale(1.2); }
+    .theme-dot.active { border-color: var(--text); }
 
     .theme-toggle {
       background: none;
@@ -1477,6 +1530,13 @@ const firebaseConfig = {
     <h1>Setup<span>Boom</span></h1>
     <p class="subtitle">Estrutura de Materiais</p>
   </div>
+  <div class="theme-selector">
+    <div class="theme-dot active" onclick="setAccentTheme('default')" style="background:#00e676;" title="Verde Setup"></div>
+    <div class="theme-dot" onclick="setAccentTheme('blue')" style="background:#00b0ff;" title="Azul Elétrico"></div>
+    <div class="theme-dot" onclick="setAccentTheme('orange')" style="background:#ff9100;" title="Laranja Fogo"></div>
+    <div class="theme-dot" onclick="setAccentTheme('purple')" style="background:#d500f9;" title="Roxo Cyberpunk"></div>
+    <div class="theme-dot" onclick="setAccentTheme('red')" style="background:#ff1744;" title="Vermelho Alerta"></div>
+  </div>
   <div class="sidebar-nav">
     <button class="tab" data-tab="inicio"><span class="tab-icon">🏠</span> Início</button>
     <button class="tab active" data-tab="consultar"><span class="tab-icon">🔍</span> Consultar</button>
@@ -1500,6 +1560,7 @@ const firebaseConfig = {
     <!-- Divisor -->
     <div style="height:1px;background:var(--border);margin:0.5rem 0.3rem;"></div>
 
+    <button class="tab" data-tab="orcamento"><span class="tab-icon">💰</span> Orçamento</button>
     <button class="tab" data-tab="quem-somos"><span class="tab-icon">🏢</span> Quem Somos</button>
   </div>
   <div class="sidebar-footer">
@@ -3077,6 +3138,27 @@ const firebaseConfig = {
   themeToggle.addEventListener('click', () => { isDark = !isDark; document.body.classList.toggle('light', !isDark); themeToggle.textContent = isDark ? '🌙 Escuro' : '☀️ Claro'; localStorage.setItem('sbTheme', isDark ? 'dark' : 'light'); });
   if (localStorage.getItem('sbTheme') === 'light') { isDark = false; document.body.classList.add('light'); themeToggle.textContent = '☀️ Claro'; }
 
+  window.setAccentTheme = function(theme) {
+    if (theme === 'default') {
+      document.body.removeAttribute('data-theme');
+    } else {
+      document.body.setAttribute('data-theme', theme);
+    }
+    localStorage.setItem('sbAccentTheme', theme);
+    
+    document.querySelectorAll('.theme-dot').forEach(dot => {
+      dot.classList.remove('active');
+      if (theme === 'default' && dot.title === 'Verde Setup') dot.classList.add('active');
+      if (theme === 'blue' && dot.title === 'Azul Elétrico') dot.classList.add('active');
+      if (theme === 'orange' && dot.title === 'Laranja Fogo') dot.classList.add('active');
+      if (theme === 'purple' && dot.title === 'Roxo Cyberpunk') dot.classList.add('active');
+      if (theme === 'red' && dot.title === 'Vermelho Alerta') dot.classList.add('active');
+    });
+  };
+
+  const savedAccent = localStorage.getItem('sbAccentTheme');
+  if (savedAccent) setAccentTheme(savedAccent);
+
   let favoritos = JSON.parse(localStorage.getItem('sbFavoritos') || '[]');
   let codigoAtual = '';
   function saveFavoritos() { localStorage.setItem('sbFavoritos', JSON.stringify(favoritos)); }
@@ -3907,6 +3989,437 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     <div class="rb-footer-item">14 registros</div>
   </div>
 </div>
+
+<!-- MODAL DISTORCER -->
+<div id="modalDistorcer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; width:100%; max-width:600px; padding:1.5rem; position:relative; max-height:90vh; overflow-y:auto;">
+    <button onclick="fecharModalDistorcer()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--muted); font-size:1.5rem; cursor:pointer;">&times;</button>
+    
+    <h3 style="font-size:1.2rem; font-weight:800; color:var(--accent); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">🔄 Distorcer Item (Substituição)</h3>
+    
+    <!-- Item Original -->
+    <div style="margin-bottom:1.25rem; padding:1rem; background:rgba(255,107,107,0.05); border:1px solid rgba(255,107,107,0.2); border-radius:8px;">
+      <label style="display:block; font-size:0.65rem; color:var(--danger); margin-bottom:0.5rem; font-family:'DM Mono',monospace; font-weight:700;">ITEM ORIGINAL (SAI)</label>
+      <div style="display:grid; grid-template-columns: 1fr 80px; gap:0.5rem;">
+        <div style="position:relative;">
+          <input type="text" id="dist-orig-input" placeholder="Buscar item original..." autocomplete="off" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--text); font-size:0.85rem;">
+          <div class="dropdown" id="dist-orig-dropdown" style="width:100%;"></div>
+        </div>
+        <input type="text" id="dist-orig-un" placeholder="Un" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--text); text-align:center;">
+      </div>
+      <div id="dist-orig-sel" style="margin-top:0.5rem; font-size:0.7rem; color:var(--muted); display:none;">Selecionado: <span id="dist-orig-nome"></span></div>
+    </div>
+
+    <div style="text-align:center; margin:-0.5rem 0 0.5rem; color:var(--muted); font-size:1.2rem;">⬇️</div>
+
+    <!-- Item Substituto -->
+    <div style="margin-bottom:1.5rem; padding:1rem; background:rgba(0,230,118,0.05); border:1px solid rgba(0,230,118,0.2); border-radius:8px;">
+      <label style="display:block; font-size:0.65rem; color:var(--accent); margin-bottom:0.5rem; font-family:'DM Mono',monospace; font-weight:700;">ITEM SUBSTITUTO (ENTRA)</label>
+      <div style="display:grid; grid-template-columns: 1fr 80px; gap:0.5rem;">
+        <div style="position:relative;">
+          <input type="text" id="dist-sub-input" placeholder="Buscar item substituto..." autocomplete="off" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--text); font-size:0.85rem;">
+          <div class="dropdown" id="dist-sub-dropdown" style="width:100%;"></div>
+        </div>
+        <input type="text" id="dist-sub-un" placeholder="Un" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--text); text-align:center;">
+      </div>
+      <div id="dist-sub-sel" style="margin-top:0.5rem; font-size:0.7rem; color:var(--muted); display:none;">Selecionado: <span id="dist-sub-nome"></span></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <button onclick="fecharModalDistorcer()" class="btn-ghost" style="width:100%; padding:0.75rem;">Cancelar</button>
+      <button onclick="confirmarDistorcer()" style="width:100%; background:var(--accent); color:#060f0a; border:none; border-radius:8px; padding:0.75rem; font-weight:700; cursor:pointer;">Confirmar Troca</button>
+    </div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-orcamento">
+  <div style="padding:1.5rem; max-width:800px; margin:0 auto;">
+    <div style="margin-bottom:2rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
+      <h2 style="font-size:1.5rem; font-weight:800; color:var(--accent); margin-bottom:0.5rem;">💰 Orçamento</h2>
+      <p style="color:var(--muted); font-size:0.85rem;">Busque itens e monte sua lista para compartilhar rapidamente.</p>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; margin-bottom:1.5rem;">
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:0.7rem; color:var(--muted); margin-bottom:0.4rem; font-family:'DM Mono',monospace;">RESERVA / IDENTIFICAÇÃO</label>
+        <input type="text" id="orc-reserva-input" placeholder="Ex: Reserva 12345 ou Nome do Cliente" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--accent); font-family:inherit; font-weight:600;">
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 100px auto; gap:0.75rem; align-items: end;">
+        <div style="position:relative;">
+          <label style="display:block; font-size:0.7rem; color:var(--muted); margin-bottom:0.4rem; font-family:'DM Mono',monospace;">BUSCAR ITEM (NOME OU CÓDIGO)</label>
+          <input type="text" id="orc-busca-input" placeholder="Digite para buscar..." autocomplete="off" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--text); font-family:inherit;">
+          <div class="dropdown" id="orc-dropdown" style="width:100%; max-height:250px; overflow-y:auto;"></div>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.7rem; color:var(--muted); margin-bottom:0.4rem; font-family:'DM Mono',monospace;">QTD</label>
+          <input type="number" id="orc-item-qtd" value="1" min="1" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.6rem; color:var(--text); font-family:inherit;">
+        </div>
+        <button id="btn-add-orc" style="background:var(--accent); color:#060f0a; border:none; border-radius:6px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer; height:38px;">Add</button>
+      </div>
+      <div id="orc-item-selecionado" style="margin-top:0.75rem; font-size:0.75rem; color:var(--accent2); font-family:'DM Mono',monospace; display:none;">
+        Selecionado: <span id="orc-sel-nome"></span> (<span id="orc-sel-code"></span>)
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:1.5rem;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:0.75rem; text-align:left; font-size:0.7rem; color:var(--muted); font-family:'DM Mono',monospace;">CÓDIGO</th>
+            <th style="padding:0.75rem; text-align:left; font-size:0.7rem; color:var(--muted); font-family:'DM Mono',monospace;">DESCRIÇÃO</th>
+            <th style="padding:0.75rem; text-align:center; font-size:0.7rem; color:var(--muted); font-family:'DM Mono',monospace; width:80px;">QTD</th>
+            <th style="padding:0.75rem; text-align:right; font-size:0.7rem; color:var(--muted); font-family:'DM Mono',monospace; width:50px;"></th>
+          </tr>
+        </thead>
+        <tbody id="orc-lista-body">
+          <!-- Itens serão adicionados aqui -->
+        </tbody>
+      </table>
+      <div id="orc-vazio" style="padding:2rem; text-align:center; color:var(--muted); font-size:0.85rem;">
+        Nenhum item na lista.
+      </div>
+    </div>
+
+    <div style="display:flex; gap:1rem; justify-content: flex-end; flex-wrap:wrap;">
+      <button onclick="abrirModalDistorcer()" style="background:var(--surface); color:var(--accent); border:1px solid var(--accent); border-radius:6px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.5rem; margin-right:auto;">
+        🔄 Distorcer
+      </button>
+      <button onclick="limparOrcamento()" class="btn-ghost" style="padding:0.6rem 1.2rem; font-size:0.8rem;">Limpar Tudo</button>
+      <button onclick="copiarLista()" style="background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+        📋 Copiar Lista
+      </button>
+      <button onclick="compartilharWPP()" style="background:#25d366; color:#fff; border:none; border-radius:6px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar para WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let itensOrcamento = [];
+  let itemAtualSelecionado = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputBusca = document.getElementById('orc-busca-input');
+    const dropdown = document.getElementById('orc-dropdown');
+    const btnAdd = document.getElementById('btn-add-orc');
+
+    if (inputBusca) {
+      inputBusca.addEventListener('input', () => {
+        const q = inputBusca.value.trim().toLowerCase();
+        if (!q) {
+          dropdown.classList.remove('open');
+          return;
+        }
+
+        // Busca tanto em códigos quanto em descrições
+        const matchesCode = Object.keys(itemIndex).filter(c => c.toLowerCase().includes(q));
+        const matchesDesc = Object.keys(descIndex).filter(k => k.includes(q));
+        
+        let results = [];
+        
+        // Adiciona matches de código
+        matchesCode.forEach(code => {
+          const descs = [...(itemIndex[code] || [])];
+          descs.forEach(d => {
+            results.push({ code, desc: d, type: 'code' });
+          });
+        });
+
+        // Adiciona matches de descrição (evitando duplicados)
+        matchesDesc.forEach(dk => {
+          const label = descIndex[dk].label;
+          const codes = [...(descIndex[dk].codes || [])];
+          codes.forEach(c => {
+            if (!results.some(r => r.code === c && r.desc === label)) {
+              results.push({ code: c, desc: label, type: 'desc' });
+            }
+          });
+        });
+
+        if (results.length === 0) {
+          dropdown.classList.remove('open');
+          return;
+        }
+
+        dropdown.innerHTML = results.slice(0, 50).map(item => {
+          const hlCode = q && item.code.toLowerCase().includes(q) ? item.code.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : item.code;
+          const hlDesc = q && item.desc.toLowerCase().includes(q) ? item.desc.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : item.desc;
+          return `
+            <div class="dropdown-item" onclick="selecionarItemOrcamento('${item.code.replace(/'/g,"\\\\'")}', '${item.desc.replace(/'/g,"\\\\'")}')">
+              <span style="color:var(--accent); font-weight:700; font-family:'DM Mono',monospace; margin-right:8px;">${hlCode}</span>
+              <span style="color:var(--text); font-size:0.8rem;">${hlDesc}</span>
+            </div>
+          `;
+        }).join('');
+        dropdown.classList.add('open');
+      });
+
+      inputBusca.addEventListener('focus', () => {
+        if (inputBusca.value.trim()) inputBusca.dispatchEvent(new Event('input'));
+      });
+    }
+
+    if (btnAdd) {
+      btnAdd.addEventListener('click', () => {
+        const qtd = parseInt(document.getElementById('orc-item-qtd').value) || 1;
+        
+        if (itemAtualSelecionado) {
+          adicionarALista(itemAtualSelecionado.code, itemAtualSelecionado.desc, qtd);
+        } else {
+          // Se não selecionou do dropdown, tenta ver se o que está escrito é um código válido
+          const val = inputBusca.value.trim().toUpperCase();
+          if (itemIndex[val]) {
+            const descs = [...itemIndex[val]];
+            adicionarALista(val, descs[0], qtd);
+          } else if (val) {
+            // Se não for código, adiciona como texto livre
+            adicionarALista('AVULSO', val, qtd);
+          } else {
+            if (typeof showToast === 'function') showToast('Busque um item ou digite uma descrição', 'error');
+          }
+        }
+      });
+    }
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', e => {
+      if (dropdown && !dropdown.contains(e.target) && e.target !== inputBusca) {
+        dropdown.classList.remove('open');
+      }
+    });
+  });
+
+  function selecionarItemOrcamento(code, desc) {
+    itemAtualSelecionado = { code, desc };
+    document.getElementById('orc-busca-input').value = desc;
+    document.getElementById('orc-sel-nome').textContent = desc;
+    document.getElementById('orc-sel-code').textContent = code;
+    document.getElementById('orc-item-selecionado').style.display = 'block';
+    document.getElementById('orc-dropdown').classList.remove('open');
+  }
+
+  function adicionarALista(code, desc, qtd) {
+    itensOrcamento.push({ id: Date.now(), code, desc, qtd });
+    
+    // Reset campos
+    document.getElementById('orc-busca-input').value = '';
+    document.getElementById('orc-item-qtd').value = '1';
+    document.getElementById('orc-item-selecionado').style.display = 'none';
+    itemAtualSelecionado = null;
+    
+    renderizarOrcamento();
+    if (typeof showToast === 'function') showToast('Item adicionado!', 'success');
+  }
+
+  function removerItemOrcamento(id) {
+    itensOrcamento = itensOrcamento.filter(item => item.id !== id);
+    renderizarOrcamento();
+  }
+
+  function limparOrcamento() {
+    if (itensOrcamento.length === 0) return;
+    if (confirm('Deseja limpar toda a lista?')) {
+      itensOrcamento = [];
+      renderizarOrcamento();
+    }
+  }
+
+  function renderizarOrcamento() {
+    const body = document.getElementById('orc-lista-body');
+    const vazio = document.getElementById('orc-vazio');
+    
+    if (itensOrcamento.length === 0) {
+      body.innerHTML = '';
+      vazio.style.display = 'block';
+      return;
+    }
+
+    vazio.style.display = 'none';
+    body.innerHTML = itensOrcamento.map(item => {
+      if (item.tipo === 'distorcer') {
+        return `
+          <tr style="border-bottom:1px solid var(--border); background:rgba(0,230,118,0.03);">
+            <td colspan="2" style="padding:0.75rem;">
+              <div style="font-size:0.65rem; color:var(--muted); margin-bottom:0.25rem; font-family:'DM Mono',monospace;">🔄 SUBSTITUIÇÃO</div>
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span style="color:var(--danger); font-size:0.8rem; text-decoration:line-through;">[${item.origCode}] ${item.origDesc}</span>
+                <span style="color:var(--muted);">➡️</span>
+                <span style="color:var(--accent); font-weight:600; font-size:0.85rem;">[${item.subCode}] ${item.subDesc}</span>
+              </div>
+            </td>
+            <td style="padding:0.75rem; text-align:center; color:var(--accent); font-weight:600; font-family:'DM Mono',monospace;">
+              ${item.origUn} / ${item.subUn}
+            </td>
+            <td style="padding:0.75rem; text-align:right;">
+              <button onclick="removerItemOrcamento(${item.id})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem; padding:0 5px;">&times;</button>
+            </td>
+          </tr>
+        `;
+      }
+      return `
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:0.75rem; color:var(--accent); font-family:'DM Mono',monospace; font-size:0.75rem;">${item.code}</td>
+          <td style="padding:0.75rem; color:var(--text); font-size:0.85rem;">${item.desc}</td>
+          <td style="padding:0.75rem; text-align:center; color:var(--accent); font-weight:600; font-family:'DM Mono',monospace;">${item.qtd}</td>
+          <td style="padding:0.75rem; text-align:right;">
+            <button onclick="removerItemOrcamento(${item.id})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.2rem; padding:0 5px;">&times;</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // LÓGICA DISTORCER
+  let distOrigSel = null;
+  let distSubSel = null;
+
+  function abrirModalDistorcer() {
+    document.getElementById('modalDistorcer').style.display = 'flex';
+    initBuscaDistorcer('dist-orig-input', 'dist-orig-dropdown', (c, d) => {
+      distOrigSel = { code: c, desc: d };
+      document.getElementById('dist-orig-nome').textContent = d;
+      document.getElementById('dist-orig-sel').style.display = 'block';
+    });
+    initBuscaDistorcer('dist-sub-input', 'dist-sub-dropdown', (c, d) => {
+      distSubSel = { code: c, desc: d };
+      document.getElementById('dist-sub-nome').textContent = d;
+      document.getElementById('dist-sub-sel').style.display = 'block';
+    });
+  }
+
+  function fecharModalDistorcer() {
+    document.getElementById('modalDistorcer').style.display = 'none';
+    // Limpar campos
+    document.getElementById('dist-orig-input').value = '';
+    document.getElementById('dist-sub-input').value = '';
+    document.getElementById('dist-orig-un').value = '';
+    document.getElementById('dist-sub-un').value = '';
+    document.getElementById('dist-orig-sel').style.display = 'none';
+    document.getElementById('dist-sub-sel').style.display = 'none';
+    distOrigSel = null;
+    distSubSel = null;
+  }
+
+  function initBuscaDistorcer(inputId, dropdownId, onSelect) {
+    const inp = document.getElementById(inputId);
+    const dd = document.getElementById(dropdownId);
+    
+    inp.addEventListener('input', () => {
+      const q = inp.value.trim().toLowerCase();
+      if (!q) { dd.classList.remove('open'); return; }
+      
+      const matchesCode = Object.keys(itemIndex).filter(c => c.toLowerCase().includes(q));
+      const matchesDesc = Object.keys(descIndex).filter(k => k.includes(q));
+      let results = [];
+      matchesCode.forEach(code => { [...(itemIndex[code] || [])].forEach(d => results.push({ code, desc: d })); });
+      matchesDesc.forEach(dk => { 
+        const label = descIndex[dk].label;
+        [...(descIndex[dk].codes || [])].forEach(c => {
+          if (!results.some(r => r.code === c && r.desc === label)) results.push({ code: c, desc: label });
+        });
+      });
+
+      if (results.length === 0) { dd.classList.remove('open'); return; }
+      dd.innerHTML = results.slice(0, 30).map(item => `
+        <div class="dropdown-item" onclick="document.getElementById('${inputId}').value='${item.code}'; document.getElementById('${dropdownId}').classList.remove('open'); window._onSelectDist('${inputId}', '${item.code.replace(/'/g,"\\\\'")}', '${item.desc.replace(/'/g,"\\\\'")}')">
+          <span style="color:var(--accent); font-weight:700;">${item.code}</span> ${item.desc}
+        </div>
+      `).join('');
+      dd.classList.add('open');
+    });
+    
+    window._onSelectDist = (id, c, d) => {
+      onSelect(c, d);
+    };
+  }
+
+  function confirmarDistorcer() {
+    const origCode = distOrigSel ? distOrigSel.code : document.getElementById('dist-orig-input').value.trim().toUpperCase();
+    const origDesc = distOrigSel ? distOrigSel.desc : (itemIndex[origCode] ? [...itemIndex[origCode]][0] : origCode);
+    const subCode = distSubSel ? distSubSel.code : document.getElementById('dist-sub-input').value.trim().toUpperCase();
+    const subDesc = distSubSel ? distSubSel.desc : (itemIndex[subCode] ? [...itemIndex[subCode]][0] : subCode);
+    const origUn = document.getElementById('dist-orig-un').value.trim() || 'un';
+    const subUn = document.getElementById('dist-sub-un').value.trim() || 'un';
+
+    if (!origCode || !subCode) {
+      if (typeof showToast === 'function') showToast('Preencha os dois itens', 'error');
+      return;
+    }
+
+    itensOrcamento.push({
+      id: Date.now(),
+      tipo: 'distorcer',
+      origCode, origDesc, origUn,
+      subCode, subDesc, subUn
+    });
+
+    renderizarOrcamento();
+    fecharModalDistorcer();
+    if (typeof showToast === 'function') showToast('Substituição adicionada!', 'success');
+  }
+
+  function gerarTextoLista() {
+    const reserva = document.getElementById('orc-reserva-input').value.trim();
+    let texto = "*LISTA DE MATERIAIS - SETUPBOOM*\n";
+    if (reserva) texto += `*RESERVA:* ${reserva.toUpperCase()}\n`;
+    texto += "--------------------------------\n\n";
+    
+    itensOrcamento.forEach((item, i) => {
+      if (item.tipo === 'distorcer') {
+        texto += `${i+1}. *🔄 DISTORCER (TROCA)*\n    SAI: ~[${item.origCode}] ${item.origDesc}~ (${item.origUn})\n    ENTRA: *[${item.subCode}] ${item.subDesc}* (${item.subUn})\n\n`;
+      } else {
+        texto += `${i+1}. *[${item.code}]* ${item.desc}\n    Quantidade: *${item.qtd}*\n\n`;
+      }
+    });
+    texto += "_Gerado via SetupBoom App_";
+    return texto;
+  }
+
+  function compartilharWPP() {
+    if (itensOrcamento.length === 0) {
+      if (typeof showToast === 'function') showToast('A lista está vazia!', 'error');
+      return;
+    }
+    const texto = gerarTextoLista();
+    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(texto);
+    window.open(url, '_blank');
+  }
+
+  function copiarLista() {
+    if (itensOrcamento.length === 0) {
+      if (typeof showToast === 'function') showToast('A lista está vazia!', 'error');
+      return;
+    }
+    const texto = gerarTextoLista();
+    
+    // Tenta usar a API de Clipboard moderna
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(() => {
+        if (typeof showToast === 'function') showToast('Lista copiada!', 'success');
+      }).catch(err => {
+        fallbackCopiar(texto);
+      });
+    } else {
+      fallbackCopiar(texto);
+    }
+  }
+
+  function fallbackCopiar(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      if (typeof showToast === 'function') showToast('Lista copiada!', 'success');
+    } catch (err) {
+      alert('Erro ao copiar lista. Tente selecionar e copiar manualmente.');
+    }
+    document.body.removeChild(textArea);
+  }
+</script>
 
 <div class="tab-panel" id="tab-quem-somos">
 

@@ -1223,6 +1223,32 @@ const firebaseConfig = {
     }
     /* ── FIM PWA ─────────────────────────────────────────────────────── */
 
+    /* ── BUSCA POR VOZ ── */
+    .btn-voice {
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      color: var(--accent);
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-voice:hover { background: rgba(0, 230, 118, 0.2); border-color: var(--accent); }
+    .btn-voice.listening {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+      animation: voice-pulse 1.5s infinite;
+    }
+    @keyframes voice-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+    }
+
   
     /* ══ TAB: CAMPO ══════════════════════════════════════════════════ */
     .campo-wrap { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -2362,7 +2388,12 @@ const firebaseConfig = {
   <select id="alim-select" onchange="alimentadorSelecionar(this.value)">
     <option value="">— todos os alimentadores —</option>
   </select>
-  <input id="alim-search-input" type="text" placeholder="Filtrar alimentador..." oninput="alimentadorFiltrar(this.value)" />
+  <div style="display:flex; gap:0.4rem; flex:1;">
+    <input id="alim-search-input" type="text" placeholder="Filtrar alimentador..." oninput="alimentadorFiltrar(this.value)" style="flex:1;" />
+    <button class="btn-voice" onclick="window.sbVoiceSearch('alim-search-input', alimentadorFiltrar)" title="Buscar por voz">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
+  </div>
   <button class="btn-ghost" onclick="alimentadorSetAll(true)" style="font-size:0.78rem;padding:0.4rem 0.8rem;white-space:nowrap;">Todos</button>
   <button class="btn-ghost" onclick="alimentadorSetAll(false)" style="font-size:0.78rem;padding:0.4rem 0.8rem;white-space:nowrap;">Nenhum</button>
   <button class="btn-ghost" id="alim-zoom-btn" onclick="alimentadorZoom()" style="font-size:0.78rem;padding:0.4rem 0.8rem;white-space:nowrap;display:none;">Zoom ↗</button>
@@ -3747,7 +3778,12 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
     <!-- Barra de busca com autocomplete -->
     <div class="mapa-search-wrap" style="position:relative;">
-      <input type="text" id="mapa-input" placeholder="Nº do poste..." autocomplete="off" oninput="window.mapaFiltrar()" />
+      <div style="display:flex; gap:0.4rem; flex:1;">
+        <input type="text" id="mapa-input" placeholder="Nº do poste..." autocomplete="off" oninput="window.mapaFiltrar()" style="flex:1;" />
+        <button class="btn-voice" onclick="window.sbVoiceSearch('mapa-input', window.mapaFiltrar)" title="Buscar por voz">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
       <button class="btn" onclick="window.mapaBuscarPoste()">🔍 Localizar</button>
       <button class="btn-ghost" id="mapa-gps-btn" onclick="window.mapaMeLocalizar()" title="Usar minha localização GPS" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
@@ -5236,6 +5272,47 @@ document.querySelectorAll('.tab').forEach(btn => {
     });
   });
 
+  // ── Busca por Voz (Web Speech API) ──────────
+  window.sbVoiceSearch = function(inputId, callback) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      if (typeof showToast === 'function') showToast('Busca por voz não suportada neste navegador.', 'error');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const btn = event.currentTarget;
+    const input = document.getElementById(inputId);
+
+    recognition.onstart = () => {
+      btn.classList.add('listening');
+      if (typeof showToast === 'function') showToast('Ouvindo...', 'success');
+    };
+
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript.replace(/[.\-]/g, ''); // Remove pontos/hifens comuns em números falados
+      input.value = text;
+      if (callback) callback(text);
+      if (typeof showToast === 'function') showToast(`Buscando: "${text}"`, 'success');
+    };
+
+    recognition.onerror = (event) => {
+      btn.classList.remove('listening');
+      console.error('Erro no reconhecimento:', event.error);
+      if (typeof showToast === 'function') showToast('Erro ao ouvir. Tente novamente.', 'error');
+    };
+
+    recognition.onend = () => {
+      btn.classList.remove('listening');
+    };
+
+    recognition.start();
+  };
+
   // Enter no input
   window.addEventListener('load', () => {
     const inp = document.getElementById('mapa-input');
@@ -5264,11 +5341,17 @@ document.querySelectorAll('.tab').forEach(btn => {
 
     <!-- Barra de busca -->
     <div class="mapa-search-wrap" style="position:relative;">
-      <input type="text" id="equip-input"
-        placeholder="Nº do equipamento..."
-        autocomplete="off"
-        oninput="equipFiltrar()"
-      />
+      <div style="display:flex; gap:0.4rem; flex:1;">
+        <input type="text" id="equip-input"
+          placeholder="Nº do equipamento..."
+          autocomplete="off"
+          oninput="equipFiltrar()"
+          style="flex:1;"
+        />
+        <button class="btn-voice" onclick="window.sbVoiceSearch('equip-input', equipFiltrar)" title="Buscar por voz">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
       <button class="btn" onclick="equipBuscar()">🔍 Buscar</button>
       <button class="btn-ghost" id="equip-gps-btn" onclick="equipMeLocalizar()" title="Usar minha localização GPS" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>

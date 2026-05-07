@@ -1647,26 +1647,6 @@ const firebaseConfig = {
       </p>
     </div>
 
-    <!-- STAT CARDS -->
-    <div id="inicio-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1.75rem;">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;">
-        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;">Estruturas</div>
-        <div id="stat-estruturas" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:var(--accent);line-height:1;">—</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;">
-        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;">Itens únicos</div>
-        <div id="stat-itens" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:var(--accent);line-height:1;">—</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;">
-        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;">Favoritos</div>
-        <div id="stat-favs" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:var(--accent);line-height:1;">—</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;">
-        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;">Sync</div>
-        <div id="stat-sync" style="font-family:'DM Mono',monospace;font-weight:500;font-size:0.78rem;color:var(--muted);line-height:1.4;margin-top:0.3rem;">—</div>
-      </div>
-    </div>
-
     <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;">⚡ O que você quer fazer?</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.85rem;margin-bottom:2rem;">
 
@@ -2730,9 +2710,6 @@ const firebaseConfig = {
         if (!document.getElementById('trc_c1_0')) trcBuildLinhas();
         setTimeout(calcularTracao, 50);
       }
-      if (tab.dataset.tab === 'inicio') {
-        atualizarStats(null);
-      }
     });
   });
 
@@ -2748,34 +2725,6 @@ const firebaseConfig = {
     const ov = document.getElementById('sidebarOverlay');
     sb.classList.remove('open');
     if (ov) ov.classList.remove('open');
-  }
-
-  function countUp(el, target, duration) {
-    if (!el) return;
-    const start = performance.now();
-    const run = (now) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(ease * target);
-      if (progress < 1) requestAnimationFrame(run);
-      else el.textContent = target;
-    };
-    requestAnimationFrame(run);
-  }
-
-  function atualizarStats(ts) {
-    const elEst  = document.getElementById('stat-estruturas');
-    const elItens = document.getElementById('stat-itens');
-    const elFavs = document.getElementById('stat-favs');
-    const elSync = document.getElementById('stat-sync');
-    const numEst  = allCodes ? allCodes.length : 0;
-    const numItens = allItemIndex ? Object.keys(allItemIndex).length : 0;
-    const favs = JSON.parse(localStorage.getItem('sb_favorites') || '[]');
-    if (elEst)  countUp(elEst,  numEst,  900);
-    if (elItens) countUp(elItens, numItens, 900);
-    if (elFavs) countUp(elFavs, favs.length, 600);
-    if (elSync && ts) elSync.textContent = ts;
   }
 
   async function loadFromSheets() {
@@ -2812,8 +2761,6 @@ const firebaseConfig = {
       const ts = new Date().toLocaleTimeString('pt-BR');
       setStatus('ok', `<strong>${allCodes.length} estruturas</strong> · ${allData.length} linhas · ${ts} <span style="color:var(--accent2);font-size:0.72rem"> | Col D: ${amostra}</span>`);
       document.getElementById('searchArea').classList.add('visible', 'fade-in');
-      // Atualiza stat cards
-      atualizarStats(ts);
     } catch(e) {
       setStatus('error', 'Erro: ' + e.message + ' — verifique se a aba se chama "Dados" e se a planilha está pública.');
     }

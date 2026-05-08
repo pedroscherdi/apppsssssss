@@ -3830,7 +3830,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
     <!-- Info card -->
     <div class="mapa-info-card" id="mapa-info">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1rem;">
         <div>
           <div class="mi-label">Número do Poste</div>
           <div class="mi-val accent" id="mi-barramento">—</div>
@@ -3845,9 +3845,27 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         </div>
         <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
           <a id="mi-maps-link" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.4rem 1rem;font-size:0.75rem;">Abrir no Google Maps ↗</a>
-          <button class="btn" onclick="window.mapaMostrarProximos()" style="font-size:0.75rem;padding:0.4rem 1rem;">📡 Mostrar Próximos</button>
+          <button class="btn-ghost" onclick="window.mapaMostrarProximos()" style="font-size:0.75rem;padding:0.4rem 1rem;">📡 Mostrar Próximos</button>
         </div>
       </div>
+      
+      <!-- Campos Colaborativos -->
+      <div style="border-top:1px solid var(--border); padding-top:1rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:0.75rem; align-items:flex-end;">
+        <div>
+          <div class="mi-label">Tipo de Poste</div>
+          <input type="text" id="mi-tipo" placeholder="Ex: Conc, Mad..." style="width:100%; padding:0.5rem; background:rgba(255,214,0,0.05); border:1px solid rgba(255,214,0,0.3); border-radius:6px; color:var(--text); font-family:'DM Mono',monospace; font-size:0.8rem;">
+        </div>
+        <div>
+          <div class="mi-label">Altura (m)</div>
+          <input type="text" id="mi-alt" placeholder="Ex: 11, 12..." style="width:100%; padding:0.5rem; background:rgba(255,214,0,0.05); border:1px solid rgba(255,214,0,0.3); border-radius:6px; color:var(--text); font-family:'DM Mono',monospace; font-size:0.8rem;">
+        </div>
+        <div>
+          <div class="mi-label">Estrutura</div>
+          <input type="text" id="mi-estr" placeholder="Ex: N1, M1..." style="width:100%; padding:0.5rem; background:rgba(255,214,0,0.05); border:1px solid rgba(255,214,0,0.3); border-radius:6px; color:var(--text); font-family:'DM Mono',monospace; font-size:0.8rem;">
+        </div>
+        <button class="btn" onclick="window.mapaSalvarDados()" style="padding:0.6rem; font-size:0.8rem; background:var(--accent); color:#000;">💾 Salvar na Planilha</button>
+      </div>
+      <div id="mapa-save-status" style="margin-top:0.5rem; font-family:'DM Mono',monospace; font-size:0.65rem; text-align:right;"></div>
     </div>
 
     <!-- Controle de postes próximos -->
@@ -4867,10 +4885,11 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function() {
   const MAPA_ABA = 'Mapa Postes';
   // Blocos de colunas (índices base-0): A=0,C=2,D=3 | L=11,N=13,O=14 | U=20,W=22,X=23
+  const MAPA_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz18pOjuzZWYbOvRvkoGJT61i4ytGwCIFN0WiAMu0opx82ikXToEHVUrCFTKU1DjqSL/exec'; // URL configurada para salvamento automático
   const BLOCOS = [
-    { nome: 0,  lat: 2,  lng: 3  },
-    { nome: 11, lat: 13, lng: 14 },
-    { nome: 20, lat: 22, lng: 23 },
+    { nome: 0,  lat: 2,  lng: 3,  tipo: 4, alt: 5, estr: 6  },
+    { nome: 11, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },
+    { nome: 20, lat: 22, lng: 23, tipo: 24, alt: 25, estr: 26 },
   ];
   let leafletLoaded = false;
   let mapaMap = null;
@@ -4943,7 +4962,15 @@ document.querySelectorAll('.tab').forEach(btn => {
           const lat = parseFloat(String(row[bloco.lat] || '').replace(',', '.'));
           const lng = parseFloat(String(row[bloco.lng] || '').replace(',', '.'));
           if (num && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-            todosPostes.push({ num, lat, lng });
+            const tipo = String(row[bloco.tipo] || '').trim();
+            const alt = String(row[bloco.alt] || '').trim();
+            const estr = String(row[bloco.estr] || '').trim();
+            todosPostes.push({ 
+              num, lat, lng, 
+              tipo, alt, estr,
+              col_tipo: bloco.tipo, col_alt: bloco.alt, col_estr: bloco.estr,
+              rowIdx: rowIdx + 1 // +1 porque sheets é 1-indexed
+            });
           }
         });
       });
@@ -5014,6 +5041,12 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('mi-lat').textContent = poste.lat.toFixed(6);
     document.getElementById('mi-lng').textContent = poste.lng.toFixed(6);
     document.getElementById('mi-maps-link').href = `https://maps.google.com/?q=${poste.lat},${poste.lng}`;
+    
+    // Novos campos editáveis
+    document.getElementById('mi-tipo').value = poste.tipo || '';
+    document.getElementById('mi-alt').value = poste.alt || '';
+    document.getElementById('mi-estr').value = poste.estr || '';
+    
     infoEl.classList.add('visible');
 
     // Plota pin no mapa
@@ -5029,6 +5062,67 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('mapa-proximos-wrap').style.display = 'none';
     // Limpa marcadores de proximos
     _limparProximos();
+  };
+
+  window.mapaSalvarDados = async function() {
+    const num = document.getElementById('mapa-input').value.trim();
+    const poste = mapaPostes.find(p => p.num.toLowerCase() === num.toLowerCase());
+    if (!poste) return;
+
+    const btn = event.currentTarget;
+    const statusEl = document.getElementById('mapa-save-status');
+    const originalText = btn.textContent;
+    
+    if (!MAPA_SCRIPT_URL) {
+      alert('ERRO: A URL do Google Apps Script não foi configurada no código. Siga as instruções da Parte 2.');
+      return;
+    }
+
+    const dados = {
+      row: poste.rowIdx,
+      col_tipo: poste.col_tipo + 1, // Sheets é 1-indexed
+      col_alt: poste.col_alt + 1,
+      col_estr: poste.col_estr + 1,
+      tipo: document.getElementById('mi-tipo').value.trim(),
+      alt: document.getElementById('mi-alt').value.trim(),
+      estr: document.getElementById('mi-estr').value.trim()
+    };
+
+    try {
+      btn.disabled = true;
+      btn.textContent = '⏳ Salvando...';
+      statusEl.textContent = 'Enviando dados para o Google Sheets...';
+      statusEl.style.color = 'var(--muted)';
+
+      const res = await fetch(MAPA_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Necessário para Google Apps Script
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      });
+
+      // Como usamos no-cors, não conseguimos ler o JSON de resposta, 
+      // mas se não deu erro no fetch, assumimos sucesso após um pequeno delay
+      setTimeout(() => {
+        // Atualiza cache local
+        poste.tipo = dados.tipo;
+        poste.alt = dados.alt;
+        poste.estr = dados.estr;
+        
+        btn.disabled = false;
+        btn.textContent = originalText;
+        statusEl.textContent = '✅ Salvo com sucesso!';
+        statusEl.style.color = 'var(--accent)';
+        if (typeof showToast === 'function') showToast('Dados do poste salvos!', 'success');
+      }, 1500);
+
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      statusEl.textContent = '❌ Erro ao salvar: ' + e.message;
+      statusEl.style.color = 'var(--danger)';
+      alert('Erro ao salvar. Verifique a conexão ou a URL do script.');
+    }
   };
 
   // ── Haversine distance (meters) ───────────────────────

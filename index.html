@@ -113,10 +113,9 @@ self.addEventListener('fetch', e => {
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-    const firebaseConfig = {
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+const firebaseConfig = {
       apiKey: "AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk",
       authDomain: "setupapp-f3ff4.firebaseapp.com",
       projectId: "setupapp-f3ff4",
@@ -125,46 +124,45 @@ self.addEventListener('fetch', e => {
       appId: "1:255369189466:web:c2dd50f0f64259bb7e2063"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    const app      = initializeApp(firebaseConfig);
+    const auth     = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    window._fbSignIn = () => signInWithPopup(auth, provider).catch(e => alert('Erro ao entrar: ' + e.message));
+    window._fbSignIn  = () => signInWithPopup(auth, provider).catch(e => alert('Erro ao entrar: ' + e.message));
+
+    window._localSignIn = function() {
+      const user = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      const err  = document.getElementById('login-error');
+      if (user === 'admin' && pass === 'admin') {
+        err.style.display = 'none';
+        // Simula login local: esconde loginScreen e mostra app
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appContent').style.display  = 'flex';
+        document.getElementById('userInfo').innerHTML = `
+          <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;">admin</span>
+          <button class="btn-ghost" onclick="document.getElementById('loginScreen').style.display='flex';document.getElementById('appContent').style.display='none';" style="font-size:0.7rem;padding:0.25rem 0.6rem;width:100%;margin-top:0.25rem;">Sair</button>
+        `;
+        if (typeof loadFromSheets === 'function') loadFromSheets();
+        if (typeof showWelcomeModal === 'function') showWelcomeModal('admin');
+      } else {
+        err.textContent = 'Usuário ou senha incorretos.';
+        err.style.display = 'block';
+        document.getElementById('login-pass').value = '';
+      }
+    };
     window._fbSignOut = () => signOut(auth);
-
-    window.salvarEstruturaFirebase = async (dados) => {
-      try {
-        const docRef = doc(db, "estruturas", dados.poste);
-        await setDoc(docRef, dados);
-        return True
-      } catch (e) {
-        console.error("Erro ao salvar:", e);
-        throw e;
-      }
-    };
-
-    window.buscarEstruturaFirebase = async (numPoste) => {
-      try {
-        const docRef = doc(db, "estruturas", numPoste);
-        const docSnap = await getDoc(docRef);
-        return docSnap.exists() ? docSnap.data() : null;
-      } catch (e) {
-        console.error("Erro ao buscar:", e);
-        return null;
-      }
-    };
 
     onAuthStateChanged(auth, user => {
       const loginScreen = document.getElementById('loginScreen');
-      const appContent = document.getElementById('appContent');
-      const userInfo = document.getElementById('userInfo');
+      const appContent  = document.getElementById('appContent');
+      const userInfo    = document.getElementById('userInfo');
 
       if (user) {
         loginScreen.style.display = 'none';
-        appContent.style.display = 'flex';
+        appContent.style.display  = 'flex';
         userInfo.innerHTML = `
-          <span id="userDisplayName" style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;">${user.displayName || user.email}</span>
+          <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;">${user.displayName || user.email}</span>
           <div style="display:flex;align-items:center;gap:0.5rem;">
             <img src="${user.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/>
             <button class="btn-ghost" onclick="window._fbSignOut()" style="font-size:0.7rem;padding:0.25rem 0.6rem;flex:1;">Sair</button>
@@ -174,7 +172,7 @@ self.addEventListener('fetch', e => {
         if (typeof showWelcomeModal === 'function') showWelcomeModal(user.displayName || user.email);
       } else {
         loginScreen.style.display = 'flex';
-        appContent.style.display = 'none';
+        appContent.style.display  = 'none';
       }
     });
   </script>
@@ -1457,45 +1455,7 @@ self.addEventListener('fetch', e => {
     .mapa-status.ok { color:var(--success); }
     /* ══ FIM TAB: MAPA ═══════════════════════════════════════════════ */
 
-  
-  .modal-estrutura {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-  }
-  .modal-estrutura-content {
-    background: var(--surface);
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  }
-  .form-group { margin-bottom: 1rem; }
-  .form-group label {
-    display: block;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin-bottom: 0.4rem;
-    text-transform: uppercase;
-  }
-  .form-group select, .form-group input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.6rem;
-    border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-  }
-</style>
+  </style>
 </head>
 <body>
 
@@ -3184,142 +3144,7 @@ self.addEventListener('fetch', e => {
       `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">${currentCols.map(c => { const val = row[c.key] ?? ''; if (c.key === columnMap.qty) return `<td><span class="qty-cell">${val}</span></td>`; return `<td>${val}</td>`; }).join('')}</tr>`
     ).join('');
     const logoSrc = document.querySelector('.logo-box img').src;
-    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>SetupBoom · ${code}</title><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/><style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Syne',sans-serif;background:#f7fbf8;color:#2d3e35;padding:2.5rem 3rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}.doc-header{display:flex;align-items:center;justify-content:space-between;background:#e8f5ec;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;border:1px solid #c8e6ce}.doc-header-left{display:flex;align-items:center;gap:.9rem}.logo-img{width:40px;height:40px;object-fit:contain}.brand-name{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:#1a3325;line-height:1}.brand-name span{color:#2e9e5a}.brand-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.1em;margin-top:3px}.doc-header-right{text-align:right;font-family:'DM Mono',monospace;font-size:.7rem;color:#7aaa88;line-height:1.9}.doc-header-right strong{color:#2d3e35;font-size:.8rem;display:block}.info-bar{display:flex;align-items:stretch;gap:0;background:#fff;border:1px solid #c8e6ce;border-radius:10px;margin-bottom:1.5rem;overflow:hidden}.info-item{display:flex;flex-direction:column;gap:3px;padding:.85rem 1.25rem;flex:1;border-right:1px solid #e4f2e8}.info-item:last-child{border-right:none}.info-label{font-family:'DM Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:#7aaa88}.info-value{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;color:#2d3e35}.info-value.accent{color:#2e9e5a;font-size:1rem;font-weight:700}.table-wrap{background:#fff;border:1px solid #c8e6ce;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:.79rem}thead tr{background:#d6eedd}thead th{padding:.7rem 1rem;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#3a6b4a;white-space:nowrap;border-bottom:1px solid #c8e6ce}tbody tr.even{background:#fff}tbody tr.odd{background:#f2faf4}tbody tr{border-bottom:1px solid #e4f2e8}tbody tr:last-child{border-bottom:none}td{padding:.6rem 1rem;vertical-align:middle;color:#2d3e35}td:first-child{color:#2e9e5a;font-weight:500}.qty-cell{display:inline-block;background:#e2f5e8;color:#2e9e5a;border:1px solid #c8e6ce;border-radius:4px;padding:1px 8px;font-size:.74rem}.doc-footer{margin-top:1.5rem;padding-top:.9rem;border-top:1px solid #c8e6ce;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:.65rem;color:#7aaa88}.doc-footer strong{color:#2e9e5a}@media print{body{padding:1.2cm 1.8cm;background:#f7fbf8}@page{margin:0;size:A4}}</style></head><body><div class="doc-header"><div class="doc-header-left"><img class="logo-img" src="${logoSrc}" alt=""/><div><div class="brand-name">Setup<span>Boom</span></div><div class="brand-sub">Estrutura de Materiais</div></div></div><div class="doc-header-right"><strong>Relatório de BOM</strong><div>Gerado em ${now}</div></div></div><div class="info-bar"><div class="info-item"><span class="info-label">Código</span><span class="info-value accent">${code}</span></div><div class="info-item"><span class="info-label">Total</span><span class="info-value">${currentItems.length} itens</span></div><div class="info-item"><span class="info-label">Data</span><span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span></div></div><div class="table-wrap"><table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div><div class="doc-footer"><div>SetupBoom © 2025 · <strong>Pedro Scherdien</strong></div><div>Documento automático</div></div><script>window.onload=function(){window.print()};<\/script>
-<!-- MODAL DE ESTRUTURA -->
-<div id="modalEstrutura" class="modal-estrutura">
-  <div class="modal-estrutura-content">
-    <h3 style="font-family:'Syne',sans-serif;margin-bottom:1rem;color:var(--accent);display:flex;justify-content:space-between;align-items:center;">
-      Estrutura do Poste <span id="modal-poste-num" style="color:var(--text)"></span>
-    </h3>
-    
-    <div class="form-group">
-      <label>Altura do Poste</label>
-      <select id="est-altura">
-        <option value="9m">9m</option>
-        <option value="10.5m">10.5m</option>
-        <option value="11m">11m</option>
-        <option value="12m">12m</option>
-        <option value="13.5m">13.5m</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Esforço (daN)</label>
-      <select id="est-esforco">
-        <option value="100">100 daN</option>
-        <option value="200">200 daN</option>
-        <option value="300">300 daN</option>
-        <option value="400">400 daN</option>
-        <option value="600">600 daN</option>
-        <option value="1000">1000 daN</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Estrutura (MT)</label>
-      <input type="text" id="est-tipo" placeholder="Ex: N1, M2, N3..." list="lista-estruturas">
-      <datalist id="lista-estruturas">
-        <option value="N1"> <option value="N2"> <option value="N3"> <option value="N4">
-        <option value="M1"> <option value="M2"> <option value="M3"> <option value="M4">
-      </datalist>
-    </div>
-
-    <div class="form-group">
-      <label>Rede BT</label>
-      <select id="est-bt">
-        <option value="Sim">Sim (Isolada)</option>
-        <option value="Não">Não</option>
-        <option value="Nua">Sim (Nua)</option>
-      </select>
-    </div>
-
-    <div style="display:flex;gap:0.5rem;margin-top:1.5rem;">
-      <button class="btn-ghost" onclick="document.getElementById('modalEstrutura').style.display='none'" style="flex:1">Cancelar</button>
-      <button id="btnSalvarEstrutura" class="btn" onclick="window.salvarEstruturaNoFirebase()" style="flex:1">Salvar no Firebase</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  window.abrirModalEstrutura = function() {
-    const num = document.getElementById('mi-barramento').textContent;
-    if (num === '—') return;
-    document.getElementById('modal-poste-num').textContent = num;
-    document.getElementById('modalEstrutura').style.display = 'flex';
-  };
-
-  window.salvarEstruturaNoFirebase = async function() {
-    const num = document.getElementById('modal-poste-num').textContent;
-    const userEl = document.getElementById('userDisplayName');
-    const usuario = userEl ? userEl.textContent : 'admin';
-
-    const dados = {
-      poste: num,
-      altura: document.getElementById('est-altura').value,
-      esforco: document.getElementById('est-esforco').value,
-      estrutura: document.getElementById('est-tipo').value,
-      bt: document.getElementById('est-bt').value,
-      usuario: usuario,
-      data: new Date().toLocaleString('pt-BR'),
-      timestamp: Date.now()
-    };
-
-    const btn = document.getElementById('btnSalvarEstrutura');
-    btn.disabled = true;
-    btn.textContent = '⏳ Salvando...';
-
-    try {
-      await window.salvarEstruturaFirebase(dados);
-      if (typeof showToast === 'function') showToast(`Estrutura do poste ${num} salva com sucesso!`, 'success');
-      if (document.getElementById('mi-barramento').textContent === num) {
-        window.atualizarInfoEstruturaNoCard(dados);
-      }
-      document.getElementById('modalEstrutura').style.display = 'none';
-    } catch (e) {
-      if (typeof showToast === 'function') showToast('Erro ao salvar no Firebase.', 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Salvar no Firebase';
-    }
-  };
-
-  window.atualizarInfoEstruturaNoCard = function(dados) {
-    let infoArea = document.getElementById('mi-estrutura-salva');
-    if (!infoArea) {
-      const card = document.getElementById('mapa-info').querySelector('div');
-      infoArea = document.createElement('div');
-      infoArea.id = 'mi-estrutura-salva';
-      infoArea.style = "grid-column: 1 / -1; margin-top: 0.5rem; padding: 0.75rem; background: rgba(0,230,118,0.05); border: 1px dashed var(--accent); border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 0.75rem;";
-      card.appendChild(infoArea);
-    }
-    infoArea.innerHTML = `
-      <div style="color:var(--accent); font-weight:bold; margin-bottom:4px;">✅ ESTRUTURA CADASTRADA:</div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-        <span>H: ${dados.altura}</span>
-        <span>E: ${dados.esforco} daN</span>
-        <span>T: ${dados.estrutura}</span>
-        <span>BT: ${dados.bt}</span>
-      </div>
-      <div style="font-size:0.65rem; color:var(--muted); margin-top:4px;">Por: ${dados.usuario} em ${dados.data}</div>
-    `;
-  };
-
-  // Interceptar a busca para carregar dados do Firebase
-  const originalMapaBuscarPoste = window.mapaBuscarPoste;
-  window.mapaBuscarPoste = async function() {
-    if (originalMapaBuscarPoste) originalMapaBuscarPoste();
-    const num = document.getElementById('mapa-input').value.trim();
-    if (!num) return;
-    const dadosExtras = await window.buscarEstruturaFirebase(num);
-    if (dadosExtras) {
-      window.atualizarInfoEstruturaNoCard(dadosExtras);
-    } else {
-      const infoArea = document.getElementById('mi-estrutura-salva');
-      if (infoArea) infoArea.innerHTML = '<div style="color:var(--muted)">⚠️ Nenhuma estrutura cadastrada.</div>';
-    }
-  };
-</script>
-</body></html>`;
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>SetupBoom · ${code}</title><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/><style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Syne',sans-serif;background:#f7fbf8;color:#2d3e35;padding:2.5rem 3rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}.doc-header{display:flex;align-items:center;justify-content:space-between;background:#e8f5ec;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;border:1px solid #c8e6ce}.doc-header-left{display:flex;align-items:center;gap:.9rem}.logo-img{width:40px;height:40px;object-fit:contain}.brand-name{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:#1a3325;line-height:1}.brand-name span{color:#2e9e5a}.brand-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.1em;margin-top:3px}.doc-header-right{text-align:right;font-family:'DM Mono',monospace;font-size:.7rem;color:#7aaa88;line-height:1.9}.doc-header-right strong{color:#2d3e35;font-size:.8rem;display:block}.info-bar{display:flex;align-items:stretch;gap:0;background:#fff;border:1px solid #c8e6ce;border-radius:10px;margin-bottom:1.5rem;overflow:hidden}.info-item{display:flex;flex-direction:column;gap:3px;padding:.85rem 1.25rem;flex:1;border-right:1px solid #e4f2e8}.info-item:last-child{border-right:none}.info-label{font-family:'DM Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:#7aaa88}.info-value{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;color:#2d3e35}.info-value.accent{color:#2e9e5a;font-size:1rem;font-weight:700}.table-wrap{background:#fff;border:1px solid #c8e6ce;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:.79rem}thead tr{background:#d6eedd}thead th{padding:.7rem 1rem;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#3a6b4a;white-space:nowrap;border-bottom:1px solid #c8e6ce}tbody tr.even{background:#fff}tbody tr.odd{background:#f2faf4}tbody tr{border-bottom:1px solid #e4f2e8}tbody tr:last-child{border-bottom:none}td{padding:.6rem 1rem;vertical-align:middle;color:#2d3e35}td:first-child{color:#2e9e5a;font-weight:500}.qty-cell{display:inline-block;background:#e2f5e8;color:#2e9e5a;border:1px solid #c8e6ce;border-radius:4px;padding:1px 8px;font-size:.74rem}.doc-footer{margin-top:1.5rem;padding-top:.9rem;border-top:1px solid #c8e6ce;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:.65rem;color:#7aaa88}.doc-footer strong{color:#2e9e5a}@media print{body{padding:1.2cm 1.8cm;background:#f7fbf8}@page{margin:0;size:A4}}</style></head><body><div class="doc-header"><div class="doc-header-left"><img class="logo-img" src="${logoSrc}" alt=""/><div><div class="brand-name">Setup<span>Boom</span></div><div class="brand-sub">Estrutura de Materiais</div></div></div><div class="doc-header-right"><strong>Relatório de BOM</strong><div>Gerado em ${now}</div></div></div><div class="info-bar"><div class="info-item"><span class="info-label">Código</span><span class="info-value accent">${code}</span></div><div class="info-item"><span class="info-label">Total</span><span class="info-value">${currentItems.length} itens</span></div><div class="info-item"><span class="info-label">Data</span><span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span></div></div><div class="table-wrap"><table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div><div class="doc-footer"><div>SetupBoom © 2025 · <strong>Pedro Scherdien</strong></div><div>Documento automático</div></div><script>window.onload=function(){window.print()};<\/script></body></html>`;
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const win = window.open(url, '_blank');
@@ -4021,7 +3846,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
           <a id="mi-maps-link" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.4rem 1rem;font-size:0.75rem;">Abrir no Google Maps ↗</a>
           <button class="btn" onclick="window.mapaMostrarProximos()" style="font-size:0.75rem;padding:0.4rem 1rem;">📡 Mostrar Próximos</button>
-          <button class="btn" onclick="window.abrirModalEstrutura()" style="background:var(--accent2);color:#060f0a;font-size:0.75rem;padding:0.4rem 1rem;">🏗️ Definir Estrutura</button>
         </div>
       </div>
     </div>

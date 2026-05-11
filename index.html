@@ -5457,7 +5457,8 @@ document.querySelectorAll('.tab').forEach(btn => {
           <div class="mi-label">Nome</div>
           <div class="mi-val" id="equip-nome">—</div>
         </div>
-        <div style="display:flex;align-items:flex-end;">
+        <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;grid-column: 1 / -1;">
+          <a id="equip-maps-link" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;display:inline-block;padding:0.4rem 1rem;font-size:0.75rem;">Abrir no Google Maps ↗</a>
           <button class="btn" onclick="window.equipMostrarProximos()" style="font-size:0.75rem;padding:0.4rem 1rem;">📡 Mostrar Próximos</button>
         </div>
       </div>
@@ -5884,10 +5885,13 @@ document.querySelectorAll('.tab').forEach(btn => {
     _equipLimparProximos();
     document.getElementById('equip-proximos-wrap').style.display = 'none';
     document.getElementById('equip-proximos-ctrl').style.display = 'none';
+    document.getElementById('equip-maps-link').style.display = 'none';
 
     if (!isNaN(latN) && !isNaN(lngN) && latN !== 0 && lngN !== 0) {
       _equipAtual = { nome, latN, lngN };
       document.getElementById('equip-proximos-ctrl').style.display = 'block';
+      document.getElementById('equip-maps-link').href = `https://maps.google.com/?q=${latN},${lngN}`;
+      document.getElementById('equip-maps-link').style.display = 'inline-block';
       if (equipMap) {
         if (equipMarker) equipMap.removeLayer(equipMarker);
         const popup = `<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;

@@ -2663,6 +2663,16 @@ const firebaseConfig = {
   const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, uploadedData = [], rawRows = [];
+  function getAlimColor(name) {
+    if (!name) return 'var(--text)';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = Math.abs(hash % 360);
+    // Saturação e brilho ajustados para ficarem bons no tema escuro
+    return `hsl(${h}, 75%, 65%)`;
+  }
 
   // Mapa de labels das abas para o topbar mobile
   const TAB_LABELS = {
@@ -5652,7 +5662,8 @@ document.querySelectorAll('.tab').forEach(btn => {
         onmouseover="this.style.background='rgba(0,230,118,0.08)'" onmouseout="this.style.background=''">
         <span>${t.emoji}</span>
         <span style="color:var(--accent);font-weight:700;">${e.nome}</span>
-        <span style="color:var(--muted);font-size:0.72rem;">${e.alimentador} · ${t.label}</span>
+        <span style="color:${getAlimColor(e.alimentador)};font-size:0.72rem;font-weight:700;">${e.alimentador}</span>
+        <span style="color:var(--muted);font-size:0.72rem;">· ${t.label}</span>
       </div>`;
     }).join('');
     dd.style.display = 'block';
@@ -5831,17 +5842,17 @@ document.querySelectorAll('.tab').forEach(btn => {
       .filter(e => e && e.dist <= raio)
       .sort((a, b) => a.dist - b.dist);
 
-    const smallIcon = L.divIcon({
-      html: `<div style="width:10px;height:10px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 6px rgba(0,230,118,0.7);"></div>`,
-      className: '',
-      iconAnchor: [5,5]
-    });
-
     proximos.forEach(e => {
       const t = tipoLabel(e.icone);
+      const alimColor = getAlimColor(e.alimentador);
+      const smallIcon = L.divIcon({
+        html: `<div style="width:10px;height:10px;border-radius:50%;background:${alimColor};border:2px solid #fff;box-shadow:0 0 6px ${alimColor};"></div>`,
+        className: '',
+        iconAnchor: [5,5]
+      });
       const m = L.marker([e.latN, e.lngN], { icon: smallIcon })
         .addTo(equipMap)
-        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${e.nome}</b><br>${t.label}<br>${e.alimentador}<br>Distância: ${Math.round(e.dist)}m`);
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:${alimColor};">${t.emoji} ${e.nome}</b><br>${t.label}<br>${e.alimentador}<br>Distância: ${Math.round(e.dist)}m`);
       _equipProxMarkers.push(m);
     });
 
@@ -5850,13 +5861,14 @@ document.querySelectorAll('.tab').forEach(btn => {
 
     document.getElementById('equip-proximos-tbody').innerHTML = proximos.map(e => {
       const t = tipoLabel(e.icone);
+      const alimColor = getAlimColor(e.alimentador);
       return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;"
         onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}','${e.lat}','${e.lng}')"
         onmouseover="this.style.background='rgba(0,230,118,0.05)'" onmouseout="this.style.background=''">
         <td style="padding:0.5rem 0.9rem;color:var(--accent);font-weight:700;font-family:'DM Mono',monospace;">${e.nome}</td>
         <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;">${t.emoji} ${t.label}</td>
         <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;">${Math.round(e.dist)}m</td>
-        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${e.alimentador || '—'}</td>
+        <td style="padding:0.5rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:${alimColor};font-weight:700;">${e.alimentador || '—'}</td>
       </tr>`;
     }).join('');
 
@@ -5871,8 +5883,9 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   function mostrarCard(nome, alim, icone, tipo, lat, lng) {
     const t = tipoLabel(icone);
+    const alimColor = getAlimColor(alim);
     document.getElementById('equip-num').textContent  = nome;
-    document.getElementById('equip-alim').textContent = alim || '—';
+    document.getElementById('equip-alim').innerHTML = `<span style="color:${alimColor};font-weight:700;">${alim || '—'}</span>`;
     document.getElementById('equip-tipo').innerHTML   = `${t.emoji} ${t.label}`;
     document.getElementById('equip-nome').textContent = tipo || '—';
     document.getElementById('equip-card').classList.add('visible');
@@ -5894,8 +5907,14 @@ document.querySelectorAll('.tab').forEach(btn => {
       document.getElementById('equip-maps-link').style.display = 'inline-block';
       if (equipMap) {
         if (equipMarker) equipMap.removeLayer(equipMarker);
-        const popup = `<b style="font-family:'DM Mono',monospace;color:#00e676;">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;
-        equipMarker = L.marker([latN, lngN]).addTo(equipMap).bindPopup(popup).openPopup();
+        const alimColor = getAlimColor(alim);
+        const mainIcon = L.divIcon({
+          html: `<div style="width:16px;height:16px;border-radius:50%;background:${alimColor};border:3px solid #fff;box-shadow:0 0 12px ${alimColor};"></div>`,
+          className: '',
+          iconAnchor: [8,8]
+        });
+        const popup = `<b style="font-family:'DM Mono',monospace;color:${alimColor};">${t.emoji} ${nome}</b><br>${t.label}<br>${alim}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`;
+        equipMarker = L.marker([latN, lngN], { icon: mainIcon }).addTo(equipMap).bindPopup(popup).openPopup();
         equipMap.setView([latN, lngN], 17);
       }
     }
@@ -5918,10 +5937,11 @@ document.querySelectorAll('.tab').forEach(btn => {
           <tbody>
             ${lista.map(e => {
               const t = tipoLabel(e.icone);
+              const alimColor = getAlimColor(e.alimentador);
               return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="equipSelecionar('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}','${e.lat}','${e.lng}')"
                 onmouseover="this.style.background='rgba(0,230,118,0.05)'" onmouseout="this.style.background=''">
                 <td style="padding:0.55rem 0.9rem;color:var(--accent);font-weight:700;">${e.nome}</td>
-                <td style="padding:0.55rem 0.9rem;">${e.alimentador || '—'}</td>
+                <td style="padding:0.55rem 0.9rem;color:${alimColor};font-weight:700;">${e.alimentador || '—'}</td>
                 <td style="padding:0.55rem 0.9rem;">${t.emoji} ${t.label}</td>
                 <td style="padding:0.55rem 0.9rem;color:var(--muted);font-size:0.8rem;">${e.tipo || '—'}</td>
               </tr>`;

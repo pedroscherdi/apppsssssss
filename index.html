@@ -1665,12 +1665,10 @@ const firebaseConfig = {
     <h1>Setup<span>Boom</span></h1>
     <p class="subtitle">Estrutura de Materiais</p>
   </div>
-  <div class="theme-selector">
-    <div class="theme-dot active" onclick="setAccentTheme('default')" style="background:#00e676;" title="Verde Setup"></div>
-    <div class="theme-dot" onclick="setAccentTheme('blue')" style="background:#00b0ff;" title="Azul Elétrico"></div>
-    <div class="theme-dot" onclick="setAccentTheme('orange')" style="background:#ff9100;" title="Laranja Fogo"></div>
-    <div class="theme-dot" onclick="setAccentTheme('purple')" style="background:#d500f9;" title="Roxo Cyberpunk"></div>
-    <div class="theme-dot" onclick="setAccentTheme('red')" style="background:#ff1744;" title="Vermelho Alerta"></div>
+  <div class="theme-selector" style="flex-direction:column;gap:0.3rem;padding:0.5rem 1.25rem;">
+    <div style="height:3px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:2px;width:100%;opacity:0.8;"></div>
+    <div style="height:3px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:2px;width:70%;opacity:0.5;"></div>
+    <div style="height:3px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:2px;width:45%;opacity:0.3;"></div>
   </div>
   <div class="sidebar-nav">
     <button class="tab" data-tab="inicio"><span class="tab-icon">🏠</span> Início</button>

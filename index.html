@@ -1491,6 +1491,37 @@ const firebaseConfig = {
     }
     .campo-print-bar p { font-family: 'DM Mono', monospace; font-size: .75rem; color: var(--muted); flex: 1; }
     #campoImgInput { display: none; }
+
+    /* ── GPS STAMP ── */
+    .gps-stamp-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.7rem 1rem;
+      margin-bottom: 1rem; font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    }
+    .gps-stamp-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: var(--muted); transition: background 0.3s;
+    }
+    .gps-stamp-dot.ok { background: var(--success); animation: pulse 2s infinite; }
+    .gps-stamp-dot.loading { background: var(--accent); animation: pulse 0.6s infinite; }
+    .gps-stamp-dot.error { background: var(--danger); }
+    .gps-stamp-info { flex: 1; color: var(--muted); }
+    .gps-stamp-info strong { color: var(--text); }
+    .gps-stamp-toggle {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted);
+      cursor: pointer; user-select: none;
+    }
+    .gps-stamp-toggle input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+    .stamp-preview {
+      display: none; margin-top: 0.5rem; width: 100%;
+      background: rgba(0,0,0,0.85); border-radius: 6px;
+      padding: 6px 10px; font-family: 'DM Mono', monospace; font-size: 0.68rem;
+      color: #00e676; letter-spacing: 0.04em; line-height: 1.8; word-break: break-all;
+    }
+    .stamp-preview.visible { display: block; }
+
     @media (max-width: 700px) {
       .campo-imgs-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
       .campo-canvas-bar { gap: 5px; }
@@ -3838,11 +3869,23 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <div class="tab-panel" id="tab-campo">
   <div class="campo-wrap">
 
+    <!-- ── GPS STAMP BAR ── -->
+    <div class="gps-stamp-bar" id="gpsStampBar">
+      <div class="gps-stamp-dot" id="gpsStampDot"></div>
+      <div class="gps-stamp-info" id="gpsStampInfo">GPS não obtido ainda</div>
+      <label class="gps-stamp-toggle">
+        <input type="checkbox" id="gpsStampEnabled" checked onchange="campoGpsToggle()">
+        Gravar na foto
+      </label>
+      <button class="cv-btn" onclick="campoGpsAtualizar()" style="white-space:nowrap;">📡 Atualizar GPS</button>
+      <div class="stamp-preview" id="stampPreview"></div>
+    </div>
+
     <!-- ── IMAGENS ── -->
     <div>
       <div class="campo-section-lbl">🖼️ Imagens e fotos do campo</div>
       <div class="campo-imgs-grid" id="campoImgsGrid"></div>
-      <input type="file" id="campoImgInput" accept="image/*" multiple />
+      <input type="file" id="campoImgInput" accept="image/*" multiple capture="environment" />
     </div>
 
     <!-- ── CROQUI / DESENHO ── -->
@@ -4838,13 +4881,119 @@ function _campoBuildGrid() {
   }
 }
 
+// ── GPS Stamp ──
+let _gpsData = null;
+
+function campoGpsAtualizar() {
+  const dot = document.getElementById('gpsStampDot');
+  const info = document.getElementById('gpsStampInfo');
+  const preview = document.getElementById('stampPreview');
+  dot.className = 'gps-stamp-dot loading';
+  info.innerHTML = 'Obtendo localização...';
+  if (!navigator.geolocation) {
+    dot.className = 'gps-stamp-dot error';
+    info.innerHTML = 'GPS não disponível neste dispositivo';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude, longitude, accuracy } = pos.coords;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR');
+    const timeStr = now.toLocaleTimeString('pt-BR');
+    const user = (function() {
+      const el = document.getElementById('userInfo');
+      if (!el) return 'campo';
+      const span = el.querySelector('span');
+      return span ? span.textContent.trim() : 'campo';
+    })();
+    _gpsData = { latitude, longitude, accuracy, dateStr, timeStr, user };
+    dot.className = 'gps-stamp-dot ok';
+    info.innerHTML = `<strong>${latitude.toFixed(6)}, ${longitude.toFixed(6)}</strong> &nbsp;·&nbsp; ±${Math.round(accuracy)}m &nbsp;·&nbsp; ${timeStr}`;
+    const enabled = document.getElementById('gpsStampEnabled').checked;
+    preview.className = 'stamp-preview' + (enabled ? ' visible' : '');
+    preview.textContent = `LAT ${latitude.toFixed(6)} | LNG ${longitude.toFixed(6)} | ±${Math.round(accuracy)}m
+${dateStr} ${timeStr} | ${user}`;
+  }, err => {
+    dot.className = 'gps-stamp-dot error';
+    const msgs = { 1: 'Permissão negada', 2: 'Sinal GPS indisponível', 3: 'Tempo esgotado' };
+    info.innerHTML = msgs[err.code] || 'Erro GPS';
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+function campoGpsToggle() {
+  const enabled = document.getElementById('gpsStampEnabled').checked;
+  const preview = document.getElementById('stampPreview');
+  preview.className = 'stamp-preview' + (enabled && _gpsData ? ' visible' : '');
+}
+
+function _campoStampImage(src, callback) {
+  const enabled = document.getElementById('gpsStampEnabled').checked;
+  if (!enabled || !_gpsData) { callback(src); return; }
+
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    // Stamp dimensions
+    const scale = Math.max(1, img.naturalWidth / 1200);
+    const fontSize = Math.round(22 * scale);
+    const lineH = Math.round(fontSize * 1.55);
+    const pad = Math.round(14 * scale);
+    const lines = [
+      `• LAT ${_gpsData.latitude.toFixed(6)}`,
+      `• LNG ${_gpsData.longitude.toFixed(6)}`,
+      `• ±${Math.round(_gpsData.accuracy)}m`,
+      `• ${_gpsData.dateStr}  ${_gpsData.timeStr}`,
+      `• ${_gpsData.user} | SetupBoom`,
+    ];
+    const boxH = lines.length * lineH + pad * 2;
+    const boxY = img.naturalHeight - boxH - Math.round(10 * scale);
+
+    // Dark semi-transparent background
+    ctx.fillStyle = 'rgba(6,15,10,0.78)';
+    ctx.beginPath();
+    const r = Math.round(8 * scale);
+    const bx = Math.round(10 * scale), bw = img.naturalWidth - bx * 2;
+    ctx.moveTo(bx + r, boxY); ctx.lineTo(bx + bw - r, boxY);
+    ctx.arcTo(bx + bw, boxY, bx + bw, boxY + r, r);
+    ctx.lineTo(bx + bw, boxY + boxH - r);
+    ctx.arcTo(bx + bw, boxY + boxH, bx + bw - r, boxY + boxH, r);
+    ctx.lineTo(bx + r, boxY + boxH);
+    ctx.arcTo(bx, boxY + boxH, bx, boxY + boxH - r, r);
+    ctx.lineTo(bx, boxY + r);
+    ctx.arcTo(bx, boxY, bx + r, boxY, r);
+    ctx.closePath();
+    ctx.fill();
+
+    // Accent left bar
+    ctx.fillStyle = '#00e676';
+    ctx.fillRect(bx, boxY, Math.round(4 * scale), boxH);
+
+    // Text
+    ctx.font = `${fontSize}px "DM Mono", monospace`;
+    ctx.fillStyle = '#e8f0ff';
+    lines.forEach((line, i) => {
+      ctx.fillText(line, bx + pad + Math.round(8 * scale), boxY + pad + lineH * i + fontSize * 0.85);
+    });
+
+    callback(c.toDataURL('image/jpeg', 0.92));
+  };
+  img.src = src;
+}
+
 function _campoLoadImg(file) {
   if (_campoSlots.length >= _CAMPO_MAX) return;
   const reader = new FileReader();
   reader.onload = ev => {
     const label = file.name.replace(/\.[^.]+$/, '').substring(0, 26) || 'Foto';
-    _campoSlots.push({ src: ev.target.result, label });
-    _campoBuildGrid();
+    _campoStampImage(ev.target.result, stamped => {
+      _campoSlots.push({ src: stamped, label });
+      _campoBuildGrid();
+    });
   };
   reader.readAsDataURL(file);
 }
@@ -4981,6 +5130,8 @@ document.querySelectorAll('.tab').forEach(btn => {
       setTimeout(() => {
         const c = document.getElementById('campoCanvas');
         if (c && c.width < 10) { c.width = c.offsetWidth; _cvUndo.length = 0; }
+        // Auto-fetch GPS when tab opens (only first time)
+        if (!_gpsData) campoGpsAtualizar();
       }, 50);
     }
   });

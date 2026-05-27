@@ -3285,13 +3285,12 @@ const firebaseConfig = {
     const rowsHtml = currentItems.map((row, i) =>
       `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">${currentCols.map(c => { const val = row[c.key] ?? ''; if (c.key === columnMap.qty) return `<td><span class="qty-cell">${val}</span></td>`; return `<td>${val}</td>`; }).join('')}</tr>`
     ).join('');
-    const logoSrc = document.querySelector('.logo-box img').src;
-    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>SetupBoom · ${code}</title><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/><style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Syne',sans-serif;background:#f7fbf8;color:#2d3e35;padding:2.5rem 3rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}.doc-header{display:flex;align-items:center;justify-content:space-between;background:#e8f5ec;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;border:1px solid #c8e6ce}.doc-header-left{display:flex;align-items:center;gap:.9rem}.logo-img{width:40px;height:40px;object-fit:contain}.brand-name{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:#1a3325;line-height:1}.brand-name span{color:#2e9e5a}.brand-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.1em;margin-top:3px}.doc-header-right{text-align:right;font-family:'DM Mono',monospace;font-size:.7rem;color:#7aaa88;line-height:1.9}.doc-header-right strong{color:#2d3e35;font-size:.8rem;display:block}.info-bar{display:flex;align-items:stretch;gap:0;background:#fff;border:1px solid #c8e6ce;border-radius:10px;margin-bottom:1.5rem;overflow:hidden}.info-item{display:flex;flex-direction:column;gap:3px;padding:.85rem 1.25rem;flex:1;border-right:1px solid #e4f2e8}.info-item:last-child{border-right:none}.info-label{font-family:'DM Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:#7aaa88}.info-value{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;color:#2d3e35}.info-value.accent{color:#2e9e5a;font-size:1rem;font-weight:700}.table-wrap{background:#fff;border:1px solid #c8e6ce;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:.79rem}thead tr{background:#d6eedd}thead th{padding:.7rem 1rem;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#3a6b4a;white-space:nowrap;border-bottom:1px solid #c8e6ce}tbody tr.even{background:#fff}tbody tr.odd{background:#f2faf4}tbody tr{border-bottom:1px solid #e4f2e8}tbody tr:last-child{border-bottom:none}td{padding:.6rem 1rem;vertical-align:middle;color:#2d3e35}td:first-child{color:#2e9e5a;font-weight:500}.qty-cell{display:inline-block;background:#e2f5e8;color:#2e9e5a;border:1px solid #c8e6ce;border-radius:4px;padding:1px 8px;font-size:.74rem}.doc-footer{margin-top:1.5rem;padding-top:.9rem;border-top:1px solid #c8e6ce;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:.65rem;color:#7aaa88}.doc-footer strong{color:#2e9e5a}@media print{body{padding:1.2cm 1.8cm;background:#f7fbf8}@page{margin:0;size:A4}}</style></head><body><div class="doc-header"><div class="doc-header-left"><img class="logo-img" src="${logoSrc}" alt=""/><div><div class="brand-name">Setup<span>Boom</span></div><div class="brand-sub">Estrutura de Materiais</div></div></div><div class="doc-header-right"><strong>Relatório de BOM</strong><div>Gerado em ${now}</div></div></div><div class="info-bar"><div class="info-item"><span class="info-label">Código</span><span class="info-value accent">${code}</span></div><div class="info-item"><span class="info-label">Total</span><span class="info-value">${currentItems.length} itens</span></div><div class="info-item"><span class="info-label">Data</span><span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span></div></div><div class="table-wrap"><table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div><div class="doc-footer"><div>SetupBoom © 2025 · <strong>Pedro Scherdien</strong></div><div>Documento automático</div></div><script>window.onload=function(){window.print()};<\/script></body></html>`;
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    if (!win) showToast('Permita pop-ups para exportar PDF.', 'error');
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    const logoSrc = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23060f0a'/><text x='256' y='340' font-family='Arial Black,sans-serif' font-size='280' font-weight='900' text-anchor='middle' fill='%2300e676'>SB</text></svg>`;
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>SetupBoom · ${code}</title><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/><style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Syne',sans-serif;background:#f7fbf8;color:#2d3e35;padding:2.5rem 3rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}.doc-header{display:flex;align-items:center;justify-content:space-between;background:#e8f5ec;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;border:1px solid #c8e6ce}.doc-header-left{display:flex;align-items:center;gap:.9rem}.logo-badge{width:48px;height:48px;border-radius:12px;background:#060f0a;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}.logo-badge img{width:100%;height:100%;}.brand-name{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:#1a3325;line-height:1}.brand-name span{color:#2e9e5a}.brand-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.1em;margin-top:3px}.doc-header-right{text-align:right;font-family:'DM Mono',monospace;font-size:.7rem;color:#7aaa88;line-height:1.9}.doc-header-right strong{color:#2d3e35;font-size:.8rem;display:block}.info-bar{display:flex;align-items:stretch;gap:0;background:#fff;border:1px solid #c8e6ce;border-radius:10px;margin-bottom:1.5rem;overflow:hidden}.info-item{display:flex;flex-direction:column;gap:3px;padding:.85rem 1.25rem;flex:1;border-right:1px solid #e4f2e8}.info-item:last-child{border-right:none}.info-label{font-family:'DM Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:#7aaa88}.info-value{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;color:#2d3e35}.info-value.accent{color:#2e9e5a;font-size:1rem;font-weight:700}.table-wrap{background:#fff;border:1px solid #c8e6ce;border-radius:10px;overflow:hidden}table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:.79rem}thead tr{background:#d6eedd}thead th{padding:.7rem 1rem;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#3a6b4a;white-space:nowrap;border-bottom:1px solid #c8e6ce}tbody tr.even{background:#fff}tbody tr.odd{background:#f2faf4}tbody tr{border-bottom:1px solid #e4f2e8}tbody tr:last-child{border-bottom:none}td{padding:.6rem 1rem;vertical-align:middle;color:#2d3e35}td:first-child{color:#2e9e5a;font-weight:500}.qty-cell{display:inline-block;background:#e2f5e8;color:#2e9e5a;border:1px solid #c8e6ce;border-radius:4px;padding:1px 8px;font-size:.74rem}.doc-footer{margin-top:1.5rem;padding-top:.9rem;border-top:1px solid #c8e6ce;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:.65rem;color:#7aaa88}.doc-footer strong{color:#2e9e5a}@media print{body{padding:1.2cm 1.8cm;background:#f7fbf8}@page{margin:0;size:A4}}</style></head><body><div class="doc-header"><div class="doc-header-left"><div class="logo-badge"><img src="${logoSrc}" alt="SB"/></div><div><div class="brand-name">Setup<span>Boom</span></div><div class="brand-sub">Estrutura de Materiais</div></div></div><div class="doc-header-right"><strong>Relatório de BOM</strong><div>Gerado em ${now}</div></div></div><div class="info-bar"><div class="info-item"><span class="info-label">Código</span><span class="info-value accent">${code}</span></div><div class="info-item"><span class="info-label">Total</span><span class="info-value">${currentItems.length} itens</span></div><div class="info-item"><span class="info-label">Data</span><span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span></div></div><div class="table-wrap"><table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div><div class="doc-footer"><div>SetupBoom © ${new Date().getFullYear()} · <strong>Grupo Setup</strong></div><div>Documento automático</div></div><script>window.onload=function(){window.print()};<\/script></body></html>`;
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Permita pop-ups para exportar PDF.', 'error'); return; }
+    win.document.write(html);
+    win.document.close();
   }
 
   let currentItems = []; let currentCols = [];
@@ -4850,6 +4849,40 @@ function qsReset() {
 const _campoSlots = [];
 const _CAMPO_MAX = 9;
 
+function campoOpenLightbox(i) {
+  let lb = document.getElementById('campoLightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'campoLightbox';
+    lb.style.cssText = 'display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;flex-direction:column;gap:1rem;';
+    lb.innerHTML = `
+      <button onclick="document.getElementById('campoLightbox').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1.4rem;width:40px;height:40px;border-radius:50%;cursor:pointer;line-height:1;">✕</button>
+      <button id="lbPrev" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1.6rem;width:44px;height:44px;border-radius:50%;cursor:pointer;">‹</button>
+      <button id="lbNext" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1.6rem;width:44px;height:44px;border-radius:50%;cursor:pointer;">›</button>
+      <img id="lbImg" style="max-width:92vw;max-height:80vh;border-radius:10px;object-fit:contain;box-shadow:0 0 40px rgba(0,0,0,0.6);">
+      <div id="lbCaption" style="font-family:'DM Mono',monospace;font-size:0.8rem;color:rgba(255,255,255,0.6);text-align:center;"></div>
+      <div id="lbCounter" style="font-family:'DM Mono',monospace;font-size:0.7rem;color:rgba(255,255,255,0.35);"></div>
+    `;
+    lb.addEventListener('click', e => { if (e.target === lb) lb.style.display = 'none'; });
+    document.body.appendChild(lb);
+    document.getElementById('lbPrev').onclick = () => campoOpenLightbox((lb._idx - 1 + _campoSlots.length) % _campoSlots.length);
+    document.getElementById('lbNext').onclick = () => campoOpenLightbox((lb._idx + 1) % _campoSlots.length);
+    document.addEventListener('keydown', e => {
+      if (lb.style.display === 'none') return;
+      if (e.key === 'ArrowLeft') campoOpenLightbox((lb._idx - 1 + _campoSlots.length) % _campoSlots.length);
+      if (e.key === 'ArrowRight') campoOpenLightbox((lb._idx + 1) % _campoSlots.length);
+      if (e.key === 'Escape') lb.style.display = 'none';
+    });
+  }
+  lb._idx = i;
+  document.getElementById('lbImg').src = _campoSlots[i].src;
+  document.getElementById('lbCaption').textContent = _campoSlots[i].label;
+  document.getElementById('lbCounter').textContent = `${i + 1} / ${_campoSlots.length}`;
+  document.getElementById('lbPrev').style.display = _campoSlots.length > 1 ? 'block' : 'none';
+  document.getElementById('lbNext').style.display = _campoSlots.length > 1 ? 'block' : 'none';
+  lb.style.display = 'flex';
+}
+
 function _campoBuildGrid() {
   const grid = document.getElementById('campoImgsGrid');
   if (!grid) return;
@@ -4857,7 +4890,7 @@ function _campoBuildGrid() {
   _campoSlots.forEach((slot, i) => {
     const el = document.createElement('div');
     el.className = 'campo-img-slot filled';
-    el.innerHTML = `<img src="${slot.src}" alt="${slot.label}">
+    el.innerHTML = `<img src="${slot.src}" alt="${slot.label}" style="cursor:zoom-in;" onclick="campoOpenLightbox(${i})">
       <div class="campo-img-caption">${slot.label}</div>
       <div class="campo-img-actions">
         <button class="campo-img-act-btn" onclick="campoRenameImg(${i})">✏️</button>
@@ -4928,7 +4961,7 @@ function campoGpsToggle() {
 
 function _campoStampImage(src, callback) {
   const enabled = document.getElementById('gpsStampEnabled').checked;
-  if (!enabled || !_gpsData) { callback(src); return; }
+  if (!enabled) { callback(src); return; }
 
   const img = new Image();
   img.onload = () => {
@@ -4938,46 +4971,105 @@ function _campoStampImage(src, callback) {
     const ctx = c.getContext('2d');
     ctx.drawImage(img, 0, 0);
 
-    // Stamp dimensions
+    // Stamp setup
     const scale = Math.max(1, img.naturalWidth / 1200);
-    const fontSize = Math.round(22 * scale);
-    const lineH = Math.round(fontSize * 1.55);
-    const pad = Math.round(14 * scale);
-    const lines = [
-      `• LAT ${_gpsData.latitude.toFixed(6)}`,
-      `• LNG ${_gpsData.longitude.toFixed(6)}`,
-      `• ±${Math.round(_gpsData.accuracy)}m`,
-      `• ${_gpsData.dateStr}  ${_gpsData.timeStr}`,
-      `• ${_gpsData.user} | SetupBoom`,
-    ];
-    const boxH = lines.length * lineH + pad * 2;
-    const boxY = img.naturalHeight - boxH - Math.round(10 * scale);
+    const stampNow = new Date();
+    const stampDate = stampNow.toLocaleDateString('pt-BR');
+    const stampTime = stampNow.toLocaleTimeString('pt-BR');
+    const user = _gpsData ? _gpsData.user : (function() {
+      const el = document.getElementById('userInfo');
+      if (!el) return 'campo';
+      const span = el.querySelector('span');
+      return span ? span.textContent.trim() : 'campo';
+    })();
 
-    // Dark semi-transparent background
-    ctx.fillStyle = 'rgba(6,15,10,0.78)';
+    // Lines (sem precisão)
+    const infoLines = _gpsData
+      ? [`LAT ${_gpsData.latitude.toFixed(6)}   LNG ${_gpsData.longitude.toFixed(6)}`, `${stampDate}  ${stampTime}  ·  ${user}`]
+      : [`${stampDate}  ${stampTime}  ·  ${user}`];
+
+    const fontSize   = Math.round(20 * scale);
+    const smallFont  = Math.round(15 * scale);
+    const lineH      = Math.round(fontSize * 1.6);
+    const pad        = Math.round(16 * scale);
+    const logoSize   = Math.round(46 * scale);
+    const gap        = Math.round(12 * scale);
+    const margin     = Math.round(12 * scale);
+
+    const boxH = Math.max(logoSize + pad * 2, infoLines.length * lineH + pad * 2);
+    const boxW = img.naturalWidth - margin * 2;
+    const boxX = margin;
+    const boxY = img.naturalHeight - boxH - margin;
+    const r    = Math.round(10 * scale);
+
+    // Background
+    ctx.fillStyle = 'rgba(6,15,10,0.82)';
     ctx.beginPath();
-    const r = Math.round(8 * scale);
-    const bx = Math.round(10 * scale), bw = img.naturalWidth - bx * 2;
-    ctx.moveTo(bx + r, boxY); ctx.lineTo(bx + bw - r, boxY);
-    ctx.arcTo(bx + bw, boxY, bx + bw, boxY + r, r);
-    ctx.lineTo(bx + bw, boxY + boxH - r);
-    ctx.arcTo(bx + bw, boxY + boxH, bx + bw - r, boxY + boxH, r);
-    ctx.lineTo(bx + r, boxY + boxH);
-    ctx.arcTo(bx, boxY + boxH, bx, boxY + boxH - r, r);
-    ctx.lineTo(bx, boxY + r);
-    ctx.arcTo(bx, boxY, bx + r, boxY, r);
+    ctx.moveTo(boxX + r, boxY);
+    ctx.lineTo(boxX + boxW - r, boxY);
+    ctx.arcTo(boxX + boxW, boxY, boxX + boxW, boxY + r, r);
+    ctx.lineTo(boxX + boxW, boxY + boxH - r);
+    ctx.arcTo(boxX + boxW, boxY + boxH, boxX + boxW - r, boxY + boxH, r);
+    ctx.lineTo(boxX + r, boxY + boxH);
+    ctx.arcTo(boxX, boxY + boxH, boxX, boxY + boxH - r, r);
+    ctx.lineTo(boxX, boxY + r);
+    ctx.arcTo(boxX, boxY, boxX + r, boxY, r);
     ctx.closePath();
     ctx.fill();
 
-    // Accent left bar
+    // Logo badge (quadrado arredondado com "SB")
+    const lx = boxX + pad;
+    const ly = boxY + (boxH - logoSize) / 2;
+    const lr = Math.round(8 * scale);
     ctx.fillStyle = '#00e676';
-    ctx.fillRect(bx, boxY, Math.round(4 * scale), boxH);
+    ctx.beginPath();
+    ctx.moveTo(lx + lr, ly);
+    ctx.lineTo(lx + logoSize - lr, ly);
+    ctx.arcTo(lx + logoSize, ly, lx + logoSize, ly + lr, lr);
+    ctx.lineTo(lx + logoSize, ly + logoSize - lr);
+    ctx.arcTo(lx + logoSize, ly + logoSize, lx + logoSize - lr, ly + logoSize, lr);
+    ctx.lineTo(lx + lr, ly + logoSize);
+    ctx.arcTo(lx, ly + logoSize, lx, ly + logoSize - lr, lr);
+    ctx.lineTo(lx, ly + lr);
+    ctx.arcTo(lx, ly, lx + lr, ly, lr);
+    ctx.closePath();
+    ctx.fill();
 
-    // Text
-    ctx.font = `${fontSize}px "DM Mono", monospace`;
-    ctx.fillStyle = '#e8f0ff';
-    lines.forEach((line, i) => {
-      ctx.fillText(line, bx + pad + Math.round(8 * scale), boxY + pad + lineH * i + fontSize * 0.85);
+    const sbFont = Math.round(logoSize * 0.42);
+    ctx.font = `900 ${sbFont}px "Syne", "Arial Black", sans-serif`;
+    ctx.fillStyle = '#060f0a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('SB', lx + logoSize / 2, ly + logoSize / 2 + Math.round(1 * scale));
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    // Divider line
+    const divX = lx + logoSize + gap;
+    ctx.strokeStyle = 'rgba(0,230,118,0.25)';
+    ctx.lineWidth = Math.round(1 * scale);
+    ctx.beginPath();
+    ctx.moveTo(divX, boxY + pad);
+    ctx.lineTo(divX, boxY + boxH - pad);
+    ctx.stroke();
+
+    // Info text
+    const textX = divX + gap;
+    const totalTextH = infoLines.length * lineH;
+    const textStartY = boxY + (boxH - totalTextH) / 2 + fontSize * 0.82;
+
+    ctx.font = `500 ${fontSize}px "DM Mono", monospace`;
+    ctx.fillStyle = '#e8f5ff';
+    infoLines.forEach((line, i) => {
+      if (i === 0 && _gpsData) {
+        // GPS line slightly smaller
+        ctx.font = `500 ${smallFont}px "DM Mono", monospace`;
+        ctx.fillStyle = 'rgba(232,245,255,0.7)';
+      } else {
+        ctx.font = `500 ${fontSize}px "DM Mono", monospace`;
+        ctx.fillStyle = '#e8f5ff';
+      }
+      ctx.fillText(line, textX, textStartY + i * lineH);
     });
 
     callback(c.toDataURL('image/jpeg', 0.92));
@@ -5101,14 +5193,185 @@ function campoCountChars() {
 
 // ── Impressão ──
 function campoPrint() {
-  const active = [...document.querySelectorAll('.tab-panel.active')].map(p => p.id);
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-campo').classList.add('active');
-  window.print();
-  setTimeout(() => {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    active.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('active'); });
-  }, 800);
+  const now      = new Date();
+  const dateStr  = now.toLocaleDateString('pt-BR');
+  const timeStr  = now.toLocaleTimeString('pt-BR');
+  const datetime = `${dateStr} às ${timeStr}`;
+
+  // Usuário logado
+  const userEl = document.getElementById('userInfo');
+  const userSpan = userEl ? userEl.querySelector('span') : null;
+  const userName = userSpan ? userSpan.textContent.trim() : 'Campo';
+
+  // GPS
+  let gpsHtml = '';
+  if (_gpsData) {
+    gpsHtml = `
+      <div class="info-item">
+        <span class="info-label">Latitude</span>
+        <span class="info-value">${_gpsData.latitude.toFixed(6)}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Longitude</span>
+        <span class="info-value">${_gpsData.longitude.toFixed(6)}</span>
+      </div>`;
+  }
+
+  // Fotos
+  let fotosHtml = '';
+  if (_campoSlots.length > 0) {
+    const imgs = _campoSlots.map(s => `
+      <div class="foto-item">
+        <img src="${s.src}" alt="${s.label}">
+        <p>${s.label}</p>
+      </div>`).join('');
+    fotosHtml = `
+      <div class="section">
+        <div class="section-title">🖼️ Fotos do Campo</div>
+        <div class="fotos-grid">${imgs}</div>
+      </div>`;
+  }
+
+  // Croqui
+  let croquiHtml = '';
+  const canvas = document.getElementById('campoCanvas');
+  if (canvas) {
+    try {
+      const croquiSrc = canvas.toDataURL('image/png');
+      // Verifica se o canvas tem conteúdo (não é branco puro)
+      croquiHtml = `
+        <div class="section">
+          <div class="section-title">✏️ Croqui / Desenho</div>
+          <img src="${croquiSrc}" class="croqui-img" alt="Croqui">
+        </div>`;
+    } catch(e) {}
+  }
+
+  // Anotações
+  let notesHtml = '';
+  const notes = document.getElementById('campoNotes')?.value?.trim();
+  if (notes) {
+    const escaped = notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    notesHtml = `
+      <div class="section">
+        <div class="section-title">📝 Anotações</div>
+        <div class="notes-box">${escaped}</div>
+      </div>`;
+  }
+
+  // Logo SVG inline (mesmo do app)
+  const logoSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23060f0a'/><text x='256' y='340' font-family='Arial Black,sans-serif' font-size='280' font-weight='900' text-anchor='middle' fill='%2300e676'>SB</text></svg>`;
+  const logoSrc = `data:image/svg+xml,${logoSvg}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>SetupBoom · Relatório de Campo · ${dateStr}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Syne',sans-serif;background:#f7fbf8;color:#2d3e35;padding:2.5rem 3rem;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+    /* HEADER */
+    .doc-header{display:flex;align-items:center;justify-content:space-between;background:#e8f5ec;border-radius:14px;padding:1.3rem 1.6rem;margin-bottom:1.6rem;border:1px solid #c8e6ce;}
+    .doc-header-left{display:flex;align-items:center;gap:1rem;}
+    .logo-badge{width:48px;height:48px;border-radius:12px;background:#060f0a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .logo-badge img{width:100%;height:100%;border-radius:12px;}
+    .brand-name{font-size:1.55rem;font-weight:800;letter-spacing:-.03em;color:#1a3325;line-height:1;}
+    .brand-name span{color:#2e9e5a;}
+    .brand-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.1em;margin-top:4px;}
+    .doc-header-right{text-align:right;font-family:'DM Mono',monospace;font-size:.72rem;color:#7aaa88;line-height:2;}
+    .doc-header-right strong{color:#2d3e35;font-size:.85rem;display:block;margin-bottom:2px;}
+
+    /* INFO BAR */
+    .info-bar{display:flex;align-items:stretch;background:#fff;border:1px solid #c8e6ce;border-radius:10px;margin-bottom:1.6rem;overflow:hidden;}
+    .info-item{display:flex;flex-direction:column;gap:3px;padding:.85rem 1.3rem;flex:1;border-right:1px solid #e4f2e8;}
+    .info-item:last-child{border-right:none;}
+    .info-label{font-family:'DM Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:#7aaa88;}
+    .info-value{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;color:#2d3e35;}
+    .info-value.accent{color:#2e9e5a;font-size:1rem;font-weight:700;}
+
+    /* SECTIONS */
+    .section{background:#fff;border:1px solid #c8e6ce;border-radius:12px;overflow:hidden;margin-bottom:1.4rem;}
+    .section-title{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#3a6b4a;padding:.75rem 1.25rem;background:#d6eedd;border-bottom:1px solid #c8e6ce;}
+
+    /* FOTOS */
+    .fotos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;padding:1.1rem;}
+    .foto-item img{width:100%;border-radius:8px;display:block;border:1px solid #e4f2e8;}
+    .foto-item p{font-family:'DM Mono',monospace;font-size:.65rem;color:#7aaa88;margin-top:5px;text-align:center;word-break:break-word;}
+
+    /* CROQUI */
+    .croqui-img{display:block;width:100%;max-width:700px;margin:1rem auto;border-radius:8px;padding:0 1rem 1rem;}
+
+    /* NOTES */
+    .notes-box{font-family:'DM Mono',monospace;font-size:.82rem;color:#2d3e35;line-height:1.75;padding:1.1rem 1.25rem;white-space:pre-wrap;}
+
+    /* FOOTER */
+    .doc-footer{margin-top:1.5rem;padding-top:.9rem;border-top:1px solid #c8e6ce;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:.65rem;color:#7aaa88;}
+    .doc-footer strong{color:#2e9e5a;}
+
+    @media print{
+      body{padding:1.2cm 1.8cm;background:#f7fbf8;}
+      @page{margin:0;size:A4;}
+      .section{break-inside:avoid;}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="logo-badge"><img src="${logoSrc}" alt="SB"/></div>
+      <div>
+        <div class="brand-name">Setup<span>Boom</span></div>
+        <div class="brand-sub">Relatório de Campo</div>
+      </div>
+    </div>
+    <div class="doc-header-right">
+      <strong>Registro de Campo</strong>
+      <div>Gerado em ${datetime}</div>
+      <div>Usuário: ${userName}</div>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <div class="info-item">
+      <span class="info-label">Data</span>
+      <span class="info-value accent">${dateStr}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Hora</span>
+      <span class="info-value">${timeStr}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Responsável</span>
+      <span class="info-value">${userName}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Fotos</span>
+      <span class="info-value">${_campoSlots.length}</span>
+    </div>
+    ${gpsHtml}
+  </div>
+
+  ${fotosHtml}
+  ${croquiHtml}
+  ${notesHtml}
+
+  <div class="doc-footer">
+    <div>SetupBoom © ${now.getFullYear()} · <strong>Grupo Setup</strong></div>
+    <div>Documento gerado automaticamente</div>
+  </div>
+
+  <script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { if (typeof showToast === 'function') showToast('Permita pop-ups para exportar.', 'error'); return; }
+  win.document.write(html);
+  win.document.close();
 }
 
 // ── Init ──

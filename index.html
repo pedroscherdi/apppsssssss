@@ -1345,6 +1345,134 @@ const firebaseConfig = {
     }
     /* ═══════════════════════════════════════════════════════════════════ */
 
+    /* ── MODAL SUBSTITUIÇÃO DE MATERIAL ─────────────────────────────── */
+    .subst-item-btn {
+      cursor: pointer;
+      border-bottom: 1px dashed rgba(0,230,118,0.35);
+      color: var(--accent2);
+      transition: color 0.15s, border-color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'DM Mono', monospace;
+    }
+    .subst-item-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .subst-item-btn .subst-icon {
+      font-size: 0.65rem;
+      opacity: 0.55;
+      transition: opacity 0.15s;
+    }
+    .subst-item-btn:hover .subst-icon { opacity: 1; }
+
+    #substModal {
+      display: none;
+      position: fixed; inset: 0; z-index: 9800;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.62);
+      backdrop-filter: blur(5px);
+    }
+    #substModal.open { display: flex; }
+
+    #substModalBox {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 1.75rem 1.75rem 1.5rem;
+      width: 96%; max-width: 520px;
+      box-shadow: 0 0 48px rgba(0,230,118,0.15);
+      animation: sbPopIn 0.25s cubic-bezier(.34,1.56,.64,1);
+      display: flex; flex-direction: column; gap: 1rem;
+      max-height: 92vh; overflow-y: auto;
+    }
+    @media (max-width: 700px) {
+      #substModalBox {
+        width: 98%;
+        padding: 1.25rem 1rem 1rem;
+        max-height: 90vh;
+        border-radius: 14px;
+      }
+    }
+
+    #substModalBox h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1rem;
+      color: var(--accent); margin: 0;
+    }
+
+    #substModalOrig {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+    }
+
+    #substModalOrig .orig-label {
+      font-size: 0.65rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px;
+    }
+    #substModalOrig .orig-code { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+    #substModalOrig .orig-desc { color: var(--muted); font-size: 0.75rem; margin-top: 2px; }
+
+    #substSearchWrap { position: relative; overflow: visible; }
+    #substSearchInput {
+      width: 100%;
+      background: rgba(255,214,0,0.10) !important;
+      border: 1px solid rgba(255,214,0,0.45) !important;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+    }
+    #substSearchInput:focus {
+      outline: none;
+      border-color: #ffd600 !important;
+      box-shadow: 0 0 0 2px rgba(255,214,0,0.18) !important;
+    }
+
+    #substDropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 5px); left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      max-height: 240px; overflow-y: auto;
+      z-index: 9999; box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    }
+    #substDropdown.open { display: block; }
+
+    .subst-dd-item {
+      padding: 0.6rem 0.9rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+    .subst-dd-item:last-child { border-bottom: none; }
+    .subst-dd-item:hover { background: rgba(0,230,118,0.08); }
+    .subst-dd-item .sdi-code { font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+    .subst-dd-item .sdi-desc { font-family: 'DM Mono', monospace; font-size: 0.73rem; color: var(--muted); margin-top: 1px; }
+    .subst-dd-item mark { background: none; color: var(--accent); font-weight: 700; }
+
+    #substPreview {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      display: none;
+    }
+    #substPreview.show { display: block; }
+    #substPreview .prev-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px; }
+    #substPreview .prev-code { color: var(--accent2); font-weight: 600; font-size: 0.9rem; }
+    #substPreview .prev-desc { color: var(--muted); font-size: 0.75rem; margin-top: 2px; }
+
+    #substModalBtns { display: flex; gap: 0.65rem; justify-content: flex-end; }
+    /* ── FIM MODAL SUBSTITUIÇÃO ─────────────────────────────────────── */
+
     /* ── PWA ─────────────────────────────────────────────────────────── */
     @keyframes pwa-pulse {
       0%,100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
@@ -2769,6 +2897,36 @@ const firebaseConfig = {
 })();
 </script>
 
+<!-- ===== MODAL DE SUBSTITUIÇÃO DE MATERIAL ===== -->
+<div id="substModal" onclick="if(event.target===this)fecharSubstModal()">
+  <div id="substModalBox">
+    <h3>🔄 Substituir Material</h3>
+
+    <div id="substModalOrig">
+      <div class="orig-label">Material atual</div>
+      <div class="orig-code" id="substOrigCode">—</div>
+      <div class="orig-desc" id="substOrigDesc"></div>
+    </div>
+
+    <div id="substSearchWrap">
+      <span style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:5px;">Buscar substituto (código ou descrição)</span>
+      <input type="text" id="substSearchInput" placeholder="Digite código ou descrição..." autocomplete="off" />
+      <div id="substDropdown"></div>
+    </div>
+
+    <div id="substPreview">
+      <div class="prev-label">Substituir por</div>
+      <div class="prev-code" id="substPrevCode">—</div>
+      <div class="prev-desc" id="substPrevDesc"></div>
+    </div>
+
+    <div id="substModalBtns">
+      <button class="btn-ghost" onclick="fecharSubstModal()">Cancelar</button>
+      <button class="btn" id="substConfirmBtn" onclick="confirmarSubstituicao()" disabled>✔ Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <footer>
@@ -2954,16 +3112,20 @@ const firebaseConfig = {
       columnMap.qty  ? { key: columnMap.qty,  label: 'Quantidade' } : null,
       columnMap.unit ? { key: columnMap.unit, label: 'Unidade' }    : null,
     ].filter(Boolean);
-    document.getElementById('tableHead').innerHTML = `<tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr>`;
+    document.getElementById('tableHead').innerHTML = `<tr>${cols.map(c => `<th>${c.label}</th>`).join('')}<th style="width:90px;text-align:center;">Substituir</th></tr>`;
     document.getElementById('tableBody').innerHTML = items.length
-      ? items.map((row, i) => `<tr class="fade-in" style="animation-delay:${i*0.03}s">${cols.map((c, ci) => {
-          const val = row[c.key] ?? '';
-          if (ci === 0) return `<td>${val}</td>`;
-          if (c.key === columnMap.qty)  return `<td><span class="qty-pill">${val}</span></td>`;
-          if (c.key === columnMap.unit) return `<td><span class="unit-text">${val}</span></td>`;
-          return `<td>${val}</td>`;
-        }).join('')}</tr>`).join('')
-      : `<tr><td colspan="${cols.length}" style="padding:2rem;text-align:center;color:var(--muted)">Nenhum componente encontrado.</td></tr>`;
+      ? items.map((row, i) => {
+          const itemCode = String(row[columnMap.item] ?? '');
+          const itemDesc = columnMap.desc ? String(row[columnMap.desc] ?? '') : '';
+          return `<tr class="fade-in" style="animation-delay:${i*0.03}s" data-row-idx="${i}">${cols.map((c, ci) => {
+            const val = row[c.key] ?? '';
+            if (ci === 0) return `<td><span class="subst-item-btn" onclick="abrirSubstModal(${i},'${itemCode.replace(/'/g,"\\'")}','${itemDesc.replace(/'/g,"\\'")}',event)">${val}<span class="subst-icon">↕</span></span></td>`;
+            if (c.key === columnMap.qty)  return `<td><span class="qty-pill">${val}</span></td>`;
+            if (c.key === columnMap.unit) return `<td><span class="unit-text">${val}</span></td>`;
+            return `<td>${val}</td>`;
+          }).join('')}<td style="text-align:center;"><button onclick="abrirSubstModal(${i},'${itemCode.replace(/'/g,"\\'")}','${itemDesc.replace(/'/g,"\\'")}',event)" title="Substituir material" style="background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.8rem;font-family:'DM Mono',monospace;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,230,118,0.18)'" onmouseout="this.style.background='rgba(0,230,118,0.08)'">🔄</button></td></tr>`;
+        }).join('')
+      : `<tr><td colspan="${cols.length + 1}" style="padding:2rem;text-align:center;color:var(--muted)">Nenhum componente encontrado.</td></tr>`;
     currentItems = items; currentCols = cols; codigoAtual = code;
     updateFavBtn();
     document.getElementById('results').classList.add('visible', 'fade-in');
@@ -2993,6 +3155,125 @@ const firebaseConfig = {
       }
     }
   }
+
+  // ── SUBSTITUIÇÃO DE MATERIAL ─────────────────────────────────────────
+  let _substRowIdx = -1;
+  let _substSelCode = '';
+  let _substSelDesc = '';
+
+  window.abrirSubstModal = function(rowIdx, origCode, origDesc, evt) {
+    if (evt) evt.stopPropagation();
+    _substRowIdx = rowIdx;
+    _substSelCode = '';
+    _substSelDesc = '';
+    document.getElementById('substOrigCode').textContent = origCode || '—';
+    document.getElementById('substOrigDesc').textContent = origDesc || '';
+    document.getElementById('substSearchInput').value = '';
+    document.getElementById('substDropdown').classList.remove('open');
+    document.getElementById('substDropdown').innerHTML = '';
+    document.getElementById('substPreview').classList.remove('show');
+    document.getElementById('substConfirmBtn').disabled = true;
+    document.getElementById('substModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('substSearchInput').focus(), 80);
+  };
+
+  window.fecharSubstModal = function() {
+    document.getElementById('substModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.confirmarSubstituicao = function() {
+    if (!_substSelCode || _substRowIdx < 0) return;
+    // Atualiza visual na tabela — linha já renderizada
+    const tr = document.querySelector(`#tableBody tr[data-row-idx="${_substRowIdx}"]`);
+    if (tr) {
+      const firstTd = tr.querySelector('td:first-child');
+      if (firstTd) {
+        const origCode = document.getElementById('substOrigCode').textContent;
+        const escapedCode = _substSelCode.replace(/'/g, "\\'");
+        const escapedDesc = _substSelDesc.replace(/'/g, "\\'");
+        firstTd.innerHTML = `<span class="subst-item-btn" onclick="abrirSubstModal(${_substRowIdx},'${escapedCode}','${escapedDesc}',event)"><span style="color:var(--accent2)">${_substSelCode}</span><span class="subst-icon">↕</span></span>`;
+        // Atualiza a descrição na segunda coluna se existir
+        const descTd = tr.querySelector('td:nth-child(2)');
+        if (descTd && _substSelDesc && columnMap.desc) {
+          const isQty = descTd.querySelector('.qty-pill');
+          const isUnit = descTd.querySelector('.unit-text');
+          if (!isQty && !isUnit) descTd.textContent = _substSelDesc;
+        }
+        tr.style.background = 'rgba(0,230,118,0.06)';
+        setTimeout(() => { if (tr) tr.style.background = ''; }, 2200);
+      }
+    }
+    showToast(`🔄 Substituído por <strong>${_substSelCode}</strong>`, 'success');
+    fecharSubstModal();
+  };
+
+  // Busca no modal de substituição — pesquisa em código E descrição
+  document.getElementById('substSearchInput').addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    const dd = document.getElementById('substDropdown');
+    if (!q) { dd.classList.remove('open'); return; }
+
+    // Coleta matches por código
+    const byCode = Object.keys(itemIndex)
+      .filter(c => c.toLowerCase().includes(q))
+      .slice(0, 30)
+      .map(c => ({ code: c, desc: [...(itemIndex[c] || [])][0] || '' }));
+
+    // Coleta matches por descrição
+    const byDesc = Object.keys(descIndex)
+      .filter(k => k.includes(q))
+      .slice(0, 30)
+      .map(k => {
+        const entry = descIndex[k];
+        const code = [...(entry.codes || [])][0] || '';
+        return { code, desc: entry.label };
+      })
+      .filter(x => x.code);
+
+    // Mescla sem duplicar por código
+    const seen = new Set();
+    const merged = [];
+    [...byCode, ...byDesc].forEach(item => {
+      if (!seen.has(item.code)) { seen.add(item.code); merged.push(item); }
+    });
+
+    if (!merged.length) { dd.classList.remove('open'); return; }
+
+    dd.innerHTML = merged.slice(0, 50).map(item => {
+      const hlCode = item.code.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>');
+      const hlDesc = item.desc ? item.desc.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : '';
+      return `<div class="subst-dd-item" data-code="${item.code.replace(/"/g,'&quot;')}" data-desc="${(item.desc||'').replace(/"/g,'&quot;')}">
+        <div class="sdi-code">${hlCode}</div>
+        ${hlDesc ? `<div class="sdi-desc">${hlDesc}</div>` : ''}
+      </div>`;
+    }).join('');
+    dd.classList.add('open');
+    dd.querySelectorAll('.subst-dd-item').forEach(el => {
+      el.addEventListener('click', () => {
+        _substSelCode = el.dataset.code;
+        _substSelDesc = el.dataset.desc;
+        document.getElementById('substSearchInput').value = _substSelCode + (_substSelDesc ? ' — ' + _substSelDesc : '');
+        dd.classList.remove('open');
+        document.getElementById('substPrevCode').textContent = _substSelCode;
+        document.getElementById('substPrevDesc').textContent = _substSelDesc;
+        document.getElementById('substPreview').classList.add('show');
+        document.getElementById('substConfirmBtn').disabled = false;
+      });
+    });
+  });
+
+  document.getElementById('substSearchInput').addEventListener('focus', function() {
+    this.dispatchEvent(new Event('input'));
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#substSearchWrap')) {
+      document.getElementById('substDropdown').classList.remove('open');
+    }
+  });
+  // ── FIM SUBSTITUIÇÃO ──────────────────────────────────────────────────
 
   const uploadZone = document.getElementById('uploadZone');
   uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });

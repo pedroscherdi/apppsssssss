@@ -1855,6 +1855,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="orcamento"><span class="tab-icon">💰</span> Orçamento</button>
     <button class="tab" data-tab="noticias"><span class="tab-icon">📰</span> Notícias</button>
     <button class="tab" data-tab="quem-somos"><span class="tab-icon">🏢</span> Quem Somos</button>
+    <button class="tab" data-tab="ia" style="margin-top:0.3rem;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:8px;"><span class="tab-icon">🤖</span> IA</button>
   </div>
   <div class="sidebar-footer">
     <!-- Botao instalar PWA -->
@@ -2930,19 +2931,7 @@ const firebaseConfig = {
 
 <div class="toast" id="toast"></div>
 
-<footer>
-  <div>
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Criado por</div>
-    <span class="footer-name">Pedro Scherdien</span>
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:3px;">
-      SetupBoom © 2025 · <span style="color:var(--accent);letter-spacing:0.05em;">Técnico PCP 2</span>
-    </div>
-  </div>
-  <div class="footer-contact">
-    <span>📱</span>
-    <a href="https://wa.me/5553984742332" target="_blank">(53) 98474-2332</a>
-  </div>
-</footer>
+
 
 <!-- ============================================================ -->
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
@@ -2986,6 +2975,7 @@ const firebaseConfig = {
     'quem-somos':  'Quem Somos',
     'alimentadores':'Alimentadores',
     'rebaixadores': 'Rebaixadores',
+    'ia':           'IA',
   };
 
   // Abre aba Início por padrão
@@ -6401,6 +6391,615 @@ document.querySelectorAll('.tab').forEach(btn => {
     </div>
   </div>
 </div><!-- /tab-equipamentos -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: IA                                                -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-ia">
+<style>
+  #tab-ia .ia-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px);
+    min-height: 500px;
+  }
+  #tab-ia .ia-header { margin-bottom: 1.2rem; }
+  #tab-ia .ia-msgs {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+  }
+  #tab-ia .ia-msg {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    animation: iaMsgIn 0.22s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes iaMsgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  #tab-ia .ia-msg.user { flex-direction: row-reverse; }
+  #tab-ia .ia-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+  }
+  #tab-ia .ia-avatar.bot { background: rgba(0,230,118,0.15); border: 1px solid rgba(0,230,118,0.3); color: var(--accent); }
+  #tab-ia .ia-avatar.usr { background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--muted); }
+  #tab-ia .ia-bubble {
+    max-width: 82%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  #tab-ia .ia-bubble.bot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-top-left-radius: 3px;
+  }
+  #tab-ia .ia-bubble.usr {
+    background: rgba(0,230,118,0.12);
+    border: 1px solid rgba(0,230,118,0.25);
+    color: var(--text);
+    border-top-right-radius: 3px;
+  }
+  #tab-ia .ia-bubble.thinking {
+    color: var(--muted);
+    font-style: italic;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  #tab-ia .ia-dots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: iaDot 1.2s ease-in-out infinite;
+    opacity: 0.4;
+  }
+  #tab-ia .ia-dots span:nth-child(2) { animation-delay: 0.2s; }
+  #tab-ia .ia-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes iaDot { 0%,80%,100%{opacity:0.4;transform:scale(1)} 40%{opacity:1;transform:scale(1.3)} }
+  #tab-ia .ia-input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.6rem 0.75rem;
+    transition: border-color 0.2s;
+  }
+  #tab-ia .ia-input-row:focus-within { border-color: var(--accent); }
+  #tab-ia #ia-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.84rem;
+    resize: none;
+    max-height: 100px;
+    line-height: 1.5;
+    overflow-y: auto;
+  }
+  #tab-ia #ia-input::placeholder { color: var(--muted); }
+  #tab-ia #ia-send-btn {
+    background: var(--accent);
+    color: #060f0a;
+    border: none;
+    border-radius: 8px;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  #tab-ia #ia-send-btn:hover { opacity: 0.85; }
+  #tab-ia #ia-send-btn:active { transform: scale(0.94); }
+  #tab-ia #ia-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  #tab-ia .ia-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+  #tab-ia .ia-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 0.3rem 0.75rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  #tab-ia .ia-chip:hover { border-color: var(--accent); color: var(--accent); }
+  #tab-ia .ia-stats-bar {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+  }
+  #tab-ia .ia-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.3rem 0.7rem;
+    color: var(--muted);
+  }
+  #tab-ia .ia-stat span { color: var(--accent); font-weight: 600; }
+</style>
+
+<div class="ia-wrap">
+  <div class="ia-header">
+    <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+      Assistente <span style="color:var(--accent)">IA</span>
+    </h1>
+    <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+      Pergunte sobre o banco de dados · Estruturas · Materiais · Itens
+    </p>
+  </div>
+
+  <div class="ia-stats-bar" id="ia-stats-bar">
+    <div class="ia-stat">Estruturas: <span id="ia-stat-estruturas">—</span></div>
+    <div class="ia-stat">Linhas: <span id="ia-stat-linhas">—</span></div>
+    <div class="ia-stat">Itens únicos: <span id="ia-stat-itens">—</span></div>
+  </div>
+
+  <div class="ia-chips" id="ia-chips">
+    <button class="ia-chip" onclick="iaSendChip('Quantas estruturas existem no banco?')">Quantas estruturas?</button>
+    <button class="ia-chip" onclick="iaSendChip('Quais são os itens mais utilizados?')">Itens mais usados</button>
+    <button class="ia-chip" onclick="iaSendChip('Liste todas as estruturas disponíveis')">Listar estruturas</button>
+    <button class="ia-chip" onclick="iaSendChip('Qual estrutura tem mais componentes?')">Maior estrutura</button>
+    <button class="ia-chip" onclick="iaSendChip('buscar cabo')">Buscar "cabo"</button>
+    <button class="ia-chip" onclick="iaSendChip('buscar isolador')">Buscar "isolador"</button>
+    <button class="ia-chip" onclick="iaSendChip('Resuma o banco de dados')">Resumo geral</button>
+    <button class="ia-chip" onclick="iaSendChip('Quem é o Pedro Scherdien?')">👨‍💻 Fundador</button>
+    <button class="ia-chip" onclick="iaSendChip('Quem é o melhor patrão?')">👑 Melhor patrão</button>
+    <button class="ia-chip" onclick="iaSendChip('Qual a diferença entre as classes de tensão?')">⚡ Classes de tensão</button>
+    <button class="ia-chip" onclick="iaSendChip('Conta uma piada elétrica')">😄 Piada</button>
+  </div>
+
+  <div class="ia-msgs" id="ia-msgs">
+    <div class="ia-msg">
+      <div class="ia-avatar bot">SB</div>
+      <div class="ia-bubble bot">Olá! Sou o assistente IA do SetupBoom. Posso responder perguntas sobre as <strong>estruturas</strong>, <strong>materiais</strong> e <strong>itens</strong> do banco de dados.
+
+Exemplos do que você pode me perguntar:
+• "buscar cabo 35mm" — busca por nome/descrição
+• "buscar isolador" — todos os itens com esse nome
+• "onde é usado cabo 35mm" — em quais estruturas aparece
+• "itens da estrutura AT-01" — componentes de uma estrutura
+• "liste todas as estruturas"
+• "quais itens mais usados"
+
+Como posso ajudar?</div>
+    </div>
+  </div>
+
+  <div class="ia-input-row">
+    <textarea id="ia-input" rows="1" placeholder="Pergunte sobre o banco de dados..." onkeydown="iaKeyDown(event)" oninput="iaAutoResize(this)"></textarea>
+    <button id="ia-send-btn" onclick="iaSend()" title="Enviar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── Histórico de mensagens ──
+  let iaHistory = [];
+  let iaBusy = false;
+
+  function iaAutoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
+
+  window.iaKeyDown = function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); iaSend(); }
+  };
+
+  window.iaSendChip = function(text) {
+    document.getElementById('ia-input').value = text;
+    iaSend();
+  };
+
+  function iaAppendMsg(role, text, thinking) {
+    const msgs = document.getElementById('ia-msgs');
+    const div = document.createElement('div');
+    div.className = 'ia-msg' + (role === 'user' ? ' user' : '');
+    const avatar = document.createElement('div');
+    avatar.className = 'ia-avatar ' + (role === 'user' ? 'usr' : 'bot');
+    avatar.textContent = role === 'user' ? 'EU' : 'SB';
+    const bubble = document.createElement('div');
+    bubble.className = 'ia-bubble ' + (role === 'user' ? 'usr' : 'bot') + (thinking ? ' thinking' : '');
+    if (thinking) {
+      bubble.innerHTML = 'Consultando dados <span class="ia-dots"><span></span><span></span><span></span></span>';
+    } else {
+      bubble.textContent = text;
+    }
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return bubble;
+  }
+
+  function iaUpdateStats() {
+    try {
+      const estrut = typeof allCodes !== 'undefined' ? allCodes.length : 0;
+      const linhas = typeof allData !== 'undefined' ? allData.length : 0;
+      const itensSet = typeof allData !== 'undefined'
+        ? new Set(allData.map(r => String(r[columnMap && columnMap.item] || '').trim()).filter(Boolean)).size
+        : 0;
+      document.getElementById('ia-stat-estruturas').textContent = estrut || '—';
+      document.getElementById('ia-stat-linhas').textContent = linhas || '—';
+      document.getElementById('ia-stat-itens').textContent = itensSet || '—';
+    } catch(e) {}
+  }
+
+  // Atualiza stats quando a aba IA é aberta
+  document.querySelector('[data-tab="ia"]').addEventListener('click', iaUpdateStats);
+
+  // ── Motor de consulta local (sem API externa) ──────────────────────
+  function norm(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+
+  function iaQueryLocal(pergunta) {
+    if (!allData || !allData.length) {
+      return '⚠️ Dados ainda não carregados. Acesse a aba "Consultar" primeiro para carregar a planilha.';
+    }
+
+    const q = norm(pergunta);
+    const totalLinhas    = allData.length;
+    const totalEstruturas = allCodes ? allCodes.length : 0;
+    const itensSet = new Set(allData.map(r => String(r[columnMap.item]||'').trim()).filter(Boolean));
+    const totalItens = itensSet.size;
+
+    // ════════════════════════════════════════════
+    // ── PAPO FURADO & CONVERSAS ──────────────────
+    // ════════════════════════════════════════════
+
+    // ── SAUDAÇÕES ──
+    if (/^(oi|ola|ola!|oi!|e ai|eai|bom dia|boa tarde|boa noite|hey|hello|salve|fala|tudo bem|tudo bom|como vai|td bem|tdm|blz|beleza)[\s!?]*$/.test(q)) {
+      const hora = new Date().getHours();
+      const saud = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+      const respostas = [
+        `${saud}! 😄 Tudo certo por aqui! Sou o assistente do SetupBoom, pronto pra te ajudar com o banco de materiais. O que você precisa?`,
+        `${saud}! 👋 Que bom te ver por aqui! Pode perguntar sobre estruturas, itens, cabos... tô aqui pra isso!`,
+        `${saud}! 😊 Aqui é o SetupBoom respondendo! Precisando de algo no banco de dados, é só falar.`,
+      ];
+      return respostas[Math.floor(Math.random()*respostas.length)];
+    }
+
+    // ── TUDO BEM? ──
+    if (/tudo bem|tudo bom|como vai|como esta|como vc ta|como voce ta|td bem|blz|beleza|firmeza/.test(q)) {
+      return `Tudo ótimo, valeu por perguntar! 😄 Aqui é código, estrutura e material o dia todo — vida boa! E você, tá bem? Se precisar de algo no banco de dados, só chamar! 💪`;
+    }
+
+    // ── QUEM É O PEDRO / FUNDADOR ──
+    if (/pedro|scherdien|fundador|criador|quem.*criou|quem.*fez|quem.*desenvolveu|quem.*fundo|desenvolvedor/.test(q)) {
+      return `👨‍💻 Pedro Scherdien é o fundador e desenvolvedor do SetupBoom!\n\nTécnico PCP 2 do Grupo Setup, ele criou o sistema do zero pra facilitar a gestão de materiais e estruturas de redes elétricas.\n\nUm cara visionário que transformou planilhas em um app completo. 🚀\n\n📱 Contato: (53) 98474-2332`;
+    }
+
+    // ── QUEM É O LEANDRO / MELHOR PATRÃO ──
+    if (/leandro|patrao|patrão|chefe|melhor.*patrao|melhor.*patrão|chefe.*top|quem.*manda/.test(q)) {
+      return `👑 O Leandro é simplesmente o MELHOR patrão do Grupo Setup!\n\nLiderança de respeito, visão de negócio afiada e ainda apoia o time com tudo. Difícil achar patrão melhor no setor elétrico — ou em qualquer setor, honestamente. 😄🏆\n\nEquipe que tem o Leandro na frente tá em boas mãos!`;
+    }
+
+    // ── CLASSES DE TENSÃO ──
+    if (/classe.*tensao|tensao.*classe|classe de tensao|alta tensao|media tensao|baixa tensao|diferenca.*tensao|tensao.*diferenca|at |mt |bt |138kv|69kv|13.8kv/.test(q)) {
+      return `⚡ Diferença entre as Classes de Tensão:\n\n🔴 Alta Tensão (AT)\n   Acima de 69 kV — transmissão de grandes distâncias\n   Ex: 69 kV, 138 kV, 230 kV, 500 kV\n   Linhas de transmissão entre subestações\n\n🟡 Média Tensão (MT)\n   De 1 kV a 69 kV — distribuição primária\n   Ex: 13,8 kV, 34,5 kV\n   Redes de distribuição urbana e rural\n\n🟢 Baixa Tensão (BT)\n   Até 1.000 V — distribuição para o consumidor final\n   Ex: 127 V, 220 V, 380 V\n   Ligações residenciais e comerciais\n\n💡 No contexto do Grupo Setup, as estruturas são majoritariamente de Média Tensão (MT) para redes de distribuição.`;
+    }
+
+    // ── O QUE É O SETUPBOOM ──
+    if (/o que.*setupboom|setupboom.*o que|pra que.*serve|como funciona|o que e isso|o que voce e|quem e voce|quem sao voces/.test(q)) {
+      return `⚡ SetupBoom é o sistema de gestão de materiais do Grupo Setup!\n\nFoi criado pelo Pedro Scherdien para facilitar:\n• 📋 Consulta de estruturas e BOM (lista de materiais)\n• 🔍 Busca de itens por código ou descrição\n• 📌 Rastreamento de onde cada item é usado\n• 🗺️ Mapa de postes\n• 📊 Kanban de obras\n• ⚙️ Consulta de equipamentos\n• E muito mais!\n\nTudo num app leve, rápido e que funciona offline. 🚀`;
+    }
+
+    // ── PIADA / HUMOR ──
+    if (/piada|conta.*piada|me diverte|me faz rir|humor|engraçado|engracado/.test(q)) {
+      const piadas = [
+        `Por que o eletricista foi ao médico?\nPorque estava com corrente alternada no estômago! ⚡😄`,
+        `Como chama um cabo elétrico que virou cantor?\nUm cabo de áudio! 🎤⚡`,
+        `Por que o transformador foi ao psicólogo?\nPorque não conseguia lidar com suas tensões! 😂⚡`,
+        `O que o eletricista disse pra namorada?\nVocê me dá um choque toda vez que te vejo! ⚡❤️`,
+      ];
+      return piadas[Math.floor(Math.random()*piadas.length)];
+    }
+
+    // ── OBRIGADO / AGRADECIMENTO ──
+    if (/^(obrigad|valeu|vlw|obg|thanks|thank you|grato|agradec)/.test(q)) {
+      const respostas = [
+        `Disponha! 😊 É pra isso que tô aqui. Qualquer outra dúvida, só chamar!`,
+        `De nada! 👍 Qualquer coisa é só perguntar, tô sempre aqui no SetupBoom!`,
+        `Imagina! 🤝 Foi um prazer ajudar. Precisando de mais alguma coisa, é só falar!`,
+      ];
+      return respostas[Math.floor(Math.random()*respostas.length)];
+    }
+
+    // ── PALAVRÃO / XINGAMENTO (resposta educada) ──
+    if (/merda|porra|caralh|foda|inferno|raio|droga|caramba/.test(q)) {
+      return `Ei, calma! 😅 Entendo a frustração, mas vamos manter o clima bom por aqui. Posso te ajudar a resolver o que tiver te aborrecendo! O que você precisa?`;
+    }
+
+    // ── TCHAU / DESPEDIDA ──
+    if (/^(tchau|ate|flw|falou|xau|bye|ate mais|ate logo|fui|saindo)[\s!?]*$/.test(q)) {
+      return `Até mais! 👋 Foi um prazer ajudar. Qualquer dúvida sobre o banco de dados, é só voltar. Bom trabalho! ⚡`;
+    }
+
+    // ── QUAL O MELHOR SISTEMA ──
+    if (/melhor.*sistema|melhor.*app|melhor.*software/.test(q)) {
+      return `Sem dúvida nenhuma: SetupBoom! 😄🏆\n\nCriado com muito carinho pelo Pedro Scherdien especialmente pra atender as necessidades do Grupo Setup. Rápido, intuitivo e ainda tem IA agora. 🤖⚡`;
+    }
+
+    // ── QUEM É O GRUPO SETUP ──
+    if (/grupo setup|empresa|setup.*empresa|quem.*setup/.test(q)) {
+      return `🏢 O Grupo Setup é uma empresa especializada em:\n\n⚡ Distribuição de Energia — instalação e manutenção de redes MT e BT\n🏗️ Infraestrutura elétrica — para concessionárias e grandes clientes\n📋 Planejamento & PCP — controle de materiais e gestão de projetos\n\nCom atuação em redes de média e baixa tensão, é referência no setor elétrico regional. 💪`;
+    }
+
+    // ════════════════════════════════════════════
+    // ── CONSULTAS TÉCNICAS DO BANCO ───────────────
+    // ════════════════════════════════════════════
+
+    // ── RESUMO GERAL ──
+    if (/resum|visao geral|overview|geral|quantas estrut|total.*estrut|estrut.*total/.test(q)) {
+      const topEstrut = allCodes.slice(0,5).join(', ');
+      const itensArr = [...itensSet];
+      // Item mais usado
+      const freq = {};
+      allData.forEach(r => { const it = String(r[columnMap.item]||'').trim(); if(it) freq[it]=(freq[it]||0)+1; });
+      const topItem = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${k} (${v}x)`).join(', ');
+      return `📊 Resumo do Banco de Dados SetupBoom\n\n• Total de linhas: ${totalLinhas}\n• Estruturas cadastradas: ${totalEstruturas}\n• Itens únicos: ${totalItens}\n• Primeiras estruturas: ${topEstrut}...\n• Itens mais frequentes: ${topItem}\n\nUse perguntas como:\n  "Liste todas as estruturas"\n  "Itens da estrutura X"\n  "Onde é usado o item Y"`;
+    }
+
+    // ── LISTAR ESTRUTURAS ──
+    if (/list.*estrut|estrut.*list|todas.*estrut|mostrar.*estrut|quais.*estrut|estrut.*exist/.test(q)) {
+      if (!allCodes || !allCodes.length) return 'Nenhuma estrutura encontrada.';
+      const linhas = allCodes.map((c,i) => `${String(i+1).padStart(3,'0')}. ${c}  (${(structures[c]||[]).length} itens)`);
+      const bloco = linhas.join('\n');
+      return `📋 ${totalEstruturas} estrutura(s) cadastrada(s):\n\n${bloco}`;
+    }
+
+    // ── ITENS MAIS USADOS / RECORRENTES ──
+    if (/mais.*us|recorr|frequen|aparec.*mais|top.*item|item.*top/.test(q)) {
+      const freq = {};
+      const descMap = {};
+      allData.forEach(r => {
+        const it = String(r[columnMap.item]||'').trim();
+        const desc = String(r[columnMap.desc]||'').trim();
+        if(it){ freq[it]=(freq[it]||0)+1; if(desc && !descMap[it]) descMap[it]=desc; }
+      });
+      const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,15);
+      const linhas = top.map(([k,v],i)=>`${String(i+1).padStart(2,'0')}. ${k}  — ${descMap[k]||''}  (${v} estrutura(s))`);
+      return `🏆 Top 15 itens mais utilizados:\n\n${linhas.join('\n')}`;
+    }
+
+    // ── ESTRUTURA COM MAIS COMPONENTES ──
+    if (/maior.*estrut|estrut.*maior|mais.*component|mais.*item|estrut.*mais/.test(q)) {
+      if(!allCodes||!allCodes.length) return 'Nenhuma estrutura encontrada.';
+      const sorted = allCodes.map(c=>({c,n:(structures[c]||[]).length})).sort((a,b)=>b.n-a.n).slice(0,10);
+      const linhas = sorted.map((x,i)=>`${i+1}. ${x.c}  — ${x.n} componente(s)`);
+      return `📐 Estruturas com mais componentes:\n\n${linhas.join('\n')}`;
+    }
+
+    // ── ITENS QUE APARECEM EM MAIS DE N ESTRUTURAS ──
+    const maisDeMatch = q.match(/mais de (\d+)|acima de (\d+)|(\d+) ou mais/);
+    if (maisDeMatch && /estrut/.test(q)) {
+      const n = parseInt(maisDeMatch[1]||maisDeMatch[2]||maisDeMatch[3]);
+      const freq = {};
+      const descMap = {};
+      allData.forEach(r => {
+        const estrut = String(r[columnMap.structure]||'').trim();
+        const it = String(r[columnMap.item]||'').trim();
+        const desc = String(r[columnMap.desc]||'').trim();
+        if(it && estrut){ if(!freq[it]) freq[it]=new Set(); freq[it].add(estrut); if(desc && !descMap[it]) descMap[it]=desc; }
+      });
+      const filtrados = Object.entries(freq).filter(([,s])=>s.size>n).sort((a,b)=>b[1].size-a[1].size);
+      if(!filtrados.length) return `Nenhum item aparece em mais de ${n} estruturas.`;
+      const linhas = filtrados.map(([k,s],i)=>`${i+1}. ${k}  — ${descMap[k]||''}  (${s.size} estruturas)`);
+      return `🔁 Itens em mais de ${n} estruturas (${filtrados.length} encontrados):\n\n${linhas.join('\n')}`;
+    }
+
+    // ── ITENS DE UMA ESTRUTURA ESPECÍFICA ──
+    // tenta capturar código da estrutura mencionado na pergunta
+    const estrutMatch = (() => {
+      // busca por código exato entre aspas ou após palavras-chave
+      const quoted = pergunta.match(/[""']([^""']+)[""']/);
+      if (quoted) return quoted[1].trim();
+      // remove palavras comuns e tenta casar com allCodes
+      const cleaned = pergunta.replace(/itens|componentes|da|do|de|na|no|estrutura|compoe|compõe|compõem|composicao|composição|mostrar|listar|quais|ver|contem|contém/gi,'').trim();
+      const candidate = norm(cleaned);
+      if (!candidate) return null;
+      // busca exata
+      const exact = allCodes.find(c => norm(c) === candidate);
+      if (exact) return exact;
+      // busca parcial
+      const partial = allCodes.find(c => norm(c).includes(candidate) || candidate.includes(norm(c)));
+      return partial || null;
+    })();
+
+    if (estrutMatch && /item|componen|compoe|compõe|composic|lista|ver|mostrar|quais|contem|contém/.test(q)) {
+      const rows = structures[estrutMatch] || [];
+      if (!rows.length) return `Estrutura "${estrutMatch}" não encontrada ou sem itens.`;
+      const linhas = rows.map((r,i)=>{
+        const it   = String(r[columnMap.item]||'').trim();
+        const desc = String(r[columnMap.desc]||'').trim();
+        const qty  = String(r[columnMap.qty] ||'').trim();
+        const unit = String(r[columnMap.unit]||'').trim();
+        return `${String(i+1).padStart(2,'0')}. ${it}  ${desc}  — ${qty} ${unit}`;
+      });
+      return `🔩 Estrutura: ${estrutMatch}  (${rows.length} componente(s))\n\n${linhas.join('\n')}`;
+    }
+
+    // ── ONDE É USADO UM ITEM (código ou descrição) ──
+    if (/onde.*usado|onde.*usa|em quais.*estrut|estrut.*contem|where.*used/.test(q)) {
+      const rawItem = pergunta.replace(/onde|e|é|usado|usa|em quais|estruturas?|item|the|is|used/gi,'').trim();
+      const qItem = norm(rawItem);
+      if (!qItem) return 'Informe o código ou a descrição do item que deseja buscar. Ex: "onde é usado cabo 35mm"';
+      const encontrados = allData.filter(r => {
+        const it   = norm(r[columnMap.item]);
+        const desc = norm(r[columnMap.desc]);
+        return it === qItem || it.includes(qItem) || qItem.includes(it) || desc.includes(qItem);
+      });
+      if (!encontrados.length) return naoEncontrado(rawItem, totalEstruturas, totalItens);
+      const estruts = [...new Set(encontrados.map(r=>String(r[columnMap.structure]||'').trim()))].filter(Boolean).sort();
+      const itCode = String(encontrados[0][columnMap.item]||rawItem).trim();
+      const itDesc = String(encontrados[0][columnMap.desc]||'').trim();
+      const linhas = estruts.map((e,i)=>`${i+1}. ${e}`);
+      return `📌 Item: ${itCode}${itDesc?' — '+itDesc:''}\n\nEncontrado em ${estruts.length} estrutura(s):\n\n${linhas.join('\n')}`;
+    }
+
+    // ── BUSCA POR DESCRIÇÃO DO ITEM ──
+    // detecta frases como "buscar cabo", "procurar parafuso", "tem isolador?", "existe conector?"
+    if (/buscar?|procurar?|pesquisar?|encontrar?|tem |existe |mostrar? item|listar? item/.test(q)) {
+      const rawTermo = pergunta
+        .replace(/buscar?|procurar?|pesquisar?|encontrar?|mostrar? itens?|listar? itens?|tem |existe |itens? com|itens? de|itens?|que|o |a /gi,'')
+        .trim();
+      const qTermo = norm(rawTermo);
+      if (qTermo.length < 2) return 'Informe o nome ou parte da descrição do item. Ex: "buscar cabo 35mm"';
+      return buscaDescricao(qTermo, rawTermo, totalEstruturas, totalItens);
+    }
+
+    // ── BUSCA LIVRE POR ITEM OU ESTRUTURA ──
+    const termosBusca = norm(pergunta).split(/\s+/).filter(t => t.length >= 3);
+
+    // 1) tenta estrutura
+    for (const termo of termosBusca) {
+      const estrutFound = allCodes.find(c => norm(c).includes(termo));
+      if (estrutFound) {
+        const rows = structures[estrutFound] || [];
+        const linhas = rows.map((r,i)=>{
+          const it   = String(r[columnMap.item]||'').trim();
+          const desc = String(r[columnMap.desc]||'').trim();
+          const qty  = String(r[columnMap.qty] ||'').trim();
+          const unit = String(r[columnMap.unit]||'').trim();
+          return `${String(i+1).padStart(2,'0')}. ${it}  ${desc}  — ${qty} ${unit}`;
+        });
+        return `🔍 Estrutura encontrada: "${estrutFound}" (${rows.length} componente(s)):\n\n${linhas.join('\n')}\n\n💡 Para ver onde um item é usado: "onde é usado [descrição ou código]"`;
+      }
+    }
+
+    // 2) tenta item por código exato ou parcial
+    for (const termo of termosBusca) {
+      const porCodigo = allData.filter(r => norm(r[columnMap.item]).includes(termo));
+      if (porCodigo.length) {
+        const it = String(porCodigo[0][columnMap.item]||'').trim();
+        const desc = String(porCodigo[0][columnMap.desc]||'').trim();
+        const estruts = [...new Set(porCodigo.map(r=>String(r[columnMap.structure]||'').trim()))].filter(Boolean);
+        return `🔍 Item encontrado pelo código: ${it}${desc?' — '+desc:''}\n\nUsado em ${estruts.length} estrutura(s):\n${estruts.slice(0,20).map((e,i)=>`${i+1}. ${e}`).join('\n')}${estruts.length>20?`\n... e mais ${estruts.length-20}`:''}`;
+      }
+    }
+
+    // 3) tenta descrição com todos os termos juntos
+    const qCompleto = norm(pergunta);
+    const porDesc = allData.filter(r => norm(r[columnMap.desc]).includes(qCompleto));
+    if (porDesc.length) {
+      return buscaDescricao(qCompleto, pergunta, totalEstruturas, totalItens);
+    }
+
+    // 4) tenta descrição com qualquer um dos termos (>=3 letras)
+    for (const termo of termosBusca) {
+      const porDescParcial = allData.filter(r => norm(r[columnMap.desc]).includes(termo));
+      if (porDescParcial.length) {
+        return buscaDescricao(termo, termo, totalEstruturas, totalItens);
+      }
+    }
+
+    // ── RESPOSTA NÃO ENCONTRADO ──
+    return naoEncontrado(pergunta, totalEstruturas, totalItens);
+  }
+
+  // ── Busca por descrição com agrupamento por item único ──
+  function buscaDescricao(qTermo, rawTermo, totalEstruturas, totalItens) {
+    const encontrados = allData.filter(r => norm(r[columnMap.desc]).includes(qTermo));
+    if (!encontrados.length) return naoEncontrado(rawTermo, totalEstruturas, totalItens);
+
+    // Agrupa por código de item
+    const agrupado = {};
+    encontrados.forEach(r => {
+      const it   = String(r[columnMap.item]||'').trim();
+      const desc = String(r[columnMap.desc]||'').trim();
+      const estrut = String(r[columnMap.structure]||'').trim();
+      if (!it) return;
+      if (!agrupado[it]) agrupado[it] = { desc, estruts: new Set() };
+      if (estrut) agrupado[it].estruts.add(estrut);
+    });
+
+    const itensUnicos = Object.entries(agrupado).sort((a,b) => b[1].estruts.size - a[1].estruts.size);
+    const linhas = itensUnicos.slice(0,20).map(([cod,info],i) =>
+      `${String(i+1).padStart(2,'0')}. ${cod}  — ${info.desc}  (${info.estruts.size} estrutura(s))`
+    );
+    const extra = itensUnicos.length > 20 ? `\n... e mais ${itensUnicos.length-20} item(ns)` : '';
+    return `🔎 ${itensUnicos.length} item(ns) encontrado(s) com "${rawTermo}":\n\n${linhas.join('\n')}${extra}\n\n💡 Para ver onde um item é usado: "onde é usado [código]"`;
+  }
+
+  // ── Resposta amigável para não encontrado ──
+  function naoEncontrado(termo, totalEstruturas, totalItens) {
+    const sugestoes = [
+      'Hmm, não encontrei nada com esse termo. 🤔',
+      'Procurei bem, mas esse item não aparece no banco. 😅',
+      'Nada por aqui com esse nome! Talvez um sinônimo? 🔎',
+    ];
+    const msg = sugestoes[Math.floor(Math.random()*sugestoes.length)];
+    return `${msg}\n\nNão encontrei resultados para "${termo}" nas descrições, códigos ou estruturas.\n\nAlgumas sugestões:\n• Tente palavras mais curtas: "cabo" em vez de "cabo de alumínio"\n• Verifique a ortografia\n• Use o código do item diretamente\n• Digite "listar estruturas" para ver o que há no banco\n\n📦 Banco atual: ${totalEstruturas} estruturas · ${totalItens} itens únicos`;
+  }
+
+  window.iaSend = async function() {
+    if (iaBusy) return;
+    const input = document.getElementById('ia-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    iaAppendMsg('user', text);
+    iaHistory.push({ role: 'user', content: text });
+    input.value = '';
+    input.style.height = 'auto';
+
+    const thinkBubble = iaAppendMsg('bot', '', true);
+    iaBusy = true;
+    document.getElementById('ia-send-btn').disabled = true;
+
+    // Simula delay para parecer que está "pensando"
+    await new Promise(r => setTimeout(r, 320));
+
+    try {
+      const answer = iaQueryLocal(text);
+      thinkBubble.className = 'ia-bubble bot';
+      thinkBubble.textContent = answer;
+      const msgs = document.getElementById('ia-msgs');
+      msgs.scrollTop = msgs.scrollHeight;
+      iaHistory.push({ role: 'assistant', content: answer });
+    } catch(e) {
+      thinkBubble.className = 'ia-bubble bot';
+      thinkBubble.textContent = 'Erro interno: ' + e.message;
+    } finally {
+      iaBusy = false;
+      document.getElementById('ia-send-btn').disabled = false;
+      document.getElementById('ia-input').focus();
+    }
+  };
+})();
+</script>
+</div><!-- /tab-ia -->
 
 <script>
 (function() {

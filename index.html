@@ -1835,6 +1835,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="buscar"><span class="tab-icon">🔎</span> Buscar Item</button>
     <button class="tab" data-tab="whereused"><span class="tab-icon">📌</span> Onde é Usado</button>
     <button class="tab" data-tab="cabos"><span class="tab-icon">🔌</span> Cabos m→kg</button>
+    <button class="tab" data-tab="orcamento-obra"><span class="tab-icon">📋</span> Orçamento de Obra</button>
     <button class="tab" data-tab="favoritos"><span class="tab-icon">⭐</span> Favoritos</button>
     <button class="tab" data-tab="parafuso"><span class="tab-icon">🔩</span> Parafuso</button>
     <button class="tab" data-tab="elos"><span class="tab-icon">⚡</span> Elos</button>
@@ -3173,6 +3174,109 @@ const firebaseConfig = {
     document.getElementById('substModal').classList.remove('open');
     document.body.style.overflow = '';
   };
+
+  // --- FUNCIONALIDADE EXCLUSIVA: ORÇAMENTO DE OBRA (SERVIÇOS R125+) ---
+  window.dadosObraR125 = [];
+  let orcObraItens = [];
+  let orcObraSelecionado = null;
+
+  window.carregarDadosOrcamentoObra = async function() {
+    const dot = document.getElementById('orc-obra-dot');
+    const status = document.getElementById('orc-obra-status');
+    if (!dot || !status) return;
+    dot.className = 'status-dot loading';
+    status.textContent = 'Lendo Dados R125+...';
+
+    try {
+      const url = `${BASE_URL}/values/${encodeURIComponent('Dados')}!P125:T?key=${API_KEY}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const rows = json.values || [];
+
+      window.dadosObraR125 = rows.map(r => {
+        const cod = (r[1] || '').toString().trim();
+        const desc = (r[2] || '').toString().trim();
+        let valStr = (r[4] || '0').toString().replace('R$', '').replace(/\s/g, '');
+        if (valStr.includes(',') && valStr.includes('.')) valStr = valStr.replace(/\./g, '').replace(',', '.');
+        else valStr = valStr.replace(',', '.');
+        return { codigo: cod, descricao: desc, valor: parseFloat(valStr) || 0 };
+      }).filter(r => r.descricao.length > 2);
+
+      status.textContent = `${window.dadosObraR125.length} serviços carregados.`;
+      dot.className = 'status-dot ok';
+    } catch (e) {
+      status.textContent = 'Erro ao carregar.';
+      dot.className = 'status-dot error';
+    }
+  };
+
+  window.orcObraFiltrar = function() {
+    const q = document.getElementById('orc-obra-search-input').value.trim().toLowerCase();
+    const dd = document.getElementById('orc-obra-dropdown');
+    if (!q || q.length < 2) { dd.classList.remove('open'); return; }
+
+    const matches = window.dadosObraR125.filter(d => d.descricao.toLowerCase().includes(q) || d.codigo.toLowerCase().includes(q)).slice(0, 20);
+    if (matches.length === 0) {
+      dd.innerHTML = '<div class="dropdown-item" style="color:var(--muted);">Nenhum serviço em R125+</div>';
+    } else {
+      dd.innerHTML = matches.map(m => `
+        <div class="dropdown-item" onclick="orcObraSelecionar('${m.descricao.replace(/'/g, "\\'")}', '${m.codigo}', ${m.valor})">
+          <div style="font-weight:700; color:var(--accent);">${m.descricao}</div>
+          <div style="font-size:0.7rem; color:var(--muted);">${m.codigo} • R$ ${m.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
+        </div>
+      `).join('');
+    }
+    dd.classList.add('open');
+  };
+
+  window.orcObraSelecionar = function(desc, cod, valor) {
+    orcObraSelecionado = { desc, cod, valor };
+    document.getElementById('orc-obra-search-input').value = desc;
+    document.getElementById('orc-obra-val-unit').textContent = `R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+    document.getElementById('orc-obra-dropdown').classList.remove('open');
+    document.getElementById('orc-obra-qty-input').focus();
+  };
+
+  window.orcObraAdicionar = function() {
+    if (!orcObraSelecionado) return showToast('Selecione um serviço.', 'error');
+    const qty = parseFloat(document.getElementById('orc-obra-qty-input').value) || 0;
+    if (qty <= 0) return showToast('Qtd inválida.', 'error');
+
+    orcObraItens.push({ ...orcObraSelecionado, qty, subtotal: orcObraSelecionado.valor * qty, id: Date.now() });
+    orcObraAtualizarTabela();
+    document.getElementById('orc-obra-search-input').value = '';
+    document.getElementById('orc-obra-val-unit').textContent = 'R$ 0,00';
+    orcObraSelecionado = null;
+    showToast('Adicionado!', 'success');
+  };
+
+  function orcObraAtualizarTabela() {
+    const tbody = document.getElementById('orc-obra-table-body');
+    const totalBadge = document.getElementById('orc-obra-total-badge');
+    if (!tbody) return;
+    if (orcObraItens.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--muted);">Nenhum serviço de obra adicionado.</td></tr>';
+      totalBadge.textContent = 'Total: R$ 0,00';
+      return;
+    }
+    let total = 0;
+    tbody.innerHTML = orcObraItens.map(item => {
+      total += item.subtotal;
+      return `<tr>
+        <td style="font-size:0.85rem; font-weight:600;">${item.desc}</td>
+        <td style="text-align:center; font-family:'DM Mono'; font-size:0.8rem;">${item.cod}</td>
+        <td style="text-align:right; font-family:'DM Mono'; font-size:0.8rem;">R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+        <td style="text-align:center;">${item.qty}</td>
+        <td style="text-align:right; font-weight:700; color:var(--accent);">R$ ${item.subtotal.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+        <td style="text-align:center;"><button class="file-clear" onclick="orcObraRemover(${item.id})">✕</button></td>
+      </tr>`;
+    }).join('');
+    totalBadge.textContent = `Total: R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+  }
+
+  window.orcObraRemover = function(id) { orcObraItens = orcObraItens.filter(i => i.id !== id); orcObraAtualizarTabela(); };
+  window.orcObraLimpar = function() { if (confirm('Limpar tudo?')) { orcObraItens = []; orcObraAtualizarTabela(); } };
+
 
   window.confirmarSubstituicao = function() {
     if (!_substSelCode || _substRowIdx < 0) return;
@@ -6393,7 +6497,78 @@ document.querySelectorAll('.tab').forEach(btn => {
 </div><!-- /tab-equipamentos -->
 
 <!-- ══════════════════════════════════════════════════════ -->
-<!-- TAB: IA                                                -->
+<!-- TAB: ORÇAMENTO DE OBRA -->
+<div class="tab-panel" id="tab-orcamento-obra">
+  <div style="margin-bottom:1.5rem;">
+    <h1 style="font-size:1.7rem;font-weight:800;letter-spacing:-0.03em;line-height:1;">
+      Orçamento de <span style="color:var(--accent)">Obra (Serviços)</span>
+    </h1>
+    <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">
+      Seleção exclusiva de serviços (Dados R125+)
+    </p>
+  </div>
+
+  <div class="sheets-status" id="orc-obra-status-area">
+    <div class="left">
+      <div class="status-dot" id="orc-obra-dot"></div>
+      <span class="status-text" id="orc-obra-status">Aguardando carregamento...</span>
+    </div>
+    <button class="btn-ghost" onclick="carregarDadosOrcamentoObra()" style="font-size:0.7rem;padding:0.25rem 0.6rem;">Atualizar Serviços</button>
+  </div>
+
+  <div class="search-area visible" style="background:var(--surface); padding:1.5rem; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:1.5rem;">
+    <div style="display:grid; grid-template-columns: 1fr auto 120px auto; gap:1rem; align-items: flex-end;">
+      <div class="search-wrap">
+        <label class="search-label">Buscar Serviço (Coluna R)</label>
+        <input type="text" id="orc-obra-search-input" placeholder="Digite para buscar serviço..." oninput="orcObraFiltrar()" autocomplete="off">
+        <div id="orc-obra-dropdown" class="dropdown"></div>
+      </div>
+      <div>
+        <label class="search-label">Preço Unit.</label>
+        <div id="orc-obra-val-unit" style="height:45px; background:var(--bg); border:1px solid var(--border); border-radius:6px; display:flex; align-items:center; padding:0 1rem; font-family:'DM Mono',monospace; color:var(--accent); font-weight:700;">R$ 0,00</div>
+      </div>
+      <div>
+        <label class="search-label">Quantidade</label>
+        <input type="number" id="orc-obra-qty-input" value="1" min="1" style="width:100%; height:45px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:0 1rem; font-family:'DM Mono',monospace;">
+      </div>
+      <button class="btn" onclick="orcObraAdicionar()" style="height:45px; padding:0 1.5rem;">Adicionar</button>
+    </div>
+  </div>
+
+  <div class="results visible">
+    <div class="results-header">
+      <div class="results-title">Itens da <span>Obra</span></div>
+      <div id="orc-obra-total-badge" class="badge" style="font-size:1rem; padding:5px 15px;">Total: R$ 0,00</div>
+    </div>
+    
+    <div class="table-wrap">
+      <table style="width:100%;">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Descrição (Coluna R)</th>
+            <th style="text-align:center; width:100px;">Código (Q)</th>
+            <th style="text-align:right; width:120px;">Valor (T)</th>
+            <th style="text-align:center; width:80px;">Qtd.</th>
+            <th style="text-align:right; width:120px;">Subtotal</th>
+            <th style="text-align:center; width:50px;"></th>
+          </tr>
+        </thead>
+        <tbody id="orc-obra-table-body">
+          <tr>
+            <td colspan="6" style="text-align:center; padding:2rem; color:var(--muted); font-family:'DM Mono',monospace;">Nenhum serviço de obra adicionado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:1.5rem; display:flex; justify-content:flex-end; gap:1rem;">
+      <button class="btn-ghost" onclick="orcObraLimpar()">Limpar Tudo</button>
+      <button class="btn" onclick="window.print()">Exportar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: IA -->
 <!-- ══════════════════════════════════════════════════════ -->
 <div class="tab-panel" id="tab-ia">
 <style>
@@ -7427,6 +7602,9 @@ Como posso ajudar?</div>
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.dataset.tab === 'equipamentos') carregarEquip();
+        if (btn.dataset.tab === 'orcamento-obra') {
+          carregarDadosOrcamentoObra();
+        }
       });
     });
     document.addEventListener('click', e => {

@@ -1399,6 +1399,29 @@ const firebaseConfig = {
       color: var(--accent); margin: 0;
     }
 
+    /* ── MODAL: Visualizador Orçamento de Obra (coluna U) */
+    #orcObraViewer {
+      display: none;
+      position: fixed; inset: 0; z-index: 9850;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.62);
+      backdrop-filter: blur(5px);
+    }
+    #orcObraViewer.open { display: flex; }
+    #orcObraViewerBox {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 96%; max-width: 720px;
+      box-shadow: 0 0 48px rgba(0,230,118,0.12);
+      display: flex; flex-direction: column; gap: 0.75rem;
+      max-height: 92vh; overflow-y: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.92rem;
+      white-space: pre-wrap;
+    }
+
     #substModalOrig {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -1844,7 +1867,6 @@ const firebaseConfig = {
     <button class="tab" data-tab="conectores"><span class="tab-icon">🔌</span> Conectores</button>
     <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
-    <button class="tab" data-tab="campo"><span class="tab-icon">📎</span> Campo</button>
     <button class="tab" data-tab="mapa"><span class="tab-icon">🗺️</span> Mapa Postes</button>
     <button class="tab" data-tab="equipamentos"><span class="tab-icon">⚙️</span> Equipamentos</button>
     <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
@@ -2930,6 +2952,17 @@ const firebaseConfig = {
   </div>
 </div>
 
+<!-- MODAL: Visualizador de Serviço (Orçamento de Obra) -->
+<div id="orcObraViewer" onclick="if(event.target===this)orcObraFechar()">
+  <div id="orcObraViewerBox">
+    <h3>📋 Descrição do Serviço</h3>
+    <div id="orcObraViewerContent">Nenhuma informação disponível.</div>
+    <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+      <button class="btn-ghost" onclick="orcObraFechar()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
@@ -3188,7 +3221,7 @@ const firebaseConfig = {
     status.textContent = 'Lendo Dados R125+...';
 
     try {
-      const url = `${BASE_URL}/values/${encodeURIComponent('Dados')}!P125:T?key=${API_KEY}`;
+      const url = `${BASE_URL}/values/${encodeURIComponent('Dados')}!P125:U?key=${API_KEY}`;
       const res = await fetch(url);
       const json = await res.json();
       const rows = json.values || [];
@@ -3197,9 +3230,10 @@ const firebaseConfig = {
         const cod = (r[1] || '').toString().trim();
         const desc = (r[2] || '').toString().trim();
         let valStr = (r[4] || '0').toString().replace('R$', '').replace(/\s/g, '');
+        const info = (r[5] || '').toString().trim();
         if (valStr.includes(',') && valStr.includes('.')) valStr = valStr.replace(/\./g, '').replace(',', '.');
         else valStr = valStr.replace(',', '.');
-        return { codigo: cod, descricao: desc, valor: parseFloat(valStr) || 0 };
+        return { codigo: cod, descricao: desc, valor: parseFloat(valStr) || 0, info };
       }).filter(r => r.descricao.length > 2);
 
       status.textContent = `${window.dadosObraR125.length} serviços carregados.`;
@@ -3219,19 +3253,36 @@ const firebaseConfig = {
     if (matches.length === 0) {
       dd.innerHTML = '<div class="dropdown-item" style="color:var(--muted);">Nenhum serviço em R125+</div>';
     } else {
-      dd.innerHTML = matches.map(m => `
-        <div class="dropdown-item" onclick="orcObraSelecionar('${m.descricao.replace(/'/g, "\\'")}', '${m.codigo}', ${m.valor})">
-          <div style="font-weight:700; color:var(--accent);">${m.descricao}</div>
-          <div style="font-size:0.7rem; color:var(--muted);">${m.codigo} • R$ ${m.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
-        </div>
-      `).join('');
+      dd.innerHTML = '';
+      matches.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.addEventListener('click', () => orcObraSelecionar(m.descricao, m.codigo, m.valor, m.info));
+
+        const title = document.createElement('div');
+        title.style.fontWeight = '700';
+        title.style.color = 'var(--accent)';
+        title.textContent = m.descricao;
+
+        const sub = document.createElement('div');
+        sub.style.fontSize = '0.7rem';
+        sub.style.color = 'var(--muted)';
+        sub.textContent = `${m.codigo} • R$ ${m.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+
+        item.appendChild(title);
+        item.appendChild(sub);
+        dd.appendChild(item);
+      });
     }
     dd.classList.add('open');
   };
 
-  window.orcObraSelecionar = function(desc, cod, valor) {
-    orcObraSelecionado = { desc, cod, valor };
-    document.getElementById('orc-obra-search-input').value = desc;
+  window.orcObraSelecionar = function(desc, cod, valor, info) {
+    // Store selected item but do NOT auto-open the viewer (keeps search clean)
+    orcObraSelecionado = { desc, cod, valor, info };
+    const inp = document.getElementById('orc-obra-search-input');
+    inp.value = desc;
+    inp.dataset.orcInfo = info || '';
     document.getElementById('orc-obra-val-unit').textContent = `R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
     document.getElementById('orc-obra-dropdown').classList.remove('open');
     document.getElementById('orc-obra-qty-input').focus();
@@ -3260,22 +3311,85 @@ const firebaseConfig = {
       return;
     }
     let total = 0;
-    tbody.innerHTML = orcObraItens.map(item => {
+    tbody.innerHTML = '';
+    orcObraItens.forEach(item => {
       total += item.subtotal;
-      return `<tr>
-        <td style="font-size:0.85rem; font-weight:600;">${item.desc}</td>
-        <td style="text-align:center; font-family:'DM Mono'; font-size:0.8rem;">${item.cod}</td>
-        <td style="text-align:right; font-family:'DM Mono'; font-size:0.8rem;">R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-        <td style="text-align:center;">${item.qty}</td>
-        <td style="text-align:right; font-weight:700; color:var(--accent);">R$ ${item.subtotal.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
-        <td style="text-align:center;"><button class="file-clear" onclick="orcObraRemover(${item.id})">✕</button></td>
-      </tr>`;
-    }).join('');
+      const tr = document.createElement('tr');
+
+      const tdDesc = document.createElement('td');
+      tdDesc.style.fontSize = '0.85rem';
+      tdDesc.style.fontWeight = '600';
+      tdDesc.style.display = 'flex';
+      tdDesc.style.alignItems = 'center';
+      tdDesc.style.gap = '8px';
+
+      const descSpan = document.createElement('span');
+      descSpan.textContent = item.desc;
+      descSpan.style.cursor = 'default';
+      tdDesc.appendChild(descSpan);
+
+      if ((item.info||'').toString().trim().length > 0) {
+        const infoBtn = document.createElement('button');
+        infoBtn.type = 'button';
+        infoBtn.title = 'Visualizar descrição';
+        infoBtn.style.background = 'transparent';
+        infoBtn.style.border = 'none';
+        infoBtn.style.cursor = 'pointer';
+        infoBtn.style.color = 'var(--muted)';
+        infoBtn.textContent = '🔎';
+        infoBtn.addEventListener('click', (e) => { e.stopPropagation(); orcObraVisualizarInfo(item.info); });
+        tdDesc.appendChild(infoBtn);
+      }
+
+      const tdCode = document.createElement('td'); tdCode.style.textAlign = 'center'; tdCode.style.fontFamily = "'DM Mono',monospace"; tdCode.style.fontSize = '0.8rem'; tdCode.textContent = item.cod;
+      const tdVal = document.createElement('td'); tdVal.style.textAlign = 'right'; tdVal.style.fontFamily = "'DM Mono',monospace"; tdVal.style.fontSize = '0.8rem'; tdVal.textContent = `R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+      const tdQty = document.createElement('td'); tdQty.style.textAlign = 'center'; tdQty.textContent = item.qty;
+      const tdSub = document.createElement('td'); tdSub.style.textAlign = 'right'; tdSub.style.fontWeight = '700'; tdSub.style.color = 'var(--accent)'; tdSub.textContent = `R$ ${item.subtotal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+      const tdAct = document.createElement('td'); tdAct.style.textAlign = 'center';
+      const remBtn = document.createElement('button'); remBtn.className = 'file-clear'; remBtn.type = 'button'; remBtn.textContent = '✕'; remBtn.addEventListener('click', () => { orcObraRemover(item.id); });
+      tdAct.appendChild(remBtn);
+
+      tr.appendChild(tdDesc);
+      tr.appendChild(tdCode);
+      tr.appendChild(tdVal);
+      tr.appendChild(tdQty);
+      tr.appendChild(tdSub);
+      tr.appendChild(tdAct);
+
+      tbody.appendChild(tr);
+    });
     totalBadge.textContent = `Total: R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
   }
 
   window.orcObraRemover = function(id) { orcObraItens = orcObraItens.filter(i => i.id !== id); orcObraAtualizarTabela(); };
   window.orcObraLimpar = function() { if (confirm('Limpar tudo?')) { orcObraItens = []; orcObraAtualizarTabela(); } };
+
+  // Visualizador da coluna U para o serviço selecionado
+  window.orcObraVisualizar = function() {
+    const info = (orcObraSelecionado && orcObraSelecionado.info) || document.getElementById('orc-obra-search-input').dataset.orcInfo || '';
+    const modal = document.getElementById('orcObraViewer');
+    const content = document.getElementById('orcObraViewerContent');
+    if (!modal || !content) return alert(info || 'Nenhuma informação disponível.');
+    content.textContent = info || 'Nenhuma informação disponível.';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.orcObraFechar = function() {
+    const modal = document.getElementById('orcObraViewer');
+    if (!modal) return;
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.orcObraVisualizarInfo = function(info) {
+    const modal = document.getElementById('orcObraViewer');
+    const content = document.getElementById('orcObraViewerContent');
+    if (!modal || !content) return alert(info || 'Nenhuma informação disponível.');
+    content.textContent = info || 'Nenhuma informação disponível.';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
 
 
   window.confirmarSubstituicao = function() {
@@ -4239,89 +4353,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 </script>
 
 <!-- TAB: QUEM SOMOS -->
-
-<!-- TAB: CAMPO — Anexos, Croqui e Anotações -->
-<div class="tab-panel" id="tab-campo">
-  <div class="campo-wrap">
-
-    <!-- ── GPS STAMP BAR ── -->
-    <div class="gps-stamp-bar" id="gpsStampBar">
-      <div class="gps-stamp-dot" id="gpsStampDot"></div>
-      <div class="gps-stamp-info" id="gpsStampInfo">GPS não obtido ainda</div>
-      <label class="gps-stamp-toggle">
-        <input type="checkbox" id="gpsStampEnabled" checked onchange="campoGpsToggle()">
-        Gravar na foto
-      </label>
-      <button class="cv-btn" onclick="campoGpsAtualizar()" style="white-space:nowrap;">📡 Atualizar GPS</button>
-      <div class="stamp-preview" id="stampPreview"></div>
-    </div>
-
-    <!-- ── IMAGENS ── -->
-    <div>
-      <div class="campo-section-lbl">🖼️ Imagens e fotos do campo</div>
-      <div class="campo-imgs-grid" id="campoImgsGrid"></div>
-      <input type="file" id="campoImgInput" accept="image/*" multiple capture="environment" />
-    </div>
-
-    <!-- ── CROQUI / DESENHO ── -->
-    <div>
-      <div class="campo-section-lbl">✏️ Croqui / desenho livre</div>
-      <div class="campo-canvas-card">
-        <div class="campo-canvas-bar">
-          <span class="campo-bar-lbl">Ferr.:</span>
-          <button class="cv-btn active" id="cvToolPen"    onclick="cvSetTool('pen')">🖊 Caneta</button>
-          <button class="cv-btn"        id="cvToolLine"   onclick="cvSetTool('line')">╱ Linha</button>
-          <button class="cv-btn"        id="cvToolRect"   onclick="cvSetTool('rect')">▭ Ret.</button>
-          <button class="cv-btn"        id="cvToolEraser" onclick="cvSetTool('eraser')">⌫ Borr.</button>
-          <span class="campo-bar-lbl" style="margin-left:4px">Cor:</span>
-          <span class="cv-swatch active" style="background:#e8f0ff"   onclick="cvSetColor('#e8f0ff',this)"   title="Branco"></span>
-          <span class="cv-swatch"        style="background:#00e676"   onclick="cvSetColor('#00e676',this)"   title="Verde"></span>
-          <span class="cv-swatch"        style="background:#74c0fc"   onclick="cvSetColor('#74c0fc',this)"   title="Azul"></span>
-          <span class="cv-swatch"        style="background:#ff6b6b"   onclick="cvSetColor('#ff6b6b',this)"   title="Vermelho"></span>
-          <span class="cv-swatch"        style="background:#ffd166"   onclick="cvSetColor('#ffd166',this)"   title="Amarelo"></span>
-          <span class="campo-bar-lbl" style="margin-left:4px">Tam.:</span>
-          <button class="cv-sz active" id="cvSz2" onclick="cvSetSize(2,this)"  style="width:20px;height:20px" title="Fino"><div   style="width:2px;height:2px;background:var(--text);border-radius:50%;margin:auto"></div></button>
-          <button class="cv-sz"        id="cvSz4" onclick="cvSetSize(4,this)"  style="width:24px;height:24px" title="Médio"><div  style="width:4px;height:4px;background:var(--text);border-radius:50%;margin:auto"></div></button>
-          <button class="cv-sz"        id="cvSz8" onclick="cvSetSize(8,this)"  style="width:28px;height:28px" title="Grosso"><div style="width:8px;height:8px;background:var(--text);border-radius:50%;margin:auto"></div></button>
-          <button class="cv-btn" style="margin-left:auto" onclick="cvUndo()">↩ Desfazer</button>
-          <button class="cv-btn" onclick="cvClear()">🗑 Limpar</button>
-        </div>
-        <canvas id="campoCanvas" height="320"></canvas>
-      </div>
-    </div>
-
-    <!-- ── ANOTAÇÕES ── -->
-    <div>
-      <div class="campo-section-lbl">📝 Anotações</div>
-      <div class="campo-tags">
-        <button class="campo-tag-btn" onclick="campoInsert('⚠️ ATENÇÃO: ')">⚠️ Atenção</button>
-        <button class="campo-tag-btn" onclick="campoInsert('✅ Conforme — ')">✅ Conforme</button>
-        <button class="campo-tag-btn" onclick="campoInsert('🔧 Manutenção: ')">🔧 Manutenção</button>
-        <button class="campo-tag-btn" onclick="campoInsert('📐 Medição: ')">📐 Medição</button>
-        <button class="campo-tag-btn" onclick="campoInsert('⚡ Tensão: ')">⚡ Tensão</button>
-        <button class="campo-tag-btn" onclick="campoInsert('🔌 Cabo: ')">🔌 Cabo</button>
-        <button class="campo-tag-btn" onclick="campoInsert('📅 '+new Date().toLocaleDateString('pt-BR')+' — ')">📅 Hoje</button>
-      </div>
-      <textarea id="campoNotes"
-        placeholder="Escreva observações, checklist, medições ou pendências do serviço...&#10;&#10;Exemplos:&#10;• Medidor nº 30615451 — leitura anterior 26324 / atual 26396&#10;• Tensão medida: 218V (nominal 220V) ✅&#10;• Ramal com oxidação — solicitar substituição&#10;• Próxima visita: ___/___/______"
-        oninput="campoCountChars()"></textarea>
-      <div class="campo-notes-footer">
-        <span class="campo-charcount" id="campoCharCount">0 caracteres</span>
-        <button class="btn-ghost" style="font-size:.75rem;padding:.3rem .85rem;" onclick="document.getElementById('campoNotes').value='';campoCountChars()">Limpar</button>
-      </div>
-    </div>
-
-    <!-- ── BARRA IMPRESSÃO ── -->
-    <div class="campo-print-bar">
-      <p>💡 Tudo fica no seu dispositivo. Registre fotos da instalação, faça croquis e anote pendências antes de fechar o serviço.</p>
-      <button class="btn" onclick="campoPrint()" style="display:flex;align-items:center;gap:7px;white-space:nowrap;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Imprimir / PDF
-      </button>
-    </div>
-
-  </div>
-</div><!-- /tab-campo -->
 
 <!-- TAB: MAPA POSTES -->
 <div class="tab-panel" id="tab-mapa">

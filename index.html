@@ -3569,7 +3569,7 @@ const firebaseConfig = {
   let dimIndex = {}; let dimCodes = [];
   function buildDimIndex() {
     dimIndex = {};
-    rawRows.forEach(row => {
+    rawRows.slice(0, 29).forEach(row => {
       const code = String(row[20] || '').trim();
       if (!code) return;
       if (!dimIndex[code]) {

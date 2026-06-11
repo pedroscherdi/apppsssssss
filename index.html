@@ -4380,6 +4380,10 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
         <span id="mapa-gps-label">Me localizar</span>
       </button>
+      <button class="btn-ghost" id="mapa-pin-btn" onclick="window.mapaTogglePinMode()" title="Marcar um ponto no mapa para ver postes ao redor" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="mapa-pin-label">Marcar no mapa</span>
+      </button>
       <div id="mapa-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
     </div>
 
@@ -6326,12 +6330,102 @@ document.querySelectorAll('.tab').forEach(btn => {
     }
   };
 
+  // ── Marcar pin manual no mapa ─────────────────────────
+  let _mapaPinMode = false;
+  let _mapaPinMarker = null;
+
+  window.mapaTogglePinMode = function() {
+    carregarLeaflet(() => {
+      initMapa();
+      if (mapaMap) setTimeout(() => mapaMap.invalidateSize(), 100);
+
+      _mapaPinMode = !_mapaPinMode;
+      const btn = document.getElementById('mapa-pin-btn');
+      const lbl = document.getElementById('mapa-pin-label');
+
+      if (_mapaPinMode) {
+        lbl.textContent = 'Clique no mapa...';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent)';
+        if (typeof showToast === 'function') showToast('📍 Clique em qualquer ponto do mapa para marcar.', 'info');
+      } else {
+        lbl.textContent = 'Marcar no mapa';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+      }
+    });
+  };
+
+  function _mapaColocarPin(lat, lng) {
+    carregarLeaflet(() => {
+      initMapa();
+
+      // Remove pin manual anterior
+      if (_mapaPinMarker) { mapaMap.removeLayer(_mapaPinMarker); _mapaPinMarker = null; }
+
+      const pinIcon = L.divIcon({
+        html: `<div style="font-size:28px;line-height:1;transform:translate(-50%,-100%);">📍</div>`,
+        className: '',
+        iconAnchor: [0, 0]
+      });
+
+      _mapaPinMarker = L.marker([lat, lng], { icon: pinIcon, draggable: true })
+        .addTo(mapaMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#ffb300;">📍 Ponto marcado</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}<br><span style="font-size:0.75rem;color:#888;">Arraste para ajustar</span>`)
+        .openPopup();
+
+      // Reseta GPS atual e usa este ponto como origem para "próximos"
+      _mapaGpsAtual = { lat, lng };
+
+      // Esconde info card de poste
+      document.getElementById('mapa-info').classList.remove('visible');
+      document.getElementById('mapa-proximos-wrap').style.display = 'none';
+      _limparProximos();
+      document.getElementById('mapa-proximos-ctrl').style.display = 'block';
+
+      const dispararProximos = () => {
+        if (mapaCarregado) {
+          window.mapaProximosDaLocalizacao(lat, lng);
+        } else {
+          setTimeout(dispararProximos, 300);
+        }
+      };
+      dispararProximos();
+
+      // Atualiza posição do pin ao arrastar
+      _mapaPinMarker.on('dragend', () => {
+        const pos = _mapaPinMarker.getLatLng();
+        _mapaPinMarker.setPopupContent(`<b style="font-family:'DM Mono',monospace;color:#ffb300;">📍 Ponto marcado</b><br>Lat: ${pos.lat.toFixed(6)}<br>Lng: ${pos.lng.toFixed(6)}<br><span style="font-size:0.75rem;color:#888;">Arraste para ajustar</span>`);
+        _mapaGpsAtual = { lat: pos.lat, lng: pos.lng };
+        window.mapaProximosDaLocalizacao(pos.lat, pos.lng);
+      });
+
+      // Sai do modo de marcação
+      _mapaPinMode = false;
+      const btn = document.getElementById('mapa-pin-btn');
+      const lbl = document.getElementById('mapa-pin-label');
+      lbl.textContent = 'Marcar no mapa';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    });
+  }
+
   // ── Inicializa quando a aba mapa for aberta ────────────
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.dataset.tab === 'mapa') {
-          carregarLeaflet(() => setTimeout(initMapa, 80));
+          carregarLeaflet(() => setTimeout(() => {
+            initMapa();
+            if (mapaMap && !mapaMap._pinClickBound) {
+              mapaMap.on('click', (e) => {
+                if (_mapaPinMode) {
+                  _mapaColocarPin(e.latlng.lat, e.latlng.lng);
+                }
+              });
+              mapaMap._pinClickBound = true;
+            }
+          }, 80));
           carregarPostes();
         }
       });
@@ -6431,6 +6525,10 @@ document.querySelectorAll('.tab').forEach(btn => {
       <button class="btn-ghost" id="equip-gps-btn" onclick="equipMeLocalizar()" title="Usar minha localização GPS" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
         <span id="equip-gps-label">Me localizar</span>
+      </button>
+      <button class="btn-ghost" id="equip-pin-btn" onclick="window.equipTogglePinMode()" title="Marcar um ponto no mapa para ver equipamentos ao redor" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.45rem 0.9rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="equip-pin-label">Marcar no mapa</span>
       </button>
       <div id="equip-dropdown"
         style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
@@ -7629,10 +7727,99 @@ Como posso ajudar?</div>
     document.getElementById('equip-card').classList.remove('visible');
   }
 
+  // ── Marcar pin manual no mapa ─────────────────────────
+  let _equipPinMode = false;
+  let _equipPinMarker = null;
+
+  window.equipTogglePinMode = function() {
+    carregarEquipLeaflet(() => {
+      initEquipMapa();
+      if (equipMap) setTimeout(() => equipMap.invalidateSize(), 100);
+
+      _equipPinMode = !_equipPinMode;
+      const btn = document.getElementById('equip-pin-btn');
+      const lbl = document.getElementById('equip-pin-label');
+
+      if (_equipPinMode) {
+        lbl.textContent = 'Clique no mapa...';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent)';
+        if (typeof showToast === 'function') showToast('📍 Clique em qualquer ponto do mapa para marcar.', 'info');
+      } else {
+        lbl.textContent = 'Marcar no mapa';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+      }
+    });
+  };
+
+  function _equipColocarPin(lat, lng) {
+    carregarEquipLeaflet(() => {
+      initEquipMapa();
+
+      if (_equipPinMarker) { equipMap.removeLayer(_equipPinMarker); _equipPinMarker = null; }
+
+      const pinIcon = L.divIcon({
+        html: `<div style="font-size:28px;line-height:1;transform:translate(-50%,-100%);">📍</div>`,
+        className: '',
+        iconAnchor: [0, 0]
+      });
+
+      _equipPinMarker = L.marker([lat, lng], { icon: pinIcon, draggable: true })
+        .addTo(equipMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#ffb300;">📍 Ponto marcado</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}<br><span style="font-size:0.75rem;color:#888;">Arraste para ajustar</span>`)
+        .openPopup();
+
+      _equipAtual = { nome: '📍 Ponto marcado', latN: lat, lngN: lng };
+
+      document.getElementById('equip-card').classList.remove('visible');
+      document.getElementById('equip-tabela-wrap').style.display = 'none';
+      document.getElementById('equip-proximos-wrap').style.display = 'none';
+      _equipLimparProximos();
+      document.getElementById('equip-proximos-ctrl').style.display = 'block';
+
+      const dispararProximos = () => {
+        if (equipCarregado) {
+          window.equipMostrarProximos();
+        } else {
+          setTimeout(dispararProximos, 300);
+        }
+      };
+      dispararProximos();
+
+      _equipPinMarker.on('dragend', () => {
+        const pos = _equipPinMarker.getLatLng();
+        _equipPinMarker.setPopupContent(`<b style="font-family:'DM Mono',monospace;color:#ffb300;">📍 Ponto marcado</b><br>Lat: ${pos.lat.toFixed(6)}<br>Lng: ${pos.lng.toFixed(6)}<br><span style="font-size:0.75rem;color:#888;">Arraste para ajustar</span>`);
+        _equipAtual = { nome: '📍 Ponto marcado', latN: pos.lat, lngN: pos.lng };
+        window.equipMostrarProximos();
+      });
+
+      _equipPinMode = false;
+      const btn = document.getElementById('equip-pin-btn');
+      const lbl = document.getElementById('equip-pin-label');
+      lbl.textContent = 'Marcar no mapa';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (btn.dataset.tab === 'equipamentos') carregarEquip();
+        if (btn.dataset.tab === 'equipamentos') {
+          carregarEquip();
+          carregarEquipLeaflet(() => setTimeout(() => {
+            initEquipMapa();
+            if (equipMap && !equipMap._pinClickBound) {
+              equipMap.on('click', (e) => {
+                if (_equipPinMode) {
+                  _equipColocarPin(e.latlng.lat, e.latlng.lng);
+                }
+              });
+              equipMap._pinClickBound = true;
+            }
+          }, 80));
+        }
         if (btn.dataset.tab === 'orcamento-obra') {
           carregarDadosOrcamentoObra();
         }

@@ -3022,6 +3022,15 @@ const firebaseConfig = {
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
+      // Reseta conectores ao sair da aba
+      if (tab.dataset.tab !== 'conectores') {
+        const conectorTypeSelect = document.getElementById('conectorType');
+        if (conectorTypeSelect) {
+          conectorTypeSelect.value = 'cunha';
+          if (typeof changeConectorType === 'function') changeConectorType();
+        }
+      }
+      
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
@@ -4098,9 +4107,17 @@ const firebaseConfig = {
 
 <!-- TAB: CONECTORES -->
 <div class="tab-panel" id="tab-conectores">
-  <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;">
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Cunha de Alumínio</div>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Tipo de Conector:</div>
+    <select id="conectorType" onchange="changeConectorType()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0.5rem 0.75rem;font-family:'DM Mono',monospace;font-size:0.82rem;outline:none;transition:border-color 0.2s;appearance:none;cursor:pointer;">
+      <option value="cunha">Cunha de Alumínio</option>
+      <option value="perfurante">Conector Perfurante Sem Estribo</option>
+      <option value="perfurante-estribo">Conector Perfurante com Estribo</option>
+    </select>
   </div>
+
+  <!-- SEÇÃO: CUNHA DE ALUMÍNIO -->
+  <div id="section-cunha" style="display:block;">
   <div style="background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:10px;padding:20px 20px 16px;margin-bottom:24px;">
     <div style="font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Selecione os cabos</div>
     <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
@@ -4236,8 +4253,135 @@ const firebaseConfig = {
   window.cnLimpar = function(){ cnSelA.value=''; cnSelB.value=''; cnRender(); };
 })();
 </script>
+  </div>
 
-<!-- TAB: KANBAN -->
+  <!-- SEÇÃO: CONECTOR PERFURANTE SEM ESTRIBO -->
+  <div id="section-perfurante" style="display:none;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:10px;padding:20px 20px 16px;margin-bottom:24px;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Dados Dimensionais</div>
+    <div id="perfurante_results">
+      <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Item</th>
+          <th>Código</th>
+          <th>Isolação (kV)</th>
+          <th>Faixa Principal (mm²)</th>
+          <th>Faixa Derivação (mm²)</th>
+          <th>Capacidade (A)</th>
+          <th>Dimensões (mm)</th>
+          <th>Quantidade</th>
+        </tr></thead>
+        <tbody id="perfurante_tbody">
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- SEÇÃO: CONECTOR PERFURANTE COM ESTRIBO -->
+  <div id="section-perfurante-estribo" style="display:none;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);border-radius:10px;padding:20px 20px 16px;margin-bottom:24px;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Dados Dimensionais</div>
+    <div id="perfurante_estribo_results">
+      <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Item</th>
+          <th>Código</th>
+          <th>Isolação (kV)</th>
+          <th>Faixa Principal (mm²)</th>
+          <th>Faixa Derivação</th>
+          <th>Capacidade (A)</th>
+          <th>Dimensões (mm)</th>
+          <th>Quantidade</th>
+        </tr></thead>
+        <tbody id="perfurante_estribo_tbody">
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const PERFURANTE_DATA = [
+    { item: 1, codigo: "124120084", isolacao: "15/25", principal: "35-70", derivacao: "35-70", capacidade: 350, l: 44, a: 60, c: 87, quantidade: 1 },
+    { item: 2, codigo: "124120085", isolacao: "15/50", principal: "50-185", derivacao: "50-185", capacidade: 630, l: 50, a: 90, c: 155, quantidade: "—" },
+    { item: 3, codigo: "124120088", isolacao: "35", principal: "70-185", derivacao: "70-185", capacidade: 710, l: 90, a: 90, c: 155, quantidade: "1 ou 2" },
+  ];
+
+  const perfTbody = document.getElementById('perfurante_tbody');
+  PERFURANTE_DATA.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.item}</div></td>
+      <td><div style="font-weight:700;font-size:0.9rem;color:var(--accent);font-family:'DM Mono',monospace;">${row.codigo}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.isolacao}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.principal}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.derivacao}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);"><strong>${row.capacidade}</strong></div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.78rem;display:flex;gap:4px;">
+        <span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;"><strong>L</strong> ${row.l}</span>
+        <span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;"><strong>A</strong> ${row.a}</span>
+        <span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;"><strong>C</strong> ${row.c}</span>
+      </div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.quantidade}</div></td>
+    `;
+    perfTbody.appendChild(tr);
+  });
+
+  const PERFURANTE_ESTRIBO_DATA = [
+    { item: 1, codigo: "124120091", isolacao: "15/25", principal: "35-70", derivacao: "2 AWG / 35 mm²", capacidade: 250, l: 44, a: 60, c: 87, quantidade: 1 },
+    { item: 2, codigo: "124120092", isolacao: "15/25", principal: "50-185", derivacao: "1/0 AWG / 50 mm²", capacidade: 450, l: 50, a: 90, c: 155, quantidade: "—" },
+    { item: 3, codigo: "124120093", isolacao: "35", principal: "70-185", derivacao: "1/0 AWG / 50 mm²", capacidade: 450, l: 90, a: 90, c: 155, quantidade: "1 ou 2" },
+  ];
+
+  const perfEstribTbody = document.getElementById('perfurante_estribo_tbody');
+  PERFURANTE_ESTRIBO_DATA.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.item}</div></td>
+      <td><div style="font-weight:700;font-size:0.9rem;color:var(--accent);font-family:'DM Mono',monospace;">${row.codigo}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.isolacao}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.principal}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.derivacao}</div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);"><strong>${row.capacidade}</strong></div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.78rem;display:flex;gap:4px;">
+        <span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;"><strong>L</strong> ${row.l}</span>
+        <span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;"><strong>A</strong> ${row.a}</span>
+        <span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;"><strong>C</strong> ${row.c}</span>
+      </div></td>
+      <td><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);">${row.quantidade}</div></td>
+    `;
+    perfEstribTbody.appendChild(tr);
+  });
+
+  window.changeConectorType = function() {
+    const typeSelect = document.getElementById('conectorType');
+    const sectionCunha = document.getElementById('section-cunha');
+    const sectionPerfurante = document.getElementById('section-perfurante');
+    const sectionPerfuranteEstribo = document.getElementById('section-perfurante-estribo');
+    
+    if (typeSelect.value === 'cunha') {
+      sectionCunha.style.display = 'block';
+      sectionPerfurante.style.display = 'none';
+      sectionPerfuranteEstribo.style.display = 'none';
+    } else if (typeSelect.value === 'perfurante') {
+      sectionCunha.style.display = 'none';
+      sectionPerfurante.style.display = 'block';
+      sectionPerfuranteEstribo.style.display = 'none';
+    } else if (typeSelect.value === 'perfurante-estribo') {
+      sectionCunha.style.display = 'none';
+      sectionPerfurante.style.display = 'none';
+      sectionPerfuranteEstribo.style.display = 'block';
+    }
+  };
+})();
+</script>
 <div class="tab-panel" id="tab-kanban">
   <style>
     .kb-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;}

@@ -1876,6 +1876,7 @@ const firebaseConfig = {
     <div style="height:1px;background:var(--border);margin:0.5rem 0.3rem;"></div>
 
     <button class="tab" data-tab="orcamento"><span class="tab-icon">💰</span> Orçamento</button>
+    <button class="tab" data-tab="normas-tecnicas"><span class="tab-icon">📘</span> Normas Técnicas</button>
     <button class="tab" data-tab="noticias"><span class="tab-icon">📰</span> Notícias</button>
     <button class="tab" data-tab="quem-somos"><span class="tab-icon">🏢</span> Quem Somos</button>
     <button class="tab" data-tab="ia" style="margin-top:0.3rem;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:8px;"><span class="tab-icon">🤖</span> IA</button>
@@ -3006,6 +3007,7 @@ const firebaseConfig = {
     'campo':       'Campo',
     'mapa':        'Mapa Postes',
     'equipamentos':'Equipamentos',
+    'normas-tecnicas':'Normas Técnicas',
     'quem-somos':  'Quem Somos',
     'alimentadores':'Alimentadores',
     'rebaixadores': 'Rebaixadores',
@@ -5260,6 +5262,67 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   </div>
 </div>
 <!-- FIM TAB: NOTICIAS -->
+
+<!-- TAB: NORMAS TÉCNICAS -->
+<div class="tab-panel" id="tab-normas-tecnicas">
+  <div style="max-width:860px;margin:0 auto;padding-top:1rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;">
+      <span style="font-size:1.5rem;">📘</span>
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--accent);line-height:1.2;">Normas Técnicas</h2>
+        <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">Documentos EQTL e anexos oficiais</p>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:grid;gap:0.75rem;">
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00001.EQTL-09-Fornecimento-de-Energia-Eletrica-em-Baixa-Tensao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00001.EQTL (Fornecimento BT) rev09</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00001.EQTL-08-Fornecimento-de-Energia-Eletrica-em-Baixa-Tensao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00001.EQTL (Fornecimento BT) rev08</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00002.EQTL-10-Fornecimento-de-Energia-Eletrica-em-Media-Tensao-138kV-231kV-e-345kV.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00002.EQTL (Fornecimento MT) rev10</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I a IX rev10/rev09 na mesma pasta /2025/12/)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00003.EQTL-06-Fornecimento-de-Energia-Eletrica-em-Alta-Tensao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00003.EQTL (AT 69/138kV) rev06</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-III)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00004.EQTL-08-Fornecimento-de-Energia-a-EMUC.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00004.EQTL (EMUC) rev08</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-VIII)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00005.EQTL-05-Criterios-de-Projetos-de-Redes-de-Distribuicao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00005.EQTL (Critérios de Projeto de Rede) rev05</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-V)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/03/NT.00006.EQTL-04-Padrao-de-Estruturas-de-Rede-de-Distribuicao-Aerea-para-138kV-e-de-Baixa-Tensao-380220V-e-220127V.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00006.EQTL (Estruturas 13,8kV/BT) rev04</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00007.EQTL-06-Padrao-de-Estruturas-para-Equipamentos.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00007.EQTL (Estruturas para Equipamentos) rev06</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00008.EQTL-03-Padronizacao-de-Materiais-e-Equipamentos-por-Tipo-de-Ambiente.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00008.EQTL (Padronização de Materiais por Ambiente) rev03</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00009.EQTL-04-Conexao-de-Geradores-Particulares-ao-Sistema-Eletrico-da-Equatorial.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00009.EQTL (Geradores Particulares) rev04</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-III)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00010.EQTL-00-Servicos-Topograficos.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00010.EQTL (Serviços Topográficos)</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I a XIX)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00011.EQTL-00-EXECUCAO-DE-SONDAGENS.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00011.EQTL (Sondagens)</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-V)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00012.EQTL-01-Construcao-de-Linhas-de-Distribuicao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00012.EQTL (Construção LD Alta Tensão)</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-III)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00013.EQTL-00-Criterios-de-Projetos-de-Linhas-de-Distribuicao-de-AT.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00013.EQTL (Critérios Projeto LD AT)</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-VIII)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00014.EQTL20-200120-20PadrC3A3o20de20Estruturas20de20Linhas-de-DistribuiC3A7C3A3o20de20AT.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00014.EQTL (Estruturas LD AT)</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00015.EQTL-03-Criterios-de-Acesso-para-Autoprodutores-e-Produtores-Independentes.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00015.EQTL (Autoprodutores) rev03</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-IV)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00016.EQTL-04-Compartilhamento-de-Infraestrutura-de-Rede-de-Distribuicao-Aerea.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00016.EQTL (Compartilhamento Infraestrutura) rev04</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-V)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00017.EQTL-04-Incorporacao-de-Ativos.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00017.EQTL (Incorporação de Ativos)</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-XI)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00018.EQTL-08-Rede-de-Distribuicao-Compacta.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00018.EQTL (Rede Compacta) rev08</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00019.EQTL-Redes-de-Distribuicao-Subterraneas.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00019.EQTL (Rede Subterrânea)</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00020.EQTL-06-Conexao-de-Micro-e-Minigeracao-Distribuida-ao-Sistema-de-Distribuicao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00020.EQTL (Micro/Minigeração) rev06</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-V)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00022.EQTL-04-Padrao-de-Estruturas-de-Rede-Distribuicao-Aerea-para-231-e-345KV.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00022.EQTL (Estruturas 23,1/34,5kV) rev04</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00023.EQTL-03-NT.-023.EQTL_.Normas-e-Qualidade-Fornecimento-de-Energia-Eletrica-para-Iluminacao-Publica.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00023.EQTL (Iluminação Pública)</a>
+      <span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">(+ Anexos I-II)</span>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00026.EQTL-00-Criterios-de-Projetos-de-Subestacoes.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00026.EQTL (Critérios Projeto Subestações)</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00027.EQTL_00_PadrC3A3o_Construtivo_de_20SubestaC3A7C3B5es_de_20Alta_TensC3A3o.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00027.EQTL (Padrão Construtivo SE AT)</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00029.EQTL-00-Encargos-e-Participacao-Financeira-em-Obras-do-Sistema-Eletrico.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00029.EQTL (Encargos Financeiros)</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00030.EQTL-03-Padroes-Construtivos-de-Caixas-de-Medicao-e-Protecao.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00030.EQTL (Caixas de Medição) rev03</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2026/01/NT.00032.EQTL-05-Conexao-e-Migracao-de-Clientes-Livres.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00032.EQTL (Clientes Livres) rev05</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00036.EQTL-01-Linhas-de-Distribuicao-Subterranea-Classe-de-Tensao-725-kV.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00036.EQTL (Subterrânea 72,5kV)</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00037.EQTL-04-Padrao-de-Estrutura-RD-15KV-com-Secundario-Blindado-RSB.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00037.EQTL (Estruturas 15kV RSB) rev04</a>
+      <a href="https://ceee.equatorialenergia.com.br/wp-content/uploads/2025/12/NT.00038.EQTL-02-Sistema-de-Medicao-Centralizada-SMC-Padrao-Construtivo.pdf" target="_blank" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:0.9rem;text-decoration:none;">NT.00038.EQTL (SMC) rev02</a>
+    </div>
+  </div>
+</div>
 <div class="tab-panel" id="tab-quem-somos">
 
   <!-- Hero Banner -->

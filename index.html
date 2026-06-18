@@ -2032,6 +2032,7 @@ const firebaseConfig = {
       <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
         <div class="badge" id="countBadge"></div>
         <button class="btn-export" id="btnFavorito" onclick="toggleFavorito()">⭐ Favoritar</button>
+        <button class="btn-export" id="btnAddOrcamento" onclick="addToOrcamento()" style="background:rgba(255,193,7,0.15);border-color:rgba(255,193,7,0.35);color:#ffc107;">💰 Add Orçamento</button>
         <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
         <button class="btn-export" onclick="exportExcel()">⬇ Excel</button>
         <button class="btn-export btn-export-pdf" onclick="exportPDF()">⬇ PDF</button>
@@ -2044,6 +2045,55 @@ const firebaseConfig = {
       </table>
     </div>
   </div>
+
+  <!-- SEÇÃO DE ORÇAMENTO CONSOLIDADO -->
+  <div id="orcamentoSection" style="display:none;margin-top:2.5rem;border-top:1px solid var(--border);padding-top:2rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;">
+      <div>
+        <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.2rem;">
+          💰 Orçamento Consolidado
+        </h2>
+        <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+          Itens agrupados de todas as estruturas adicionadas
+        </p>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button class="btn" onclick="exportOrcamentoCSV()">⬇ CSV Orç.</button>
+        <button class="btn" onclick="exportOrcamentoExcel()">⬇ Excel Orç.</button>
+        <button class="btn-ghost" onclick="limparOrcamentoConsolidado()">Limpar Tudo</button>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;justify-content:space-between;">
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">
+          <span style="color:var(--text);font-weight:700;" id="orcEstruturasCount">0</span> estruturas · 
+          <span style="color:var(--accent);font-weight:700;" id="orcItensCount">0</span> itens únicos · 
+          <span style="color:var(--accent2);font-weight:700;" id="orcQtyTotal">0</span> unidades
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:35%;">Código do Item</th>
+            <th style="width:35%;">Descrição</th>
+            <th style="width:12%;text-align:center;">Quantidade</th>
+            <th style="width:12%;text-align:center;">Unidade</th>
+            <th style="width:6%;text-align:center;">Onde?</th>
+          </tr>
+        </thead>
+        <tbody id="orcamentoBody"></tbody>
+      </table>
+    </div>
+
+    <div id="orcamentoEmpty" style="text-align:center;padding:2rem;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.85rem;">
+      Nenhum item no orçamento. Selecione uma estrutura e clique em "Add Orçamento" para começar.
+    </div>
+  </div>
+
   <div id="estrutura-img-wrap" style="display:none;"></div>
 
   <!-- ── ACESSO RÁPIDO ── -->
@@ -3795,6 +3845,150 @@ const firebaseConfig = {
   }
 
   let currentItems = []; let currentCols = [];
+  let orcamentoGlobal = {}; // { "ITEM_CODE": {code, desc, unit, qty, estruturas: new Set()} }
+
+  function addToOrcamento() {
+    if (!currentItems.length) { showToast('Selecione uma estrutura primeiro.', 'error'); return; }
+    const estrutura = document.getElementById('selectedCode').textContent || 'Estrutura';
+    
+    currentItems.forEach(row => {
+      const itemCode = String(row[columnMap.item] || '').trim();
+      const desc = columnMap.desc ? String(row[columnMap.desc] || '').trim() : '';
+      const qty = columnMap.qty ? parseFloat(row[columnMap.qty]) || 1 : 1;
+      const unit = columnMap.unit ? String(row[columnMap.unit] || '').trim() : '';
+      
+      if (!itemCode) return;
+      
+      if (!orcamentoGlobal[itemCode]) {
+        orcamentoGlobal[itemCode] = { code: itemCode, desc, unit, qty: 0, estruturas: new Set() };
+      }
+      orcamentoGlobal[itemCode].qty += qty;
+      orcamentoGlobal[itemCode].estruturas.add(estrutura);
+    });
+    
+    atualizarTabelaOrcamento();
+    document.getElementById('orcamentoSection').style.display = 'block';
+    showToast(`✅ ${currentItems.length} itens adicionados ao orçamento!`, 'success');
+  }
+
+  function atualizarTabelaOrcamento() {
+    const tbody = document.getElementById('orcamentoBody');
+    const empty = document.getElementById('orcamentoEmpty');
+    const items = Object.values(orcamentoGlobal);
+    
+    if (!items.length) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      document.getElementById('orcEstruturasCount').textContent = '0';
+      document.getElementById('orcItensCount').textContent = '0';
+      document.getElementById('orcQtyTotal').textContent = '0';
+      return;
+    }
+    
+    empty.style.display = 'none';
+    
+    // Estatísticas
+    const allEstruturas = new Set();
+    let totalQty = 0;
+    items.forEach(item => {
+      totalQty += item.qty;
+      item.estruturas.forEach(e => allEstruturas.add(e));
+    });
+    
+    document.getElementById('orcEstruturasCount').textContent = allEstruturas.size;
+    document.getElementById('orcItensCount').textContent = items.length;
+    document.getElementById('orcQtyTotal').textContent = totalQty.toLocaleString('pt-BR');
+    
+    tbody.innerHTML = items.map((item, idx) => {
+      const estruturas = Array.from(item.estruturas).join(', ');
+      return `<tr class="fade-in" style="animation-delay:${idx*0.02}s"><td style="color:var(--accent);font-weight:600;font-family:'DM Mono',monospace;font-size:0.9rem;">${item.code}</td><td>${item.desc || '—'}</td><td style="text-align:center;"><input type="number" value="${item.qty}" step="0.01" min="0" style="width:70px;background:rgba(255,214,0,0.10);border:1px solid rgba(255,214,0,0.45);color:var(--text);border-radius:4px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:0.85rem;text-align:center;" onchange="alterarQtyOrcamento('${item.code}', this.value)" oninput="this.style.borderColor='#ffd600';" onblur="this.style.borderColor='rgba(255,214,0,0.45)'" /></td><td style="text-align:center;color:var(--muted);font-size:0.82rem;">${item.unit || '—'}</td><td style="text-align:center;"><button class="file-clear" onclick="removerDoOrcamento('${item.code}')" title="Remover">✕</button></td></tr><tr style="background:rgba(255,255,255,0.01);border-top:none;"><td colspan="5" style="padding:4px 12px;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);">De: <span style="color:var(--accent2);">${estruturas}</span></td></tr>`;
+    }).join('');
+  }
+
+  function alterarQtyOrcamento(itemCode, newQtyStr) {
+    const newQty = parseFloat(newQtyStr) || 0;
+    if (newQty < 0) {
+      showToast('Quantidade não pode ser negativa.', 'error');
+      if (orcamentoGlobal[itemCode]) {
+        atualizarTabelaOrcamento();
+      }
+      return;
+    }
+    if (orcamentoGlobal[itemCode]) {
+      orcamentoGlobal[itemCode].qty = newQty;
+      atualizarTabelaOrcamento();
+    }
+  }
+
+  function removerDoOrcamento(itemCode) {
+    if (orcamentoGlobal[itemCode]) {
+      delete orcamentoGlobal[itemCode];
+      atualizarTabelaOrcamento();
+      if (!Object.keys(orcamentoGlobal).length) {
+        document.getElementById('orcamentoSection').style.display = 'none';
+      }
+      showToast('Item removido do orçamento.', 'success');
+    }
+  }
+
+  function limparOrcamentoConsolidado() {
+    if (!Object.keys(orcamentoGlobal).length) return;
+    if (!confirm('Tem certeza? Isso vai limpar todos os itens do orçamento.')) return;
+    orcamentoGlobal = {};
+    atualizarTabelaOrcamento();
+    document.getElementById('orcamentoSection').style.display = 'none';
+    showToast('Orçamento limpo.', 'success');
+  }
+
+  function exportOrcamentoCSV() {
+    const items = Object.values(orcamentoGlobal);
+    if (!items.length) { showToast('Orçamento vazio.', 'error'); return; }
+    const header = 'Código do Item,Descrição,Quantidade,Unidade,Estruturas';
+    const rows = items.map(item => {
+      const estruturas = Array.from(item.estruturas).join('; ');
+      const val1 = '"' + (item.code || '').replace(/"/g, '""') + '"';
+      const val2 = '"' + (item.desc || '').replace(/"/g, '""') + '"';
+      const val3 = item.qty;
+      const val4 = '"' + (item.unit || '').replace(/"/g, '""') + '"';
+      const val5 = '"' + estruturas.replace(/"/g, '""') + '"';
+      return val1 + ',' + val2 + ',' + val3 + ',' + val4 + ',' + val5;
+    });
+    download('SetupBoom-Orcamento-' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv', [header, ...rows].join('\n'));
+  }
+
+  function exportOrcamentoExcel() {
+    const items = Object.values(orcamentoGlobal);
+    if (!items.length) { showToast('Orçamento vazio.', 'error'); return; }
+    const data = [
+      ['Código do Item', 'Descrição', 'Quantidade', 'Unidade', 'Estruturas'],
+      ...items.map(item => [
+        item.code || '',
+        item.desc || '',
+        item.qty,
+        item.unit || '',
+        Array.from(item.estruturas).join('; ')
+      ])
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Orçamento');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    download('SetupBoom-Orcamento-' + new Date().toISOString().split('T')[0] + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', wbout);
+  }
+
+  function exportExcel() {
+    if (!currentItems.length) return;
+    const data = [
+      currentCols.map(c => c.label),
+      ...currentItems.map(row => currentCols.map(c => row[c.key] ?? ''))
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Export');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    download('SetupBoom-' + (document.getElementById('selectedCode').textContent||'export') + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', wbout);
+  }
+
   function exportCSV() {
     if (!currentItems.length) return;
     const header = currentCols.map(c => c.label).join(',');

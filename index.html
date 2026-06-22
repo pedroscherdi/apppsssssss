@@ -1868,6 +1868,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
     <button class="tab" data-tab="mapa"><span class="tab-icon">🗺️</span> Mapa Postes</button>
+    <button class="tab" data-tab="mapa-obras"><span class="tab-icon">🏗️</span> Mapa de Obras</button>
     <button class="tab" data-tab="equipamentos"><span class="tab-icon">⚙️</span> Equipamentos</button>
     <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
     <button class="tab" data-tab="rebaixadores"><span class="tab-icon">🔻</span> Rebaixadores</button>
@@ -3056,6 +3057,7 @@ const firebaseConfig = {
     'kanban':      'Kanban',
     'campo':       'Campo',
     'mapa':        'Mapa Postes',
+    'mapa-obras':  'Mapa de Obras',
     'equipamentos':'Equipamentos',
     'normas-tecnicas':'Normas Técnicas',
     'quem-somos':  'Quem Somos',
@@ -8444,6 +8446,312 @@ Como posso ajudar?</div>
   });
 })();
 </script>
+
+<!-- ===== TAB: MAPA DE OBRAS ===== -->
+<div class="tab-panel" id="tab-mapa-obras">
+
+  <!-- Cabeçalho -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+    <div>
+      <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.2rem;">🏗️ Mapa de Obras</h2>
+      <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">PEPs · Lotes · Localizações — Dados X33:Z100</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div id="mo-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;"></div>
+        <span id="mo-status" style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);">Aguardando...</span>
+      </div>
+      <button class="btn-ghost" onclick="moCarregar(true)" style="font-size:0.8rem;padding:0.4rem 0.9rem;">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div style="display:flex;gap:0.65rem;margin-bottom:0.9rem;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="mo-search" placeholder="🔍 PEP, lote ou coordenada..." autocomplete="off"
+      oninput="moFiltrar()"
+      style="flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.82rem;transition:border-color 0.2s;outline:none;"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+    <select id="mo-lote-sel" onchange="moFiltrar()"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:0.6rem 0.85rem;font-family:'DM Mono',monospace;font-size:0.82rem;cursor:pointer;outline:none;">
+      <option value="">Todos os lotes</option>
+    </select>
+    <span id="mo-badge" style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);white-space:nowrap;"></span>
+  </div>
+
+  <!-- Legenda de lotes -->
+  <div id="mo-legenda" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem;"></div>
+
+  <!-- Mapa Leaflet -->
+  <div id="mo-map" style="height:460px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:1.25rem;position:relative;z-index:1;background:var(--surface);"></div>
+
+  <!-- Estado vazio -->
+  <div id="mo-vazio" style="display:none;text-align:center;padding:3rem 1rem;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.85rem;">
+    🏗️ Nenhuma obra com coordenadas válidas.<br/>
+    <span style="font-size:0.75rem;margin-top:0.5rem;display:block;">Confirme se X33:Z100 (PEP · Lote · lat,lng) está preenchido na aba Dados.</span>
+  </div>
+
+  <!-- Tabela -->
+  <div id="mo-lista-wrap" style="display:none;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.65rem;">📋 Obras visíveis</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>PEP</th><th>Lote</th><th>Coordenada</th><th style="text-align:center;">Ir</th></tr></thead>
+        <tbody id="mo-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ── Paleta de cores para lotes ───────────────────────── */
+  const PALETA = [
+    '#00e676','#00b0ff','#ff9100','#d500f9','#ff1744',
+    '#69f0ae','#40c4ff','#ffab40','#ea80fc','#ff6e40',
+    '#b2ff59','#84ffff','#ffd740','#f48fb1','#80cbc4',
+    '#ce93d8','#80deea','#a5d6a7','#fff176','#ffcc80'
+  ];
+  const _loteCores = {};
+  let _paletaIdx = 0;
+  function loteCor(lote) {
+    if (!lote) return '#888888';
+    if (!_loteCores[lote]) { _loteCores[lote] = PALETA[_paletaIdx++ % PALETA.length]; }
+    return _loteCores[lote];
+  }
+
+  /* ── Ícone SVG colorido ──────────────────────────────── */
+  function mkIcon(cor) {
+    const enc = encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
+        <path d="M13 0C5.82 0 0 5.82 0 13c0 9.1 11.6 20.3 12.1 20.8a1.2 1.2 0 0 0 1.8 0C14.4 33.3 26 22.1 26 13 26 5.82 20.18 0 13 0z" fill="${cor}"/>
+        <circle cx="13" cy="13" r="5.5" fill="#060f0a" opacity=".65"/>
+      </svg>`
+    );
+    return L.divIcon({
+      html: `<img src="data:image/svg+xml,${enc}" width="26" height="34"/>`,
+      iconSize:[26,34], iconAnchor:[13,34], popupAnchor:[0,-36], className:''
+    });
+  }
+
+  /* ── Parse coordenada "lat,lng" ─────────────────────── */
+  function parseCoord(raw) {
+    if (!raw) return null;
+    const s = String(raw).trim().replace(/\s/g,'');
+    const m = s.match(/^(-?\d{1,3}(?:\.\d+)?)[,;](-?\d{1,3}(?:\.\d+)?)$/);
+    if (!m) return null;
+    const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+    if (isNaN(lat)||isNaN(lng)) return null;
+    return [lat, lng];
+  }
+
+  /* ── Estado ─────────────────────────────────────────── */
+  let moMap = null, moLayer = null, moLoaded = false;
+  let todasObras = [], obrasFiltradas = [], moMarkers = [];
+
+  function setDot(state, msg) {
+    const dot = document.getElementById('mo-dot');
+    const st  = document.getElementById('mo-status');
+    const classes = {loading:'#00e676',ok:'#47ff9a',error:'#ff6b6b'};
+    dot.style.background = classes[state]||'#888';
+    if (state==='loading') { dot.style.animation='pulse 0.6s infinite'; }
+    else if (state==='ok') { dot.style.animation='pulse 2s infinite'; }
+    else { dot.style.animation='none'; }
+    st.textContent = msg;
+    st.style.color = state==='error'?'var(--danger)':'var(--muted)';
+  }
+
+  /* ── Carrega dados do Sheets ─────────────────────────── */
+  window.moCarregar = async function(force) {
+    if (moLoaded && !force) return;
+    moLoaded = true;
+    setDot('loading','Carregando obras...');
+    try {
+      const API_KEY  = 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
+      const SHEET_ID = '1_KoOY_AfIxr4d7Afg24ZTvuBaV2CMZzl0yIFZFJynVM';
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Dados!X33:Z100?key=${API_KEY}`;
+      const res  = await fetch(url);
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message);
+
+      const rows = json.values || [];
+      todasObras = rows.map(r => ({
+        pep:    (r[0]||'').trim(),
+        lote:   (r[1]||'').trim(),
+        locRaw: (r[2]||'').trim(),
+        coord:  parseCoord((r[2]||''))
+      })).filter(o => o.pep && o.coord);
+
+      if (!todasObras.length) {
+        setDot('error','Nenhuma coordenada válida encontrada.');
+        document.getElementById('mo-vazio').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('mo-vazio').style.display = 'none';
+      setDot('ok', `${todasObras.length} obra${todasObras.length!==1?'s':''} carregada${todasObras.length!==1?'s':''}`);
+
+      // Popula select de lotes
+      const lotes = [...new Set(todasObras.map(o=>o.lote).filter(Boolean))].sort();
+      const sel = document.getElementById('mo-lote-sel');
+      sel.innerHTML = '<option value="">Todos os lotes</option>';
+      lotes.forEach(l => { const o=document.createElement('option'); o.value=o.textContent=l; sel.appendChild(o); });
+
+      // Pré-gera cores (garante ordem consistente)
+      lotes.forEach(l => loteCor(l));
+
+      moIniciarMapa();
+      moFiltrar();
+    } catch(e) {
+      setDot('error','Erro: '+e.message);
+    }
+  };
+
+  /* ── Inicia mapa Leaflet ─────────────────────────────── */
+  function moIniciarMapa() {
+    if (moMap) return;
+    function _init() {
+      moMap = L.map('mo-map', {center:[-31.77,-52.33], zoom:11, preferCanvas:false});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        {attribution:'© OpenStreetMap © CartoDB', subdomains:'abcd', maxZoom:19}
+      ).addTo(moMap);
+      moLayer = L.layerGroup().addTo(moMap);
+      setTimeout(()=>moMap.invalidateSize(),150);
+      moRenderMarkers();
+    }
+
+    if (typeof L !== 'undefined') { _init(); return; }
+
+    if (!document.getElementById('mo-leaflet-css')) {
+      const lnk=document.createElement('link');
+      lnk.id='mo-leaflet-css'; lnk.rel='stylesheet';
+      lnk.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(lnk);
+    }
+    const existSc = document.querySelector('script[src*="leaflet.min.js"]');
+    if (existSc) {
+      let t=0; const wait=setInterval(()=>{ t++; if(typeof L!=='undefined'){clearInterval(wait);_init();} else if(t>120)clearInterval(wait); },50);
+    } else {
+      const sc=document.createElement('script');
+      sc.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      sc.onload=_init; document.head.appendChild(sc);
+    }
+  }
+
+  /* ── Filtra obras ───────────────────────────────────── */
+  window.moFiltrar = function() {
+    const q    = (document.getElementById('mo-search')?.value||'').toLowerCase().trim();
+    const lote = (document.getElementById('mo-lote-sel')?.value||'').trim();
+    obrasFiltradas = todasObras.filter(o => {
+      const mq = !q || o.pep.toLowerCase().includes(q) || o.lote.toLowerCase().includes(q) || o.locRaw.toLowerCase().includes(q);
+      const ml = !lote || o.lote===lote;
+      return mq && ml;
+    });
+    document.getElementById('mo-badge').textContent =
+      obrasFiltradas.length + ' obra' + (obrasFiltradas.length!==1?'s':'') + ' visível' + (obrasFiltradas.length!==1?'s':'');
+    moRenderMarkers();
+    moRenderLista();
+    moRenderLegenda();
+  };
+
+  /* ── Renderiza markers ──────────────────────────────── */
+  function moRenderMarkers() {
+    if (!moMap || !moLayer) return;
+    moLayer.clearLayers();
+    moMarkers = [];
+
+    obrasFiltradas.forEach((o,i) => {
+      const cor  = loteCor(o.lote);
+      const icon = mkIcon(cor);
+      const popup = `<div style="font-family:'DM Mono',monospace;min-width:170px;">
+        <div style="font-weight:700;font-size:0.88rem;color:${cor};margin-bottom:5px;">${o.pep}</div>
+        <div style="font-size:0.73rem;margin-bottom:2px;">
+          <span style="color:#6b8070;">Lote: </span>
+          <span style="color:#0d1f14;font-weight:600;">${o.lote||'—'}</span>
+        </div>
+        <div style="font-size:0.68rem;color:#9aaa9a;">${o.locRaw}</div>
+      </div>`;
+      const mk = L.marker(o.coord, {icon})
+        .addTo(moLayer)
+        .bindPopup(popup, {maxWidth:250, className:'mo-popup'});
+      moMarkers.push({mk, obra:o, idx:i});
+    });
+
+    if (obrasFiltradas.length) {
+      const pts = obrasFiltradas.map(o=>o.coord);
+      if (pts.length===1) moMap.setView(pts[0], 15);
+      else moMap.fitBounds(pts, {padding:[40,40]});
+    }
+  }
+
+  /* ── Renderiza legenda ──────────────────────────────── */
+  function moRenderLegenda() {
+    const el = document.getElementById('mo-legenda');
+    const lotesVisiveis = [...new Set(obrasFiltradas.map(o=>o.lote).filter(Boolean))].sort();
+    if (!lotesVisiveis.length) { el.innerHTML=''; return; }
+    el.innerHTML = lotesVisiveis.map(l => {
+      const cor = loteCor(l);
+      return `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text);">
+        <span style="width:9px;height:9px;border-radius:50%;background:${cor};flex-shrink:0;"></span>${l}
+      </span>`;
+    }).join('');
+  }
+
+  /* ── Renderiza tabela ───────────────────────────────── */
+  function moRenderLista() {
+    const wrap  = document.getElementById('mo-lista-wrap');
+    const tbody = document.getElementById('mo-tbody');
+    if (!obrasFiltradas.length) { wrap.style.display='none'; return; }
+    wrap.style.display = 'block';
+    tbody.innerHTML = obrasFiltradas.map((o,i) => {
+      const cor = loteCor(o.lote);
+      return `<tr>
+        <td>
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${cor};margin-right:7px;vertical-align:middle;flex-shrink:0;"></span>
+          <span style="color:var(--accent2);">${o.pep}</span>
+        </td>
+        <td><span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text);">${o.lote||'—'}</span></td>
+        <td><span style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">${o.locRaw}</span></td>
+        <td style="text-align:center;">
+          <button onclick="moIr(${i})"
+            style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.78rem;font-family:'DM Mono',monospace;transition:background 0.15s;"
+            onmouseover="this.style.background='rgba(0,230,118,0.22)'" onmouseout="this.style.background='rgba(0,230,118,0.1)'">📍</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ── Navega para obra ───────────────────────────────── */
+  window.moIr = function(idx) {
+    const o = obrasFiltradas[idx];
+    if (!o || !moMap) return;
+    moMap.setView(o.coord, 16, {animate:true});
+    const found = moMarkers.find(m => m.idx===idx);
+    if (found) found.mk.openPopup();
+    // Scroll suave até o mapa
+    document.getElementById('mo-map').scrollIntoView({behavior:'smooth', block:'center'});
+  };
+
+  /* ── Ativa ao entrar na aba ─────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'mapa-obras') {
+          setTimeout(() => {
+            if (moMap) moMap.invalidateSize();
+            moCarregar(false);
+          }, 120);
+        }
+      });
+    });
+  });
+
+  /* Estilo popup Leaflet */
+  const moSty = document.createElement('style');
+  moSty.textContent = `.mo-popup .leaflet-popup-content-wrapper{background:#fff;border:1px solid #d0e8d8;border-radius:10px;color:#0d1f14;box-shadow:0 6px 24px rgba(0,0,0,.15);}.mo-popup .leaflet-popup-tip{background:#fff;}.mo-popup .leaflet-popup-content{margin:10px 14px;}`;
+  document.head.appendChild(moSty);
+})();
+</script>
+<!-- ===== FIM TAB: MAPA DE OBRAS ===== -->
 
 <!-- ===== MODAL DE BOAS-VINDAS ===== -->
 <div id="welcomeModal" style="

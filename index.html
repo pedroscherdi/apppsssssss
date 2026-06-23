@@ -577,6 +577,25 @@ const firebaseConfig = {
       position: relative;
       z-index: 9998;
     }
+
+    @media (max-width: 700px) {
+      .mob-topbar-inner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9998;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0.6rem 0.9rem;
+        margin-bottom: 0;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+        padding-top: max(0.6rem, env(safe-area-inset-top, 0.6rem));
+      }
+      .main-content {
+        padding-top: calc(max(0.6rem, env(safe-area-inset-top, 0.6rem)) + 0.6rem + 38px + 1rem) !important;
+      }
+    }
     .mob-brand {
       font-family: 'Syne', sans-serif;
       font-weight: 800;

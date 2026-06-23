@@ -1867,9 +1867,8 @@ const firebaseConfig = {
     <button class="tab" data-tab="conectores"><span class="tab-icon">🔌</span> Conectores</button>
     <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
-    <button class="tab" data-tab="mapa"><span class="tab-icon">🗺️</span> Mapa Postes</button>
+    <button class="tab" data-tab="mapa-unificado"><span class="tab-icon">🗺️</span> Mapa</button>
     <button class="tab" data-tab="mapa-obras"><span class="tab-icon">🏗️</span> Mapa de Obras</button>
-    <button class="tab" data-tab="equipamentos"><span class="tab-icon">⚙️</span> Equipamentos</button>
     <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
     <button class="tab" data-tab="rebaixadores"><span class="tab-icon">🔻</span> Rebaixadores</button>
 
@@ -3059,6 +3058,7 @@ const firebaseConfig = {
     'mapa':        'Mapa Postes',
     'mapa-obras':  'Mapa de Obras',
     'equipamentos':'Equipamentos',
+    'mapa-unificado': 'Mapa',
     'normas-tecnicas':'Normas Técnicas',
     'quem-somos':  'Quem Somos',
     'alimentadores':'Alimentadores',
@@ -4811,6 +4811,622 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
   </div>
 </div><!-- /tab-mapa -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: MAPA UNIFICADO (Postes + Equipamentos)           -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-mapa-unificado">
+  <div style="max-width:900px;margin:0 auto;">
+
+    <div style="margin-bottom:1.2rem;">
+      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+        Mapa <span style="color:var(--accent)">Unificado</span>
+      </h1>
+      <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+        Postes · Equipamentos · Google Sheets
+      </p>
+    </div>
+
+    <!-- Toggles de camada -->
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1rem;">
+      <button id="mu-toggle-postes" onclick="muToggleLayer('postes')"
+        style="display:flex;align-items:center;gap:0.45rem;background:rgba(0,230,118,0.15);border:2px solid var(--accent);color:var(--accent);border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span> ⚡ Postes
+      </button>
+      <button id="mu-toggle-equip" onclick="muToggleLayer('equip')"
+        style="display:flex;align-items:center;gap:0.45rem;background:rgba(255,183,77,0.15);border:2px solid #ffb74d;color:#ffb74d;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#ffb74d;flex-shrink:0;"></span> ⚙️ Equipamentos
+      </button>
+      <button class="btn-ghost" id="mu-gps-btn" onclick="muMeLocalizar()" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.35rem 0.9rem;font-size:0.78rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
+        <span id="mu-gps-label">Me localizar</span>
+      </button>
+      <div id="mu-badge" style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:1rem;">
+        <span id="mu-badge-postes"></span>
+        <span id="mu-badge-equip"></span>
+      </div>
+    </div>
+
+    <!-- Busca dupla -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;" id="mu-search-grid">
+      <!-- Busca Poste -->
+      <div style="position:relative;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.35rem;">⚡ Poste</div>
+        <div style="display:flex;gap:0.4rem;">
+          <input type="text" id="mu-poste-input" placeholder="Nº do poste..." autocomplete="off"
+            oninput="muPosteFilter()"
+            style="flex:1;font-size:0.82rem;" />
+          <button class="btn" onclick="muBuscarPoste()" style="padding:0.4rem 0.75rem;font-size:0.78rem;white-space:nowrap;">🔍</button>
+        </div>
+        <div id="mu-poste-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+      </div>
+      <!-- Busca Equipamento -->
+      <div style="position:relative;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.09em;color:#ffb74d;margin-bottom:0.35rem;">⚙️ Equipamento</div>
+        <div style="display:flex;gap:0.4rem;">
+          <input type="text" id="mu-equip-input" placeholder="Nº do equipamento..." autocomplete="off"
+            oninput="muEquipFilter()"
+            style="flex:1;font-size:0.82rem;" />
+          <button class="btn" onclick="muBuscarEquip()" style="padding:0.4rem 0.75rem;font-size:0.78rem;white-space:nowrap;background:#ffb74d;color:#060f0a;">🔍</button>
+        </div>
+        <div id="mu-equip-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid #ffb74d;border-radius:var(--radius);max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div id="mu-status" class="mapa-status" style="margin-bottom:0.75rem;">
+      <span id="mu-status-text">Carregando dados...</span>
+    </div>
+
+    <!-- Info cards (visíveis ao selecionar) -->
+    <div id="mu-poste-card" class="mapa-info-card" style="margin-bottom:0.75rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.5rem;">⚡ Poste selecionado</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
+        <div><div class="mi-label">Número</div><div class="mi-val accent" id="mu-p-num">—</div></div>
+        <div><div class="mi-label">Estrutura</div><div class="mi-val" id="mu-p-estr">—</div></div>
+        <div><div class="mi-label">Tipo</div><div class="mi-val" id="mu-p-tipo">—</div></div>
+        <div><div class="mi-label">Altura</div><div class="mi-val" id="mu-p-alt">—</div></div>
+        <div><div class="mi-label">Lat / Lng</div><div class="mi-val" id="mu-p-coord" style="font-size:0.72rem;">—</div></div>
+        <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
+          <a id="mu-p-gmaps" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;padding:0.35rem 0.85rem;font-size:0.73rem;">Maps ↗</a>
+          <button class="btn" onclick="muMostrarProximos('poste')" style="font-size:0.73rem;padding:0.35rem 0.85rem;">📡 Próximos</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mu-equip-card" class="mapa-info-card" style="margin-bottom:0.75rem;border-color:#ffb74d33;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:#ffb74d;margin-bottom:0.5rem;">⚙️ Equipamento selecionado</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
+        <div><div class="mi-label">Nome</div><div class="mi-val" id="mu-e-nome" style="color:#ffb74d;">—</div></div>
+        <div><div class="mi-label">Alimentador</div><div class="mi-val" id="mu-e-alim">—</div></div>
+        <div><div class="mi-label">Tipo</div><div class="mi-val" id="mu-e-tipo">—</div></div>
+        <div><div class="mi-label">Lat / Lng</div><div class="mi-val" id="mu-e-coord" style="font-size:0.72rem;">—</div></div>
+        <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
+          <a id="mu-e-gmaps" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;padding:0.35rem 0.85rem;font-size:0.73rem;">Maps ↗</a>
+          <button class="btn" onclick="muMostrarProximos('equip')" style="font-size:0.73rem;padding:0.35rem 0.85rem;background:#ffb74d;color:#060f0a;">📡 Próximos</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controle de raio -->
+    <div id="mu-raio-ctrl" style="display:none;margin-bottom:0.75rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.65rem 1rem;">
+        <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);white-space:nowrap;">📡 Raio:</span>
+        <input type="range" id="mu-raio-slider" min="50" max="1000" step="50" value="200"
+          oninput="document.getElementById('mu-raio-val').textContent=this.value+'m';muAtualizarProximos()"
+          style="flex:1;min-width:100px;accent-color:var(--accent);" />
+        <span id="mu-raio-val" style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--accent);font-weight:700;min-width:48px;text-align:right;">200m</span>
+        <button class="btn-ghost" onclick="muAtualizarProximos()" style="font-size:0.75rem;padding:0.3rem 0.85rem;white-space:nowrap;">🔄</button>
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div id="mu-leaflet" style="height:480px;border-radius:12px;border:1px solid var(--border);overflow:hidden;"></div>
+
+    <!-- Tabela de resultados próximos -->
+    <div id="mu-proximos-wrap" style="display:none;margin-top:1rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;" id="mu-proximos-label">Elementos próximos</div>
+      <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="background:var(--surface);">
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Tipo</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Nome/Nº</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Distância</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Info</th>
+            </tr>
+          </thead>
+          <tbody id="mu-proximos-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
+      🗺️ OpenStreetMap · Postes e Equipamentos via Google Sheets
+    </div>
+  </div>
+</div><!-- /tab-mapa-unificado -->
+
+<script>
+(function() {
+  /* ── Dados compartilhados ── */
+  let muMap = null;
+  let muReady = false;
+  let _muLeafletLoaded = false;
+
+  // Estado das camadas
+  let muLayerPostes = true;
+  let muLayerEquip = true;
+
+  // Dados
+  let muPostes = [];
+  let muPostesOk = false;
+  let muEquips = [];
+  let muEquipsOk = false;
+
+  // Marcadores
+  let muPosteMarker = null;
+  let muEquipMarker = null;
+  let muGpsMarker = null;
+  let muProxMarkers = [];
+  let muProxCircle = null;
+  let muPostesLayer = null;
+  let muEquipsLayer = null;
+
+  // Seleção atual para "próximos"
+  let muCentro = null; // {lat, lng}
+  let muProxMode = null; // 'poste'|'equip'|'gps'
+
+  /* ── Consts ── */
+  const MAPA_ABA  = 'Mapa Postes';
+  const EQUIP_ABA = 'EQUIPAMENTOS';
+  const BLOCOS_POSTES = [
+    { nome: 0,  lat: 2,  lng: 3,  tipo: 4,  alt: 5,  estr: 6  },
+    { nome: 11, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },
+    { nome: 20, lat: 22, lng: 23, tipo: 24, alt: 25, estr: 26 },
+  ];
+
+  /* ── Haversine ── */
+  function haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371000, toRad = x => x * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  /* ── Carrega Leaflet (reusa se já carregado) ── */
+  function carregarLeafletMU(cb) {
+    if (typeof L !== 'undefined') { cb(); return; }
+    if (_muLeafletLoaded) { const t = setInterval(() => { if (typeof L !== 'undefined') { clearInterval(t); cb(); } }, 50); return; }
+    _muLeafletLoaded = true;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(link);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  /* ── Inicializa mapa ── */
+  function initMuMap() {
+    if (muMap) return;
+    muMap = L.map('mu-leaflet').setView([-31.7654, -52.3376], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(muMap);
+    muPostesLayer = L.layerGroup().addTo(muMap);
+    muEquipsLayer = L.layerGroup().addTo(muMap);
+    muReady = true;
+  }
+
+  /* ── Alterna camada ── */
+  window.muToggleLayer = function(tipo) {
+    if (tipo === 'postes') {
+      muLayerPostes = !muLayerPostes;
+      const btn = document.getElementById('mu-toggle-postes');
+      if (muLayerPostes) {
+        btn.style.background = 'rgba(0,230,118,0.15)';
+        btn.style.opacity = '1';
+        if (muMap && muPostesLayer) muMap.addLayer(muPostesLayer);
+      } else {
+        btn.style.background = 'rgba(0,230,118,0.04)';
+        btn.style.opacity = '0.45';
+        if (muMap && muPostesLayer) muMap.removeLayer(muPostesLayer);
+      }
+    } else {
+      muLayerEquip = !muLayerEquip;
+      const btn = document.getElementById('mu-toggle-equip');
+      if (muLayerEquip) {
+        btn.style.background = 'rgba(255,183,77,0.15)';
+        btn.style.opacity = '1';
+        if (muMap && muEquipsLayer) muMap.addLayer(muEquipsLayer);
+      } else {
+        btn.style.background = 'rgba(255,183,77,0.04)';
+        btn.style.opacity = '0.45';
+        if (muMap && muEquipsLayer) muMap.removeLayer(muEquipsLayer);
+      }
+    }
+  };
+
+  /* ── Carrega postes ── */
+  async function carregarMuPostes() {
+    if (muPostesOk) return;
+    setMuStatus('loading', 'Carregando postes...');
+    try {
+      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_ABA)}!A:AA?key=${API_KEY}`;
+      const json = await (await fetch(url)).json();
+      if (json.error) throw new Error(json.error.message);
+      const rows = json.values || [];
+      rows.forEach((row, ri) => {
+        if (ri === 0) { const v = String(row[BLOCOS_POSTES[0].nome] || '').trim(); if (v && isNaN(parseFloat(v))) return; }
+        BLOCOS_POSTES.forEach(b => {
+          const num = String(row[b.nome] || '').trim();
+          const lat = parseFloat(String(row[b.lat] || '').replace(',', '.'));
+          const lng = parseFloat(String(row[b.lng] || '').replace(',', '.'));
+          if (num && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+            muPostes.push({ num, lat, lng, tipo: row[b.tipo]||'', alt: row[b.alt]||'', estr: row[b.estr]||'' });
+          }
+        });
+      });
+      muPostesOk = true;
+      document.getElementById('mu-badge-postes').textContent = `⚡ ${muPostes.length.toLocaleString('pt-BR')} postes`;
+      atualizarStatusMU();
+    } catch(e) { setMuStatus('erro', 'Erro postes: ' + e.message); }
+  }
+
+  /* ── Carrega equipamentos ── */
+  async function carregarMuEquips() {
+    if (muEquipsOk) return;
+    try {
+      const url = `${BASE_URL}/values/${encodeURIComponent(EQUIP_ABA)}!A:U?key=${API_KEY}`;
+      const json = await (await fetch(url)).json();
+      const rows = (json.values || []).slice(1);
+      const parseBlocoE = (r, aIdx, iIdx, nIdx, tIdx, latIdx, lngIdx) => ({
+        alimentador: (r[aIdx] || r[aIdx+1] || '').trim(),
+        icone:       (r[iIdx] || '').trim(),
+        nome:        (r[nIdx] || '').trim(),
+        tipo:        (r[tIdx] || '').trim(),
+        lat:         (r[latIdx] || '').trim(),
+        lng:         (r[lngIdx] || '').trim(),
+      });
+      const b1 = rows.map(r => parseBlocoE(r,1,2,3,4,5,6)).filter(r=>r.nome);
+      const b2 = rows.map(r => parseBlocoE(r,8,9,10,11,12,13)).filter(r=>r.nome);
+      const b3 = rows.map(r => parseBlocoE(r,15,16,17,18,19,20)).filter(r=>r.nome);
+      muEquips = [...b1, ...b2, ...b3];
+      muEquipsOk = true;
+      document.getElementById('mu-badge-equip').textContent = `⚙️ ${muEquips.length} equipamentos`;
+      atualizarStatusMU();
+    } catch(e) { console.warn('Equip erro:', e); }
+  }
+
+  function atualizarStatusMU() {
+    if (muPostesOk && muEquipsOk) setMuStatus('ok', `✔ ${muPostes.length.toLocaleString('pt-BR')} postes · ${muEquips.length} equipamentos · Pronto`);
+    else if (muPostesOk) setMuStatus('ok', `⚡ ${muPostes.length.toLocaleString('pt-BR')} postes · Carregando equipamentos...`);
+  }
+
+  function setMuStatus(tipo, msg) {
+    const el = document.getElementById('mu-status-text');
+    const wrap = document.getElementById('mu-status');
+    if (!el) return;
+    el.textContent = msg;
+    wrap.className = 'mapa-status' + (tipo==='erro'?' erro':tipo==='ok'?' ok':'');
+  }
+
+  /* ── Filtro Poste (autocomplete) ── */
+  window.muPosteFilter = function() {
+    const val = (document.getElementById('mu-poste-input').value || '').trim().toLowerCase();
+    const dd  = document.getElementById('mu-poste-dropdown');
+    if (!val || !muPostesOk) { dd.style.display='none'; return; }
+    const matches = muPostes.filter(p => p.num.toLowerCase().includes(val)).slice(0, 10);
+    if (!matches.length) { dd.style.display='none'; return; }
+    dd.innerHTML = matches.map(p =>
+      `<div onclick="muSelecionarPoste('${p.num}')" style="padding:0.55rem 1rem;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text);border-bottom:1px solid var(--border);"
+        onmouseover="this.style.background='rgba(0,230,118,0.08)'" onmouseout="this.style.background=''">${p.num}</div>`
+    ).join('');
+    dd.style.display = 'block';
+  };
+
+  window.muSelecionarPoste = function(num) {
+    document.getElementById('mu-poste-input').value = num;
+    document.getElementById('mu-poste-dropdown').style.display = 'none';
+    muBuscarPoste();
+  };
+
+  window.muBuscarPoste = function() {
+    const num = (document.getElementById('mu-poste-input').value || '').trim();
+    document.getElementById('mu-poste-dropdown').style.display = 'none';
+    if (!num) return;
+    const p = muPostes.find(x => x.num.toLowerCase() === num.toLowerCase());
+    if (!p) { setMuStatus('erro', `Poste "${num}" não encontrado.`); return; }
+
+    // Preenche card
+    document.getElementById('mu-p-num').textContent  = p.num;
+    document.getElementById('mu-p-estr').textContent = p.estr || '—';
+    document.getElementById('mu-p-tipo').textContent = p.tipo || '—';
+    document.getElementById('mu-p-alt').textContent  = p.alt  || '—';
+    document.getElementById('mu-p-coord').textContent = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+    document.getElementById('mu-p-gmaps').href = `https://maps.google.com/?q=${p.lat},${p.lng}`;
+    document.getElementById('mu-poste-card').classList.add('visible');
+
+    setMuStatus('ok', `⚡ Poste ${p.num} localizado`);
+    muCentro = { lat: p.lat, lng: p.lng };
+    muProxMode = 'poste';
+
+    // Plota no mapa
+    carregarLeafletMU(() => {
+      initMuMap();
+      if (muPosteMarker) muMap.removeLayer(muPosteMarker);
+      const icon = L.divIcon({
+        html: `<div style="width:16px;height:16px;border-radius:50%;background:#00e676;border:3px solid #fff;box-shadow:0 0 14px #00e676;"></div>`,
+        className: '', iconAnchor:[8,8]
+      });
+      muPosteMarker = L.marker([p.lat, p.lng], {icon})
+        .addTo(muMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ ${p.num}</b><br>Lat: ${p.lat.toFixed(6)}<br>Lng: ${p.lng.toFixed(6)}`)
+        .openPopup();
+      muMap.setView([p.lat, p.lng], 17);
+      document.getElementById('mu-raio-ctrl').style.display = 'block';
+      muLimparProximos();
+      document.getElementById('mu-proximos-wrap').style.display = 'none';
+      setTimeout(() => muMap.invalidateSize(), 80);
+    });
+  };
+
+  /* ── Filtro Equipamento (autocomplete) ── */
+  function tipoLabelMU(icone) {
+    if (!icone) return { label:'Desconhecido', emoji:'❓' };
+    const ic = icone.toUpperCase();
+    if (ic.includes('FACA'))   return { label:'Faca', emoji:'🔪' };
+    if (ic.includes('FUSIV') || ic.includes('FUSI')) return { label:'Fusível', emoji:'⚡' };
+    if (ic.includes('TRANS'))  return { label:'Transformador', emoji:'🔌' };
+    if (ic.includes('CHAVE'))  return { label:'Chave', emoji:'🔑' };
+    if (ic.includes('RELIGAD')) return { label:'Religador', emoji:'🔄' };
+    return { label: icone, emoji:'⚙️' };
+  }
+
+  window.muEquipFilter = function() {
+    const val = (document.getElementById('mu-equip-input').value || '').trim().toUpperCase();
+    const dd  = document.getElementById('mu-equip-dropdown');
+    if (!val || val.length < 2 || !muEquipsOk) { dd.style.display='none'; return; }
+    const matches = muEquips.filter(e => e.nome.toUpperCase().includes(val)).slice(0, 10);
+    if (!matches.length) { dd.style.display='none'; return; }
+    dd.innerHTML = matches.map(e => {
+      const t = tipoLabelMU(e.icone);
+      return `<div onclick="muSelecionarEquip('${e.nome.replace(/'/g,"\\'")}','${e.alimentador.replace(/'/g,"\\'")}','${e.icone.replace(/'/g,"\\'")}','${e.tipo.replace(/'/g,"\\'")}','${e.lat}','${e.lng}')"
+        style="padding:0.5rem 0.9rem;cursor:pointer;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.78rem;display:flex;gap:0.5rem;align-items:center;"
+        onmouseover="this.style.background='rgba(255,183,77,0.1)'" onmouseout="this.style.background=''">
+        <span>${t.emoji}</span>
+        <span style="color:#ffb74d;font-weight:700;">${e.nome}</span>
+        <span style="color:var(--muted);font-size:0.7rem;">· ${t.label}</span>
+      </div>`;
+    }).join('');
+    dd.style.display = 'block';
+  };
+
+  window.muSelecionarEquip = function(nome, alim, icone, tipo, lat, lng) {
+    document.getElementById('mu-equip-input').value = nome;
+    document.getElementById('mu-equip-dropdown').style.display = 'none';
+    _muMostrarEquip(nome, alim, icone, tipo, lat, lng);
+  };
+
+  window.muBuscarEquip = function() {
+    const val = (document.getElementById('mu-equip-input').value || '').trim().toUpperCase();
+    document.getElementById('mu-equip-dropdown').style.display = 'none';
+    if (!val) return;
+    const matches = muEquips.filter(e => e.nome.toUpperCase().includes(val));
+    if (!matches.length) { setMuStatus('erro', 'Equipamento não encontrado.'); return; }
+    const e = matches[0];
+    _muMostrarEquip(e.nome, e.alimentador, e.icone, e.tipo, e.lat, e.lng);
+  };
+
+  function _muMostrarEquip(nome, alim, icone, tipo, lat, lng) {
+    const latN = parseFloat(String(lat).replace(',', '.'));
+    const lngN = parseFloat(String(lng).replace(',', '.'));
+    const t = tipoLabelMU(icone);
+
+    document.getElementById('mu-e-nome').textContent = `${t.emoji} ${nome}`;
+    document.getElementById('mu-e-alim').textContent = alim || '—';
+    document.getElementById('mu-e-tipo').textContent = tipo || t.label;
+    document.getElementById('mu-equip-card').classList.add('visible');
+
+    if (!isNaN(latN) && !isNaN(lngN) && latN !== 0 && lngN !== 0) {
+      document.getElementById('mu-e-coord').textContent = `${latN.toFixed(6)}, ${lngN.toFixed(6)}`;
+      document.getElementById('mu-e-gmaps').href = `https://maps.google.com/?q=${latN},${lngN}`;
+      muCentro = { lat: latN, lng: lngN };
+      muProxMode = 'equip';
+      setMuStatus('ok', `⚙️ Equipamento ${nome} localizado`);
+
+      carregarLeafletMU(() => {
+        initMuMap();
+        if (muEquipMarker) muMap.removeLayer(muEquipMarker);
+        const icon = L.divIcon({
+          html: `<div style="width:16px;height:16px;border-radius:50%;background:#ffb74d;border:3px solid #fff;box-shadow:0 0 14px #ffb74d;"></div>`,
+          className: '', iconAnchor:[8,8]
+        });
+        muEquipMarker = L.marker([latN, lngN], {icon})
+          .addTo(muMap)
+          .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#ffb74d;">${t.emoji} ${nome}</b><br>${alim || ''}<br>Lat: ${latN.toFixed(6)}<br>Lng: ${lngN.toFixed(6)}`)
+          .openPopup();
+        muMap.setView([latN, lngN], 17);
+        document.getElementById('mu-raio-ctrl').style.display = 'block';
+        muLimparProximos();
+        document.getElementById('mu-proximos-wrap').style.display = 'none';
+        setTimeout(() => muMap.invalidateSize(), 80);
+      });
+    } else {
+      document.getElementById('mu-e-coord').textContent = 'Sem coordenadas';
+    }
+  }
+
+  /* ── GPS ── */
+  window.muMeLocalizar = function() {
+    if (!navigator.geolocation) { if (typeof showToast==='function') showToast('GPS não suportado.','error'); return; }
+    const btn = document.getElementById('mu-gps-btn');
+    const lbl = document.getElementById('mu-gps-label');
+    btn.disabled = true; lbl.textContent = 'Localizando...';
+    navigator.geolocation.getCurrentPosition(pos => {
+      btn.disabled = false; lbl.textContent = 'Me localizar';
+      const {latitude:lat, longitude:lng, accuracy:acc} = pos.coords;
+      carregarLeafletMU(() => {
+        initMuMap();
+        if (muGpsMarker) muMap.removeLayer(muGpsMarker);
+        if (!document.getElementById('gps-pulse-style')) {
+          const s = document.createElement('style');
+          s.id = 'gps-pulse-style';
+          s.textContent = `@keyframes gps-pulse{0%,100%{box-shadow:0 0 0 4px rgba(41,121,255,0.3)}50%{box-shadow:0 0 0 10px rgba(41,121,255,0.08)}}`;
+          document.head.appendChild(s);
+        }
+        const gpsIcon = L.divIcon({
+          html:`<div style="width:18px;height:18px;border-radius:50%;background:#2979ff;border:3px solid #fff;box-shadow:0 0 0 4px rgba(41,121,255,0.3);animation:gps-pulse 1.5s ease-in-out infinite;"></div>`,
+          className:'', iconAnchor:[9,9]
+        });
+        muGpsMarker = L.marker([lat,lng],{icon:gpsIcon}).addTo(muMap)
+          .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#2979ff;">📍 Você está aqui</b><br>±${Math.round(acc)}m`)
+          .openPopup();
+        muCentro = {lat, lng};
+        muProxMode = 'gps';
+        muMap.setView([lat,lng], 15);
+        document.getElementById('mu-raio-ctrl').style.display = 'block';
+        muLimparProximos();
+        document.getElementById('mu-proximos-wrap').style.display = 'none';
+        const f = () => { if (muPostesOk || muEquipsOk) muMostrarProximos('gps'); else setTimeout(f,300); };
+        f();
+        if (typeof showToast==='function') showToast(`📍 ±${Math.round(acc)}m`, 'success');
+        setTimeout(() => muMap.invalidateSize(), 80);
+      });
+    }, err => {
+      btn.disabled = false; lbl.textContent = 'Me localizar';
+      const msgs = {1:'Permissão negada.',2:'Posição indisponível.',3:'Tempo esgotado.'};
+      if (typeof showToast==='function') showToast(msgs[err.code]||'Erro GPS.','error');
+    }, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
+  };
+
+  /* ── Proximidade ── */
+  function muLimparProximos() {
+    muProxMarkers.forEach(m => { if (muMap) muMap.removeLayer(m); });
+    muProxMarkers = [];
+    if (muProxCircle && muMap) { muMap.removeLayer(muProxCircle); muProxCircle = null; }
+  }
+
+  window.muAtualizarProximos = function() {
+    if (document.getElementById('mu-proximos-wrap').style.display !== 'none') {
+      muMostrarProximos(muProxMode || 'poste');
+    }
+  };
+
+  window.muMostrarProximos = function(mode) {
+    if (!muCentro || !muMap) return;
+    muProxMode = mode || muProxMode || 'poste';
+    const raio = parseInt(document.getElementById('mu-raio-slider').value) || 200;
+    muLimparProximos();
+
+    const cor = muProxMode === 'equip' ? '#ffb74d' : muProxMode === 'gps' ? '#2979ff' : '#00e676';
+    muProxCircle = L.circle([muCentro.lat, muCentro.lng], {
+      radius: raio, color: cor, fillColor: cor, fillOpacity: 0.05, weight: 1.5, dashArray: '6,4'
+    }).addTo(muMap);
+
+    const rows = [];
+
+    // Postes próximos
+    if (muLayerPostes && muPostesOk) {
+      muPostes.filter(p => haversine(muCentro.lat, muCentro.lng, p.lat, p.lng) <= raio)
+        .map(p => ({ ...p, dist: haversine(muCentro.lat, muCentro.lng, p.lat, p.lng), _kind:'poste' }))
+        .sort((a,b)=>a.dist-b.dist)
+        .forEach(p => {
+          rows.push({ kind:'poste', label: p.num, info: p.tipo||p.estr||'—', dist: p.dist, lat:p.lat, lng:p.lng });
+          const icon = L.divIcon({
+            html:`<div style="width:9px;height:9px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 5px rgba(0,230,118,0.6);"></div>`,
+            className:'', iconAnchor:[4,4]
+          });
+          muProxMarkers.push(L.marker([p.lat,p.lng],{icon}).addTo(muMap)
+            .bindPopup(`<b style="color:#00e676;">⚡ ${p.num}</b><br>${Math.round(p.dist)}m`));
+        });
+    }
+
+    // Equipamentos próximos
+    if (muLayerEquip && muEquipsOk) {
+      muEquips.filter(e => {
+        const la = parseFloat(String(e.lat).replace(',','.')), lo = parseFloat(String(e.lng).replace(',','.'));
+        return !isNaN(la) && !isNaN(lo) && haversine(muCentro.lat, muCentro.lng, la, lo) <= raio;
+      }).map(e => {
+        const la = parseFloat(String(e.lat).replace(',','.')), lo = parseFloat(String(e.lng).replace(',','.'));
+        return { ...e, latN:la, lngN:lo, dist: haversine(muCentro.lat, muCentro.lng, la, lo), _kind:'equip' };
+      }).sort((a,b)=>a.dist-b.dist)
+        .forEach(e => {
+          const t = tipoLabelMU(e.icone);
+          rows.push({ kind:'equip', label: e.nome, info: `${t.emoji} ${t.label} · ${e.alimentador||''}`, dist: e.dist, lat:e.latN, lng:e.lngN });
+          const icon = L.divIcon({
+            html:`<div style="width:9px;height:9px;border-radius:50%;background:#ffe082;border:2px solid #ffb74d;box-shadow:0 0 5px rgba(255,183,77,0.6);"></div>`,
+            className:'', iconAnchor:[4,4]
+          });
+          muProxMarkers.push(L.marker([e.latN,e.lngN],{icon}).addTo(muMap)
+            .bindPopup(`<b style="color:#ffb74d;">${t.emoji} ${e.nome}</b><br>${Math.round(e.dist)}m`));
+        });
+    }
+
+    rows.sort((a,b)=>a.dist-b.dist);
+
+    const wrap = document.getElementById('mu-proximos-wrap');
+    const tbody = document.getElementById('mu-proximos-tbody');
+    document.getElementById('mu-proximos-label').textContent = `${rows.length} elemento(s) num raio de ${raio}m`;
+
+    if (rows.length) {
+      tbody.innerHTML = rows.map(r => `<tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:0.45rem 0.9rem;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.kind==='poste'?'#00e676':'#ffb74d'};margin-right:6px;"></span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">${r.kind==='poste'?'Poste':'Equip.'}</span>
+        </td>
+        <td style="padding:0.45rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.8rem;color:${r.kind==='poste'?'var(--accent)':'#ffb74d'};font-weight:700;">${r.label}</td>
+        <td style="padding:0.45rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent);">${Math.round(r.dist)}m</td>
+        <td style="padding:0.45rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">${r.info}</td>
+      </tr>`).join('');
+      wrap.style.display = 'block';
+    } else {
+      tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem;text-align:center;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">Nenhum elemento em ${raio}m.</td></tr>`;
+      wrap.style.display = 'block';
+    }
+  };
+
+  /* ── Inicializa ao entrar na aba ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'mapa-unificado') {
+          carregarLeafletMU(() => {
+            setTimeout(() => {
+              initMuMap();
+              if (muMap) muMap.invalidateSize();
+            }, 100);
+          });
+          carregarMuPostes();
+          carregarMuEquips();
+        }
+      });
+    });
+    // Fecha dropdowns ao clicar fora
+    document.addEventListener('click', e => {
+      const dp = document.getElementById('mu-poste-dropdown');
+      const ip = document.getElementById('mu-poste-input');
+      if (dp && ip && !ip.contains(e.target) && !dp.contains(e.target)) dp.style.display='none';
+      const de = document.getElementById('mu-equip-dropdown');
+      const ie = document.getElementById('mu-equip-input');
+      if (de && ie && !ie.contains(e.target) && !de.contains(e.target)) de.style.display='none';
+    });
+    // Enter nos inputs
+    const ip = document.getElementById('mu-poste-input');
+    if (ip) ip.addEventListener('keydown', e => { if(e.key==='Enter') muBuscarPoste(); });
+    const ie = document.getElementById('mu-equip-input');
+    if (ie) ie.addEventListener('keydown', e => { if(e.key==='Enter') muBuscarEquip(); });
+  });
+
+  // Mobile: grid de busca vira coluna única
+  const muSG = document.getElementById('mu-search-grid');
+  if (muSG && window.innerWidth < 600) muSG.style.gridTemplateColumns = '1fr';
+})();
+</script>
+<!-- ══ FIM MAPA UNIFICADO ══ -->
 
 <div class="tab-panel" id="tab-rebaixadores">
   <style>

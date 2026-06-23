@@ -553,6 +553,8 @@ const firebaseConfig = {
       font-size: 1.1rem;
       flex-shrink: 0;
       transition: border-color 0.2s;
+      position: relative;
+      z-index: 9999;
     }
     .mob-menu-btn:hover { border-color: var(--accent); }
 
@@ -563,6 +565,8 @@ const firebaseConfig = {
       gap: 0.75rem;
       width: 100%;
       margin-bottom: 1.25rem;
+      position: relative;
+      z-index: 9998;
     }
     .mob-brand {
       font-family: 'Syne', sans-serif;
@@ -594,7 +598,7 @@ const firebaseConfig = {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.55);
-      z-index: 9000;
+      z-index: 10000;
       backdrop-filter: blur(2px);
     }
     .sidebar-overlay.open { display: block; }
@@ -606,7 +610,7 @@ const firebaseConfig = {
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
         box-shadow: 4px 0 24px rgba(0,0,0,0.4);
-        z-index: 9001;
+        z-index: 10001;
       }
       .sidebar.open { transform: translateX(0); }
       .main-content {
@@ -6951,14 +6955,14 @@ document.querySelectorAll('.tab').forEach(btn => {
         const s = document.createElement('style');
         s.id = 'leaflet-zindex-fix';
         s.textContent = `
-          .leaflet-pane { z-index: auto !important; }
-          .leaflet-tile-pane { z-index: 200 !important; }
-          .leaflet-overlay-pane { z-index: 300 !important; }
-          .leaflet-shadow-pane { z-index: 400 !important; }
-          .leaflet-marker-pane { z-index: 500 !important; }
-          .leaflet-tooltip-pane { z-index: 550 !important; }
-          .leaflet-popup-pane { z-index: 600 !important; }
-          .leaflet-top, .leaflet-bottom { z-index: 700 !important; }
+          .leaflet-pane { z-index: 1 !important; }
+          .leaflet-tile-pane { z-index: 2 !important; }
+          .leaflet-overlay-pane { z-index: 3 !important; }
+          .leaflet-shadow-pane { z-index: 4 !important; }
+          .leaflet-marker-pane { z-index: 5 !important; }
+          .leaflet-tooltip-pane { z-index: 6 !important; }
+          .leaflet-popup-pane { z-index: 7 !important; }
+          .leaflet-top, .leaflet-bottom { z-index: 10 !important; }
         `;
         document.head.appendChild(s);
       }
@@ -8357,14 +8361,14 @@ Como posso ajudar?</div>
         const s = document.createElement('style');
         s.id = 'leaflet-zindex-fix';
         s.textContent = `
-          .leaflet-pane { z-index: auto !important; }
-          .leaflet-tile-pane { z-index: 200 !important; }
-          .leaflet-overlay-pane { z-index: 300 !important; }
-          .leaflet-shadow-pane { z-index: 400 !important; }
-          .leaflet-marker-pane { z-index: 500 !important; }
-          .leaflet-tooltip-pane { z-index: 550 !important; }
-          .leaflet-popup-pane { z-index: 600 !important; }
-          .leaflet-top, .leaflet-bottom { z-index: 700 !important; }
+          .leaflet-pane { z-index: 1 !important; }
+          .leaflet-tile-pane { z-index: 2 !important; }
+          .leaflet-overlay-pane { z-index: 3 !important; }
+          .leaflet-shadow-pane { z-index: 4 !important; }
+          .leaflet-marker-pane { z-index: 5 !important; }
+          .leaflet-tooltip-pane { z-index: 6 !important; }
+          .leaflet-popup-pane { z-index: 7 !important; }
+          .leaflet-top, .leaflet-bottom { z-index: 10 !important; }
         `;
         document.head.appendChild(s);
       }

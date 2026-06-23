@@ -594,7 +594,7 @@ const firebaseConfig = {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.55);
-      z-index: 1999;
+      z-index: 9000;
       backdrop-filter: blur(2px);
     }
     .sidebar-overlay.open { display: block; }
@@ -606,6 +606,7 @@ const firebaseConfig = {
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
         box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+        z-index: 9001;
       }
       .sidebar.open { transform: translateX(0); }
       .main-content {
@@ -1691,13 +1692,13 @@ const firebaseConfig = {
     /* ══ FIM TAB: CAMPO ══════════════════════════════════════════════ */
 
     /* ══ TAB: MAPA POSTES ════════════════════════════════════════════ */
-    #mapa-leaflet, #equip-leaflet { width:100%; height:500px; border-radius:var(--radius); border:1px solid var(--border); }
+    #mapa-leaflet, #equip-leaflet { width:100%; height:500px; border-radius:var(--radius); border:1px solid var(--border); position: relative; z-index: 1; }
     #mapa-leaflet .leaflet-pane,
-    #equip-leaflet .leaflet-pane { z-index: auto; }
+    #equip-leaflet .leaflet-pane { z-index: 1; }
     #mapa-leaflet .leaflet-top,
     #mapa-leaflet .leaflet-bottom,
     #equip-leaflet .leaflet-top,
-    #equip-leaflet .leaflet-bottom { z-index: 400; }
+    #equip-leaflet .leaflet-bottom { z-index: 10; }
     /* Força todos os elementos do Leaflet abaixo do sidebar */
     .leaflet-container,
     .leaflet-pane,
@@ -1709,11 +1710,11 @@ const firebaseConfig = {
     .leaflet-popup-pane,
     .leaflet-top,
     .leaflet-bottom,
-    .leaflet-control-container { z-index: auto !important; }
+    .leaflet-control-container { z-index: 1 !important; }
     .leaflet-top.leaflet-left,
     .leaflet-top.leaflet-right,
     .leaflet-bottom.leaflet-left,
-    .leaflet-bottom.leaflet-right { z-index: 400 !important; }
+    .leaflet-bottom.leaflet-right { z-index: 10 !important; }
     @media (max-width: 700px) {
       #mapa-leaflet, #equip-leaflet { height:320px; }
     }

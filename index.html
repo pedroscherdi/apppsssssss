@@ -2291,6 +2291,7 @@ const firebaseConfig = {
         <option value="1">1 fase</option>
         <option value="2">2 fases</option>
         <option value="3" selected>3 fases</option>
+        <option value="4">3 fases + neutro</option>
       </select>
     </div>
     <div style="padding-top:1.3rem;">
@@ -3804,14 +3805,17 @@ const firebaseConfig = {
 
   function calcularCabo() {
     const metros = parseFloat(document.getElementById('caboMetros').value);
-    const fases  = parseInt(document.getElementById('caboFases').value);
+    const fasesVal = parseInt(document.getElementById('caboFases').value);
     if (!caboSelecionado) { showToast('Selecione um cabo primeiro.', 'error'); return; }
     if (isNaN(metros) || metros <= 0) { showToast('Informe uma distância válida em metros.', 'error'); return; }
-    const kg = metros * fases * caboSelecionado.ppm;
+    const kg = metros * fasesVal * caboSelecionado.ppm;
     document.getElementById('resNome').textContent   = caboSelecionado.nome;
     document.getElementById('resPpm').textContent    = caboSelecionado.ppm.toFixed(4) + ' kg/m';
     document.getElementById('resMetros').textContent = metros.toLocaleString('pt-BR') + ' m';
-    document.getElementById('resFases').textContent  = fases + (fases === 1 ? ' fase' : ' fases');
+    
+    let fasesText = fasesVal + (fasesVal === 1 ? ' fase' : ' fases');
+    if (fasesVal === 4) fasesText = '3 fases + neutro';
+    document.getElementById('resFases').textContent  = fasesText;
     document.getElementById('resKg').textContent     = kg.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + ' kg';
     document.getElementById('caboResultado').style.display = 'block';
   }

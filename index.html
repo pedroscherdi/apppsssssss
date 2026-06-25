@@ -5025,11 +5025,16 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Aba Mapa: Blocos de colunas na aba Mapa Postes
+  // Estrutura da aba "Mapa Postes":
+  // Bloco 1: A(0)=num, B(1)=lat, C(2)=lng, D(3)=tipo, E(4)=alt, F(5)=estr
+  // Bloco 2: G(6)=num, H(7)=lat, I(8)=lng, J(9)=tipo, K(10)=alt, L(11)=estr
+  // Bloco 3: M(12)=num, N(13)=lat, O(14)=lng, P(15)=tipo, Q(16)=alt, R(17)=estr
+  // Bloco 4: U(20)=num, V(21)=lat, W(22)=lng, X(23)=tipo, Y(24)=alt, Z(25)=estr
   const BLOCOS_POSTES = [
-    { nome: 0,  lat: 2,  lng: 3,  tipo: 4,  alt: 5,  estr: 6  },  // Bloco 1 (A, C, D...)
-    { nome: 7,  lat: 8,  lng: 9,  tipo: 10, alt: 11, estr: 12 }, // Bloco Novo (H, I, J...)
-    { nome: 11, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 }, // Bloco 2 (L, N, O...)
-    { nome: 20, lat: 22, lng: 23, tipo: 24, alt: 25, estr: 26 }, // Bloco 3 (U, W, X...)
+    { nome: 0,  lat: 1,  lng: 2,  tipo: 3,  alt: 4,  estr: 5  },  // Bloco 1: A=num, B=lat, C=lng, D=tipo, E=alt, F=estr
+    { nome: 6,  lat: 7,  lng: 8,  tipo: 9,  alt: 10, estr: 11 },  // Bloco 2: G=num, H=lat, I=lng, J=tipo, K=alt, L=estr
+    { nome: 12, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },  // Bloco 3: M=num, N=lat, O=lng, P=tipo, Q=alt, R=estr
+    { nome: 20, lat: 21, lng: 22, tipo: 23, alt: 24, estr: 25 },  // Bloco 4: U=num, V=lat, W=lng, X=tipo, Y=alt, Z=estr
   ];
 
   /* ── Haversine ── */
@@ -6958,14 +6963,16 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   
-  // Blocos de colunas (índices base-0): 
-  // Bloco 1: A=0, C=2, D=3, E=4(tipo), F=5(alt), G=6(estr)
-  // Bloco 2: L=11, N=13, O=14, P=15(tipo), Q=16(alt), R=17(estr)
-  // Bloco 3: U=20, W=22, X=23, Y=24(tipo), Z=25(alt), AA=26(estr)
+  // Blocos de colunas (índices base-0):
+  // Bloco 1: A(0)=num, B(1)=lat, C(2)=lng, D(3)=tipo, E(4)=alt, F(5)=estr
+  // Bloco 2: G(6)=num, H(7)=lat, I(8)=lng, J(9)=tipo, K(10)=alt, L(11)=estr
+  // Bloco 3: M(12)=num, N(13)=lat, O(14)=lng, P(15)=tipo, Q(16)=alt, R(17)=estr
+  // Bloco 4: U(20)=num, V(21)=lat, W(22)=lng, X(23)=tipo, Y(24)=alt, Z(25)=estr
   const BLOCOS = [
-    { nome: 0,  lat: 2,  lng: 3,  tipo: 4,  alt: 5,  estr: 6  },
-    { nome: 11, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },
-    { nome: 20, lat: 22, lng: 23, tipo: 24, alt: 25, estr: 26 },
+    { nome: 0,  lat: 1,  lng: 2,  tipo: 3,  alt: 4,  estr: 5  },
+    { nome: 6,  lat: 7,  lng: 8,  tipo: 9,  alt: 10, estr: 11 },
+    { nome: 12, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },
+    { nome: 20, lat: 21, lng: 22, tipo: 23, alt: 24, estr: 25 },
   ];
   let leafletLoaded = false;
   let mapaMap = null;
@@ -7029,10 +7036,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       const rows = json.values || [];
       const todosPostes = [];
       rows.forEach((row, rowIdx) => {
-        if (rowIdx === 0) {
-          const v = String(row[BLOCOS[0].nome] || '').trim();
-          if (v !== '' && isNaN(parseFloat(v))) return;
-        }
+        if (rowIdx === 0) return; // pula cabeçalho (linha 1 da aba)
         BLOCOS.forEach(bloco => {
           const num = String(row[bloco.nome] || '').trim();
           const lat = parseFloat(String(row[bloco.lat] || '').replace(',', '.'));
@@ -7045,7 +7049,7 @@ document.querySelectorAll('.tab').forEach(btn => {
               tipo: row[bloco.tipo] || '',
               alt: row[bloco.alt] || '',
               estr: row[bloco.estr] || '',
-              rowIdx: rowIdx + 1, // Para salvar depois
+              rowIdx: rowIdx + 1,
               bloco: bloco
             });
           }

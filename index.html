@@ -5024,10 +5024,12 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   /* ── Consts ── */
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
+  // Aba Mapa: Blocos de colunas na aba Mapa Postes
   const BLOCOS_POSTES = [
-    { nome: 0,  lat: 2,  lng: 3,  tipo: 4,  alt: 5,  estr: 6  },
-    { nome: 11, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },
-    { nome: 20, lat: 22, lng: 23, tipo: 24, alt: 25, estr: 26 },
+    { nome: 0,  lat: 2,  lng: 3,  tipo: 4,  alt: 5,  estr: 6  },  // Bloco 1 (A, C, D...)
+    { nome: 7,  lat: 8,  lng: 9,  tipo: 10, alt: 11, estr: 12 }, // Bloco Novo (H, I, J...)
+    { nome: 11, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 }, // Bloco 2 (L, N, O...)
+    { nome: 20, lat: 22, lng: 23, tipo: 24, alt: 25, estr: 26 }, // Bloco 3 (U, W, X...)
   ];
 
   /* ── Haversine ── */

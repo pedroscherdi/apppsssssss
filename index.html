@@ -124,6 +124,8 @@ self.addEventListener('fetch', e => {
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
 const firebaseConfig = {
       apiKey: "AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk",
       authDomain: "setupapp-f3ff4.firebaseapp.com",
@@ -135,132 +137,47 @@ const firebaseConfig = {
 
     const app      = initializeApp(firebaseConfig);
     const auth     = getAuth(app);
+    const db       = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
     window._fbSignIn  = () => signInWithPopup(auth, provider).catch(e => alert('Erro ao entrar: ' + e.message));
 
-    const SB_USERS = {
-  "admin": "admin",
-  "setup10": "Pg5SvoBm",
-  "filipe": "setup123",
-  "david": "setup123",
-  "israel": "setup123",
-  "diretor": "setup123",
-  "equipe15": "NOaVu6fH",
-  "rede16": "geV9D4g1",
-  "rede17": "GYpr9ygz",
-  "equipe18": "zazsgUvA",
-  "manut19": "pQ8jvJMs",
-  "op20": "RJ9HIj2G",
-  "tecnico21": "inJUKnfb",
-  "equipe22": "DMftnWcn",
-  "op23": "LlN9hZ6h",
-  "infra24": "wqtSn9we",
-  "boom25": "0FjxV8eM",
-  "op26": "x5r3Uok6",
-  "rede27": "7YWcmRUx",
-  "op28": "1kERUk1Z",
-  "tecnico29": "ckMiBXci",
-  "manut30": "zJQLUxpk",
-  "tecnico31": "zVO9uHKU",
-  "campo32": "517Hmoa8",
-  "user33": "bIYj3EVt",
-  "op34": "Xy3j7jxa",
-  "user35": "Q5s8kghJ",
-  "campo36": "OAHubNcn",
-  "infra37": "qmkDScld",
-  "user38": "MQmB8fGP",
-  "setup39": "l313JvFF",
-  "infra40": "m1qP0m5P",
-  "manut41": "S9j4fgcF",
-  "setup42": "ywxrdQhd",
-  "boom43": "7u1SV9oy",
-  "infra44": "8C49I4zd",
-  "boom45": "I5z5xcKS",
-  "tecnico46": "CXXQUnzj",
-  "campo47": "OMwhK6re",
-  "rede48": "1K1fGaYd",
-  "campo49": "FXfxyH8x",
-  "campo50": "34qoo8EV",
-  "boom51": "XNspKfG2",
-  "infra52": "kdhT6wV0",
-  "rede53": "e9mB2irx",
-  "boom54": "qoFNZIiL",
-  "equipe55": "ODJouozO",
-  "infra56": "1zUaRaB4",
-  "tecnico57": "nByYkgt8",
-  "manut58": "ogC4B0fD",
-  "boom59": "cJ3SuklQ",
-  "user60": "GlvilglV",
-  "manut61": "gVi25Y6h",
-  "boom62": "xbDxCFBi",
-  "boom63": "1eQI0x7I",
-  "manut64": "X5ar5RYt",
-  "tecnico65": "0WMNo3y1",
-  "campo66": "gmf8OXCy",
-  "rede67": "vZhvpw4e",
-  "op68": "O6bhkoX9",
-  "setup69": "NFoxb3gx",
-  "setup70": "dWgovF9n",
-  "equipe71": "bsZLIJwq",
-  "boom72": "OKrXGOQZ",
-  "user73": "rKBfSU83",
-  "campo74": "8lRopNAd",
-  "manut75": "hxzJdciY",
-  "tecnico76": "i1e8UWuC",
-  "rede77": "tlCmjCtf",
-  "infra78": "Fhtx5kGr",
-  "equipe79": "AsEtdfa0",
-  "op80": "HHKzNBIf",
-  "op81": "m0R6fltg",
-  "rede82": "OBxHNUdI",
-  "campo83": "OFBw7bq7",
-  "infra84": "jvVczehd",
-  "rede85": "IaRzH9kF",
-  "rede86": "sLoPtggD",
-  "campo87": "s1TxM4Kt",
-  "infra88": "Iv4pGJYj",
-  "campo89": "BRFpx53f",
-  "manut90": "RV258M16",
-  "campo91": "zQ2qljmh",
-  "rede92": "z7SakoPL",
-  "manut93": "NvoLXofS",
-  "rede94": "fRmVMQP5",
-  "op95": "jgm0Qfv1",
-  "equipe96": "eU3vA0zI",
-  "tecnico97": "c61KjsYg",
-  "infra98": "GNcRtvL5",
-  "boom99": "2oJxr3g8",
-  "boom100": "gBZ1KLl8",
-  "user101": "VsiFfs6y",
-  "infra102": "Zt2QkCUt",
-  "equipe103": "Ie8SYa0u",
-  "infra104": "C3VzxCrU",
-  "user105": "NVjDXrhm",
-  "infra106": "6mrmX1bc",
-  "manut107": "qmpbtRzn",
-  "user108": "0KRO5Rhl",
-  "equipe109": "X0OaQqFH",
-};
-
-    window._localSignIn = function() {
+    window._localSignIn = async function() {
       const user = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pass').value;
       const err  = document.getElementById('login-error');
-      if (SB_USERS[user] && SB_USERS[user] === pass) {
-        err.style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appContent').style.display  = 'flex';
-        document.getElementById('userInfo').innerHTML = `
-          <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;">${user}</span>
-          <button class="btn-ghost" onclick="document.getElementById('loginScreen').style.display='flex';document.getElementById('appContent').style.display='none';" style="font-size:0.7rem;padding:0.25rem 0.6rem;width:100%;margin-top:0.25rem;">Sair</button>
-        `;
-        if (typeof loadFromSheets === 'function') loadFromSheets();
-        if (typeof showWelcomeModal === 'function') showWelcomeModal(user);
-      } else {
-        err.textContent = 'Usuário ou senha incorretos.';
+      
+      try {
+        // Buscar o usuário na coleção 'usuarios' do Firestore
+        const userRef = doc(db, 'usuarios', user);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          if (userData.senha === pass) {
+            err.style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContent').style.display  = 'flex';
+            document.getElementById('userInfo').innerHTML = `
+              <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;">${user}</span>
+              <button class="btn-ghost" onclick="document.getElementById('loginScreen').style.display='flex';document.getElementById('appContent').style.display='none';" style="font-size:0.7rem;padding:0.25rem 0.6rem;width:100%;margin-top:0.25rem;">Sair</button>
+            `;
+            if (typeof loadFromSheets === 'function') loadFromSheets();
+            if (typeof showWelcomeModal === 'function') showWelcomeModal(user);
+          } else {
+            err.textContent = 'Usuário ou senha incorretos.';
+            err.style.display = 'block';
+            document.getElementById('login-pass').value = '';
+          }
+        } else {
+          err.textContent = 'Usuário ou senha incorretos.';
+          err.style.display = 'block';
+          document.getElementById('login-pass').value = '';
+        }
+      } catch (error) {
+        console.error('Erro ao validar usuário:', error);
+        err.textContent = 'Erro ao conectar ao servidor. Tente novamente.';
         err.style.display = 'block';
-        document.getElementById('login-pass').value = '';
       }
     };
     window._fbSignOut = () => signOut(auth);

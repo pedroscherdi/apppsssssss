@@ -5433,7 +5433,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
     <!-- Busca -->
     <div class="mapa-search-wrap">
-      <input type="text" id="bc-input" placeholder="Digite o número da UC..." autocomplete="off"
+      <input type="text" id="bc-input" placeholder="Digite o número da UC ou o nome do titular..." autocomplete="off"
         oninput="bcFilter()" />
       <button class="btn" onclick="bcBuscar()" style="padding:0.7rem 1.1rem;font-size:0.85rem;white-space:nowrap;">🔍 Buscar</button>
     </div>
@@ -5449,6 +5449,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.5rem;">👤 Consumidor selecionado</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
         <div><div class="mi-label">UC / Contrato</div><div class="mi-val accent" id="bc-uc">—</div></div>
+        <div><div class="mi-label">Titular</div><div class="mi-val" id="bc-nome">—</div></div>
         <div><div class="mi-label">Endereço</div><div class="mi-val" id="bc-endereco">—</div></div>
       </div>
     </div>
@@ -5461,6 +5462,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           <thead>
             <tr style="background:var(--surface);">
               <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">UC</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Titular</th>
               <th style="padding:0.5rem 0.9rem;text-align:center;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Info</th>
             </tr>
           </thead>
@@ -5673,15 +5675,47 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       return [];
     }
 
-    // Filtra por UC
-    const resultados = window.bcConsumidores.filter(c => c.uc.toLowerCase().includes(termo.toLowerCase()));
+    // Filtra por UC ou por nome do titular
+    const termoLower = termo.toLowerCase();
+    const resultados = window.bcConsumidores.filter(c =>
+      (c.uc && c.uc.toLowerCase().includes(termoLower)) ||
+      (c.nome && c.nome.toLowerCase().includes(termoLower))
+    );
 
     return resultados;
+  }
+
+  // ── Proteção por senha para busca por NOME ────────────────
+  const BC_SENHA_NOME = '123456';
+  window.bcNomeDesbloqueado = window.bcNomeDesbloqueado || false;
+
+  function bcEhBuscaPorNome(termo) {
+    return /[a-zA-Z]/.test(termo); // se tiver letra, é busca por nome
+  }
+
+  // Retorna true se pode prosseguir, false se foi bloqueado/cancelado
+  function bcVerificarSenhaNome(termo) {
+    if (!bcEhBuscaPorNome(termo)) return true; // busca por UC (só números) não precisa de senha
+    if (window.bcNomeDesbloqueado) return true;
+
+    const senha = prompt('🔒 A busca por nome é protegida. Digite a senha:');
+    if (senha === null) {
+      bcSetStatus('Busca por nome cancelada.');
+      return false;
+    }
+    if (senha !== BC_SENHA_NOME) {
+      bcSetStatus('❌ Senha incorreta. Busca por nome bloqueada.', 'erro');
+      return false;
+    }
+    window.bcNomeDesbloqueado = true;
+    return true;
   }
 
   window.bcBuscar = async function() {
     const termo = document.getElementById('bc-input').value.trim();
     if (!termo) { bcSetStatus('Digite algo para buscar.'); return; }
+
+    if (!bcVerificarSenhaNome(termo)) return;
 
     bcSetStatus('🔄 Buscando...');
     document.getElementById('bc-dropdown').style.display = 'none';
@@ -5721,6 +5755,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
   function bcMostrarCard(c) {
     document.getElementById('bc-uc').textContent       = c.uc       || c.contrato || '—';
+    document.getElementById('bc-nome').textContent     = c.nome     || '—';
     document.getElementById('bc-endereco').textContent = c.endereco || `${c.latitude || '—'}, ${c.longitude || '—'}`;
     document.getElementById('bc-card').classList.add('visible');
     bcMostrarMapa(c);
@@ -5731,6 +5766,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     tbody.innerHTML = bcResultados.map((c, i) => `
       <tr>
         <td style="padding:0.5rem 0.9rem;"><span style="color:var(--accent2);font-family:'DM Mono',monospace;font-size:0.8rem;">${c.uc || c.contrato || '—'}</span></td>
+        <td style="padding:0.5rem 0.9rem;"><span style="color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;">${c.nome || '—'}</span></td>
         <td style="padding:0.5rem 0.9rem;text-align:center;">
           <button onclick="bcSelecionar(${i})"
             style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.78rem;font-family:'DM Mono',monospace;">👁️</button>
@@ -5755,6 +5791,10 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       document.getElementById('bc-dropdown').style.display = 'none';
       return;
     }
+    // Busca automática (enquanto digita) só para UC (números).
+    // Busca por nome (letras) exige clicar em "Buscar" ou Enter, pra não
+    // ficar pedindo a senha a cada letra digitada.
+    if (bcEhBuscaPorNome(termo)) return;
     bcFilterTimeout = setTimeout(() => { bcBuscar(); }, 400);
   };
 

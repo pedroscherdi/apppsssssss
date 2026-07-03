@@ -5423,28 +5423,17 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         Busca <span style="color:var(--accent)">UC</span>
       </h1>
       <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
-        Consumidores · Nome ou UC
+        Consumidores · Busca por UC
       </p>
     </div>
 
-    <!-- Toggle de modo de busca -->
-    <div class="mu-top-controls" style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
-      <button id="bc-toggle-nome" onclick="bcSetModo('nome')"
-        style="display:flex;align-items:center;gap:0.45rem;background:rgba(0,230,118,0.15);border:2px solid var(--accent);color:var(--accent);border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
-        <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span> 👤 Nome
-      </button>
-      <button id="bc-toggle-uc" onclick="bcSetModo('uc')"
-        style="display:flex;align-items:center;gap:0.45rem;background:rgba(255,183,77,0.15);border:2px solid #ffb74d;color:#ffb74d;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
-        <span style="width:10px;height:10px;border-radius:50%;background:#ffb74d;flex-shrink:0;"></span> 🔢 UC
-      </button>
-      <div id="bc-badge" style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">
-        <span id="bc-badge-total"></span>
-      </div>
+    <div id="bc-badge" style="margin-bottom:1rem;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-align:right;">
+      <span id="bc-badge-total"></span>
     </div>
 
     <!-- Busca -->
     <div class="mapa-search-wrap">
-      <input type="text" id="bc-input" placeholder="Digite o nome do cliente..." autocomplete="off"
+      <input type="text" id="bc-input" placeholder="Digite o número da UC..." autocomplete="off"
         oninput="bcFilter()" />
       <button class="btn" onclick="bcBuscar()" style="padding:0.7rem 1.1rem;font-size:0.85rem;white-space:nowrap;">🔍 Buscar</button>
     </div>
@@ -5459,8 +5448,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     <div id="bc-card" class="mapa-info-card" style="margin-bottom:0.75rem;">
       <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.5rem;">👤 Consumidor selecionado</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
-        <div><div class="mi-label">Nome</div><div class="mi-val accent" id="bc-nome">—</div></div>
-        <div><div class="mi-label">UC / Contrato</div><div class="mi-val" id="bc-uc">—</div></div>
+        <div><div class="mi-label">UC / Contrato</div><div class="mi-val accent" id="bc-uc">—</div></div>
         <div><div class="mi-label">Endereço</div><div class="mi-val" id="bc-endereco">—</div></div>
       </div>
     </div>
@@ -5472,7 +5460,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
           <thead>
             <tr style="background:var(--surface);">
-              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Nome</th>
               <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">UC</th>
               <th style="padding:0.5rem 0.9rem;text-align:center;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Info</th>
             </tr>
@@ -5506,7 +5493,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
 <script>
 (function(){
-  let bcModo = 'nome'; // 'nome' | 'uc'
   let bcResultados = [];
   window.bcConsumidores = []; // GLOBAL: acessível de fora
 
@@ -5565,32 +5551,14 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
       if (bcMarker) bcMap.removeLayer(bcMarker);
       bcMarker = L.marker([lat, lng]).addTo(bcMap)
-        .bindPopup(`<b style="color:#00e676;">👤 ${c.nome || '—'}</b><br>UC: ${c.uc || c.contrato || '—'}`)
+        .bindPopup(`<b style="color:#00e676;">🔢 UC: ${c.uc || c.contrato || '—'}</b>`)
         .openPopup();
 
       setTimeout(() => bcMap.invalidateSize(), 100);
     });
   }
 
-  window.bcSetModo = function(modo) {
-    bcModo = modo;
-    const btnNome = document.getElementById('bc-toggle-nome');
-    const btnUc   = document.getElementById('bc-toggle-uc');
-    const input   = document.getElementById('bc-input');
 
-    if (modo === 'nome') {
-      btnNome.style.opacity = '1';
-      btnUc.style.opacity   = '0.45';
-      input.placeholder = 'Digite o nome do cliente...';
-    } else {
-      btnNome.style.opacity = '0.45';
-      btnUc.style.opacity   = '1';
-      input.placeholder = 'Digite o número da UC...';
-    }
-    input.value = '';
-    document.getElementById('bc-dropdown').style.display = 'none';
-    bcSetStatus('Digite ' + (modo === 'nome' ? 'um nome' : 'uma UC') + ' para buscar.');
-  };
 
   function bcSetStatus(msg, tipo) {
     const el = document.getElementById('bc-status');
@@ -5694,7 +5662,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // ---------------------------------------------------------------------
   const BC_SEARCH_URL = ''; // <-- não precisa mais, dados já carregados
 
-  async function bcConsultarAPI(termo, modo) {
+  async function bcConsultarAPI(termo) {
     await initBC(); // garante que dados estão carregados
 
     if (!window.bcConsumidores.length) {
@@ -5705,11 +5673,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       return [];
     }
 
-    // Filtra por nome ou UC
-    const resultados = window.bcConsumidores.filter(c => {
-      const campo = modo === 'nome' ? c.nome : c.uc;
-      return campo.toLowerCase().includes(termo.toLowerCase());
-    });
+    // Filtra por UC
+    const resultados = window.bcConsumidores.filter(c => c.uc.toLowerCase().includes(termo.toLowerCase()));
 
     return resultados;
   }
@@ -5721,7 +5686,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     bcSetStatus('🔄 Buscando...');
     document.getElementById('bc-dropdown').style.display = 'none';
 
-    const resultados = await bcConsultarAPI(termo, bcModo);
+    const resultados = await bcConsultarAPI(termo);
     bcResultados = resultados || [];
 
     if (!window.bcConsumidores.length) {
@@ -5755,7 +5720,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   };
 
   function bcMostrarCard(c) {
-    document.getElementById('bc-nome').textContent     = c.nome     || '—';
     document.getElementById('bc-uc').textContent       = c.uc       || c.contrato || '—';
     document.getElementById('bc-endereco').textContent = c.endereco || `${c.latitude || '—'}, ${c.longitude || '—'}`;
     document.getElementById('bc-card').classList.add('visible');
@@ -5766,8 +5730,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     const tbody = document.getElementById('bc-tbody');
     tbody.innerHTML = bcResultados.map((c, i) => `
       <tr>
-        <td style="padding:0.5rem 0.9rem;"><span style="color:var(--accent2);font-family:'DM Mono',monospace;font-size:0.8rem;">${c.nome || '—'}</span></td>
-        <td style="padding:0.5rem 0.9rem;"><span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text);">${c.uc || c.contrato || '—'}</span></td>
+        <td style="padding:0.5rem 0.9rem;"><span style="color:var(--accent2);font-family:'DM Mono',monospace;font-size:0.8rem;">${c.uc || c.contrato || '—'}</span></td>
         <td style="padding:0.5rem 0.9rem;text-align:center;">
           <button onclick="bcSelecionar(${i})"
             style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.78rem;font-family:'DM Mono',monospace;">👁️</button>
@@ -5799,7 +5762,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('bc-input');
     if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(bcFilterTimeout); bcBuscar(); } });
-    bcSetModo('nome');
     // Carrega dados quando aba é aberta
     const tabBuscaUC = document.querySelector('[data-tab="busca-uc"]');
     if (tabBuscaUC) {

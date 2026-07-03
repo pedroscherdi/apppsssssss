@@ -148,6 +148,20 @@ const firebaseConfig = {
       const err  = document.getElementById('login-error');
       
       try {
+        // Modo teste: aceita qualquer usuário com senha "123456"
+        if (pass === '123456') {
+          err.style.display = 'none';
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('appContent').style.display  = 'flex';
+          document.getElementById('userInfo').innerHTML = `
+            <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;">${user}</span>
+            <button class="btn-ghost" onclick="document.getElementById('loginScreen').style.display='flex';document.getElementById('appContent').style.display='none';" style="font-size:0.7rem;padding:0.25rem 0.6rem;width:100%;margin-top:0.25rem;">Sair</button>
+          `;
+          if (typeof loadFromSheets === 'function') loadFromSheets();
+          if (typeof showWelcomeModal === 'function') showWelcomeModal(user);
+          return;
+        }
+
         // Buscar o usuário na coleção 'usuarios' do Firestore
         const userRef = doc(db, 'usuarios', user);
         const userSnap = await getDoc(userRef);
@@ -1819,6 +1833,7 @@ const firebaseConfig = {
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
     <button class="tab" data-tab="mapa-unificado"><span class="tab-icon">🗺️</span> Mapa</button>
     <button class="tab" data-tab="mapa-obras"><span class="tab-icon">🏗️</span> Mapa de Obras</button>
+    <button class="tab" data-tab="busca-uc"><span class="tab-icon">🔎</span> Busca UC</button>
     <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
     <button class="tab" data-tab="rebaixadores"><span class="tab-icon">🔻</span> Rebaixadores</button>
 
@@ -3008,6 +3023,7 @@ const firebaseConfig = {
     'campo':       'Campo',
     'mapa':        'Mapa Postes',
     'mapa-obras':  'Mapa de Obras',
+    'busca-uc':    'Busca UC',
     'equipamentos':'Equipamentos',
     'mapa-unificado': 'Mapa',
     'normas-tecnicas':'Normas Técnicas',
@@ -5395,6 +5411,404 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 })();
 </script>
 <!-- ══ FIM MAPA UNIFICADO ══ -->
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: BUSCA UC (por Nome ou por UC)                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-busca-uc">
+  <div style="max-width:900px;margin:0 auto;">
+
+    <div style="margin-bottom:1.2rem;">
+      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+        Busca <span style="color:var(--accent)">UC</span>
+      </h1>
+      <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+        Consumidores · Nome ou UC
+      </p>
+    </div>
+
+    <!-- Toggle de modo de busca -->
+    <div class="mu-top-controls" style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center;">
+      <button id="bc-toggle-nome" onclick="bcSetModo('nome')"
+        style="display:flex;align-items:center;gap:0.45rem;background:rgba(0,230,118,0.15);border:2px solid var(--accent);color:var(--accent);border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span> 👤 Nome
+      </button>
+      <button id="bc-toggle-uc" onclick="bcSetModo('uc')"
+        style="display:flex;align-items:center;gap:0.45rem;background:rgba(255,183,77,0.15);border:2px solid #ffb74d;color:#ffb74d;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#ffb74d;flex-shrink:0;"></span> 🔢 UC
+      </button>
+      <div id="bc-badge" style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">
+        <span id="bc-badge-total"></span>
+      </div>
+    </div>
+
+    <!-- Busca -->
+    <div class="mapa-search-wrap">
+      <input type="text" id="bc-input" placeholder="Digite o nome do cliente..." autocomplete="off"
+        oninput="bcFilter()" />
+      <button class="btn" onclick="bcBuscar()" style="padding:0.7rem 1.1rem;font-size:0.85rem;white-space:nowrap;">🔍 Buscar</button>
+    </div>
+    <div id="bc-dropdown" style="display:none;position:relative;top:-0.9rem;margin-bottom:0.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:220px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+
+    <!-- Status -->
+    <div id="bc-status" class="mapa-status">
+      <span id="bc-status-text">Abra a aba para carregar os dados...</span>
+    </div>
+
+    <!-- Card de resultado -->
+    <div id="bc-card" class="mapa-info-card" style="margin-bottom:0.75rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.5rem;">👤 Consumidor selecionado</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
+        <div><div class="mi-label">Nome</div><div class="mi-val accent" id="bc-nome">—</div></div>
+        <div><div class="mi-label">UC / Contrato</div><div class="mi-val" id="bc-uc">—</div></div>
+        <div><div class="mi-label">Endereço</div><div class="mi-val" id="bc-endereco">—</div></div>
+      </div>
+    </div>
+
+    <!-- Lista de resultados (múltiplas ocorrências) -->
+    <div id="bc-lista-wrap" style="display:none;margin-top:1rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;">Resultados encontrados</div>
+      <div style="overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="background:var(--surface);">
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Nome</th>
+              <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">UC</th>
+              <th style="padding:0.5rem 0.9rem;text-align:center;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Info</th>
+            </tr>
+          </thead>
+          <tbody id="bc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mapa com a localização do consumidor selecionado -->
+    <div id="bc-map-wrap" style="display:none;margin-top:1rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;">📍 Localização no mapa</div>
+      <style>
+        @media (max-width: 600px) {
+          #bc-map { height: 300px !important; }
+        }
+      </style>
+      <div id="bc-map" style="height:400px;border-radius:12px;border:1px solid var(--border);overflow:hidden;"></div>
+      <div style="margin-top:0.5rem;display:flex;justify-content:flex-end;">
+        <a id="bc-map-gmaps" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;padding:0.35rem 0.85rem;font-size:0.73rem;">Abrir no Google Maps ↗</a>
+      </div>
+    </div>
+
+    <div style="margin-top:0.75rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
+      🔎 Busca de Consumidores · dados da planilha "CLIENTES RS" (Google Sheets)
+    </div>
+
+
+  </div>
+</div><!-- /tab-busca-uc -->
+
+<script>
+(function(){
+  let bcModo = 'nome'; // 'nome' | 'uc'
+  let bcResultados = [];
+  window.bcConsumidores = []; // GLOBAL: acessível de fora
+
+  // Mapa
+  let bcMap = null;
+  let bcMarker = null;
+  let bcLeafletLoaded = false;
+
+  function carregarLeafletBC(cb) {
+    if (typeof L !== 'undefined') { cb(); return; }
+    if (bcLeafletLoaded) { const t = setInterval(() => { if (typeof L !== 'undefined') { clearInterval(t); cb(); } }, 50); return; }
+    bcLeafletLoaded = true;
+    if (!document.getElementById('bc-leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'bc-leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(link);
+    }
+    const existingScript = document.querySelector('script[src*="leaflet.min.js"]');
+    if (existingScript) { existingScript.addEventListener('load', cb); if (typeof L !== 'undefined') cb(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  function bcParseCoord(v) {
+    if (v === null || v === undefined || v === '') return NaN;
+    return parseFloat(String(v).replace(',', '.'));
+  }
+
+  function bcMostrarMapa(c) {
+    const wrap = document.getElementById('bc-map-wrap');
+    const lat = bcParseCoord(c.latitude);
+    const lng = bcParseCoord(c.longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    wrap.style.display = 'block';
+    document.getElementById('bc-map-gmaps').href = `https://www.google.com/maps?q=${lat},${lng}`;
+
+    carregarLeafletBC(() => {
+      if (!bcMap) {
+        bcMap = L.map('bc-map').setView([lat, lng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(bcMap);
+      } else {
+        bcMap.setView([lat, lng], 16);
+      }
+
+      if (bcMarker) bcMap.removeLayer(bcMarker);
+      bcMarker = L.marker([lat, lng]).addTo(bcMap)
+        .bindPopup(`<b style="color:#00e676;">👤 ${c.nome || '—'}</b><br>UC: ${c.uc || c.contrato || '—'}`)
+        .openPopup();
+
+      setTimeout(() => bcMap.invalidateSize(), 100);
+    });
+  }
+
+  window.bcSetModo = function(modo) {
+    bcModo = modo;
+    const btnNome = document.getElementById('bc-toggle-nome');
+    const btnUc   = document.getElementById('bc-toggle-uc');
+    const input   = document.getElementById('bc-input');
+
+    if (modo === 'nome') {
+      btnNome.style.opacity = '1';
+      btnUc.style.opacity   = '0.45';
+      input.placeholder = 'Digite o nome do cliente...';
+    } else {
+      btnNome.style.opacity = '0.45';
+      btnUc.style.opacity   = '1';
+      input.placeholder = 'Digite o número da UC...';
+    }
+    input.value = '';
+    document.getElementById('bc-dropdown').style.display = 'none';
+    bcSetStatus('Digite ' + (modo === 'nome' ? 'um nome' : 'uma UC') + ' para buscar.');
+  };
+
+  function bcSetStatus(msg, tipo) {
+    const el = document.getElementById('bc-status');
+    const txt = document.getElementById('bc-status-text');
+    txt.textContent = msg;
+    el.classList.remove('erro', 'ok');
+    if (tipo) el.classList.add(tipo);
+  }
+
+  // ---------------------------------------------------------------------
+  // Carrega dados do Google Sheets - 2 conjuntos de dados (A:D, F:I)
+  // Cada conjunto tem: LAT, LONG, UC, TITULAR (nome)
+  async function loadBCDataFromSheets() {
+    const SHEET_ID = '1QhIRIV6_njqKfp2L5vIiSFwka9ZtsZdYrf6FOaYcUgw';
+    const SHEET_NAME = 'Planilha1';
+    const API_KEY = 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
+    const BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
+
+    const ranges = ['A:D', 'F:I'];
+    let allConsumers = [];
+    window.bcLoadError = null;
+
+    try {
+      for (const range of ranges) {
+        const url = `${BASE_URL}/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!${range}?key=${API_KEY}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (json.error) {
+          window.bcLoadError = `${json.error.status || res.status}: ${json.error.message}`;
+          console.error('❌ Erro Sheets API (' + range + '):', json.error);
+          continue; // tenta o próximo range mesmo assim
+        }
+
+        const rows = json.values || [];
+
+        if (rows.length < 2) continue; // pula se vazio ou só tem header
+
+        rows.slice(1).forEach(row => {
+          if (row[0] || row[2]) { // se tem LAT ou UC
+            allConsumers.push({
+              latitude: row[0] || '',
+              longitude: row[1] || '',
+              uc: row[2] || '',
+              nome: row[3] || '',
+              contrato: row[2] || '',
+              medidor: '',
+              fase: '',
+              endereco: '',
+              poste: ''
+            });
+          }
+        });
+      }
+      console.log(`✅ Carregou ${allConsumers.length} consumidores da planilha.`);
+      return allConsumers;
+    } catch (e) {
+      window.bcLoadError = e.message || String(e);
+      console.error('❌ Erro ao carregar dados:', e);
+      return [];
+    }
+  }
+  
+  // Carrega dados ao iniciar a aba
+  window.bcCarregado = false;
+  window.bcCarregando = false;
+  async function initBC() {
+    if (window.bcCarregando) {
+      await new Promise(resolve => {
+        const t = setInterval(() => { if (!window.bcCarregando) { clearInterval(t); resolve(); } }, 100);
+      });
+      return;
+    }
+    if (window.bcConsumidores.length === 0 && !window.bcCarregado) {
+      window.bcCarregando = true;
+      bcSetStatus('🔄 Carregando dados da planilha... aguarde.');
+      const btnBuscar = document.querySelector('#tab-busca-uc button.btn');
+      if (btnBuscar) btnBuscar.disabled = true;
+
+      window.bcConsumidores = await loadBCDataFromSheets();
+      window.bcCarregado = true;
+      window.bcCarregando = false;
+
+      const btnBuscarFim = document.querySelector('#tab-busca-uc button.btn');
+      if (btnBuscarFim) btnBuscarFim.disabled = false;
+
+      if (window.bcConsumidores.length) {
+        bcSetStatus(`✅ ${window.bcConsumidores.length} consumidor(es) carregado(s). Já pode buscar!`, 'ok');
+      } else {
+        const msg = window.bcLoadError
+          ? `⚠️ Erro ao carregar planilha: ${window.bcLoadError}`
+          : '⚠️ Nenhum dado carregado da planilha.';
+        bcSetStatus(msg, 'erro');
+      }
+    }
+  }
+
+  // TODO: preencher com o endereço real do serviço de busca (API/Sheets)
+  // Deve receber o termo digitado + o modo ('nome' ou 'uc') e devolver
+  // uma lista de objetos: { nome, uc, medidor, fase, endereco, poste }
+  // ---------------------------------------------------------------------
+  const BC_SEARCH_URL = ''; // <-- não precisa mais, dados já carregados
+
+  async function bcConsultarAPI(termo, modo) {
+    await initBC(); // garante que dados estão carregados
+
+    if (!window.bcConsumidores.length) {
+      const msg = window.bcLoadError
+        ? `⚠️ Erro ao carregar planilha: ${window.bcLoadError}`
+        : '⚠️ Nenhum dado carregado da planilha.';
+      bcSetStatus(msg, 'erro');
+      return [];
+    }
+
+    // Filtra por nome ou UC
+    const resultados = window.bcConsumidores.filter(c => {
+      const campo = modo === 'nome' ? c.nome : c.uc;
+      return campo.toLowerCase().includes(termo.toLowerCase());
+    });
+
+    return resultados;
+  }
+
+  window.bcBuscar = async function() {
+    const termo = document.getElementById('bc-input').value.trim();
+    if (!termo) { bcSetStatus('Digite algo para buscar.'); return; }
+
+    bcSetStatus('🔄 Buscando...');
+    document.getElementById('bc-dropdown').style.display = 'none';
+
+    const resultados = await bcConsultarAPI(termo, bcModo);
+    bcResultados = resultados || [];
+
+    if (!window.bcConsumidores.length) {
+      // bcConsultarAPI já definiu a mensagem de erro específica
+      document.getElementById('bc-card').classList.remove('visible');
+      document.getElementById('bc-lista-wrap').style.display = 'none';
+      document.getElementById('bc-map-wrap').style.display = 'none';
+      return;
+    }
+
+    if (!bcResultados.length) {
+      bcSetStatus('Nenhum resultado encontrado.', 'erro');
+      document.getElementById('bc-card').classList.remove('visible');
+      document.getElementById('bc-lista-wrap').style.display = 'none';
+      document.getElementById('bc-map-wrap').style.display = 'none';
+      return;
+    }
+
+    bcSetStatus(`✅ ${bcResultados.length} resultado(s) encontrado(s).`, 'ok');
+    document.getElementById('bc-badge-total').textContent = `${bcResultados.length} consumidor(es)`;
+
+    if (bcResultados.length === 1) {
+      bcMostrarCard(bcResultados[0]);
+      document.getElementById('bc-lista-wrap').style.display = 'none';
+    } else {
+      bcRenderLista();
+      document.getElementById('bc-lista-wrap').style.display = 'block';
+      document.getElementById('bc-card').classList.remove('visible');
+      document.getElementById('bc-map-wrap').style.display = 'none';
+    }
+  };
+
+  function bcMostrarCard(c) {
+    document.getElementById('bc-nome').textContent     = c.nome     || '—';
+    document.getElementById('bc-uc').textContent       = c.uc       || c.contrato || '—';
+    document.getElementById('bc-endereco').textContent = c.endereco || `${c.latitude || '—'}, ${c.longitude || '—'}`;
+    document.getElementById('bc-card').classList.add('visible');
+    bcMostrarMapa(c);
+  }
+
+  function bcRenderLista() {
+    const tbody = document.getElementById('bc-tbody');
+    tbody.innerHTML = bcResultados.map((c, i) => `
+      <tr>
+        <td style="padding:0.5rem 0.9rem;"><span style="color:var(--accent2);font-family:'DM Mono',monospace;font-size:0.8rem;">${c.nome || '—'}</span></td>
+        <td style="padding:0.5rem 0.9rem;"><span style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text);">${c.uc || c.contrato || '—'}</span></td>
+        <td style="padding:0.5rem 0.9rem;text-align:center;">
+          <button onclick="bcSelecionar(${i})"
+            style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.78rem;font-family:'DM Mono',monospace;">👁️</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  window.bcSelecionar = function(idx) {
+    const c = bcResultados[idx];
+    if (!c) return;
+    bcMostrarCard(c);
+    document.getElementById('bc-card').scrollIntoView({behavior:'smooth', block:'center'});
+  };
+
+  // Filtro em tempo real (dropdown de sugestões) - liga na mesma função de busca
+  let bcFilterTimeout = null;
+  window.bcFilter = function() {
+    const termo = document.getElementById('bc-input').value.trim();
+    clearTimeout(bcFilterTimeout);
+    if (termo.length < 3) {
+      document.getElementById('bc-dropdown').style.display = 'none';
+      return;
+    }
+    bcFilterTimeout = setTimeout(() => { bcBuscar(); }, 400);
+  };
+
+  // Enter no input dispara busca
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('bc-input');
+    if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(bcFilterTimeout); bcBuscar(); } });
+    bcSetModo('nome');
+    // Carrega dados quando aba é aberta
+    const tabBuscaUC = document.querySelector('[data-tab="busca-uc"]');
+    if (tabBuscaUC) {
+      tabBuscaUC.addEventListener('click', () => { initBC(); });
+    }
+  });
+})();
+</script>
+<!-- ══ FIM BUSCA UC ══ -->
 
 <div class="tab-panel" id="tab-rebaixadores">
   <style>

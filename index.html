@@ -1842,6 +1842,109 @@ self.addEventListener('fetch', e => {
 <div class="tab-panel" id="tab-inicio">
   <div style="max-width:680px;margin:0 auto;padding-top:1rem;">
 
+    <div class="sb-power-line" aria-hidden="true" style="margin:0 0 1.4rem;line-height:0;">
+      <svg viewBox="0 0 680 130" preserveAspectRatio="none" style="width:100%;height:auto;display:block;max-height:110px;">
+        <defs>
+          <filter id="sbPulseGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="2.2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- linha de solo -->
+        <line x1="0" y1="118" x2="680" y2="118" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 6" opacity="0.35"/>
+
+        <!-- fios (vãos entre postes) -->
+        <g fill="none" stroke="var(--muted)" stroke-width="1.3" opacity="0.55">
+          <path d="M 24 19 Q 145 44 214 19"/>
+          <path id="sbWireA0" d="M 50 19 Q 145 44 240 19"/>
+          <path d="M 76 19 Q 145 44 266 19"/>
+
+          <path d="M 214 19 Q 335 44 404 19"/>
+          <path id="sbWireA1" d="M 240 19 Q 335 44 430 19"/>
+          <path d="M 266 19 Q 335 44 456 19"/>
+
+          <path d="M 404 19 Q 525 44 594 19"/>
+          <path id="sbWireA2" d="M 430 19 Q 525 44 620 19"/>
+          <path d="M 456 19 Q 525 44 646 19"/>
+        </g>
+
+        <!-- postes -->
+        <g stroke="var(--border)" stroke-linecap="round">
+          <!-- poste 1 -->
+          <line x1="50" y1="115" x2="50" y2="15" stroke-width="4"/>
+          <line x1="24" y1="26" x2="76" y2="26" stroke-width="3"/>
+          <line x1="50" y1="38" x2="24" y2="26" stroke-width="2"/>
+          <line x1="50" y1="38" x2="76" y2="26" stroke-width="2"/>
+          <line x1="24" y1="26" x2="24" y2="19" stroke-width="2"/>
+          <line x1="50" y1="26" x2="50" y2="19" stroke-width="2"/>
+          <line x1="76" y1="26" x2="76" y2="19" stroke-width="2"/>
+
+          <!-- poste 2 -->
+          <line x1="240" y1="115" x2="240" y2="15" stroke-width="4"/>
+          <line x1="214" y1="26" x2="266" y2="26" stroke-width="3"/>
+          <line x1="240" y1="38" x2="214" y2="26" stroke-width="2"/>
+          <line x1="240" y1="38" x2="266" y2="26" stroke-width="2"/>
+          <line x1="214" y1="26" x2="214" y2="19" stroke-width="2"/>
+          <line x1="240" y1="26" x2="240" y2="19" stroke-width="2"/>
+          <line x1="266" y1="26" x2="266" y2="19" stroke-width="2"/>
+
+          <!-- poste 3 -->
+          <line x1="430" y1="115" x2="430" y2="15" stroke-width="4"/>
+          <line x1="404" y1="26" x2="456" y2="26" stroke-width="3"/>
+          <line x1="430" y1="38" x2="404" y2="26" stroke-width="2"/>
+          <line x1="430" y1="38" x2="456" y2="26" stroke-width="2"/>
+          <line x1="404" y1="26" x2="404" y2="19" stroke-width="2"/>
+          <line x1="430" y1="26" x2="430" y2="19" stroke-width="2"/>
+          <line x1="456" y1="26" x2="456" y2="19" stroke-width="2"/>
+
+          <!-- poste 4 -->
+          <line x1="620" y1="115" x2="620" y2="15" stroke-width="4"/>
+          <line x1="594" y1="26" x2="646" y2="26" stroke-width="3"/>
+          <line x1="620" y1="38" x2="594" y2="26" stroke-width="2"/>
+          <line x1="620" y1="38" x2="646" y2="26" stroke-width="2"/>
+          <line x1="594" y1="26" x2="594" y2="19" stroke-width="2"/>
+          <line x1="620" y1="26" x2="620" y2="19" stroke-width="2"/>
+          <line x1="646" y1="26" x2="646" y2="19" stroke-width="2"/>
+        </g>
+
+        <!-- isoladores -->
+        <g fill="var(--accent2)" opacity="0.55">
+          <circle cx="24" cy="18" r="2"/><circle cx="50" cy="18" r="2"/><circle cx="76" cy="18" r="2"/>
+          <circle cx="214" cy="18" r="2"/><circle cx="240" cy="18" r="2"/><circle cx="266" cy="18" r="2"/>
+          <circle cx="404" cy="18" r="2"/><circle cx="430" cy="18" r="2"/><circle cx="456" cy="18" r="2"/>
+          <circle cx="594" cy="18" r="2"/><circle cx="620" cy="18" r="2"/><circle cx="646" cy="18" r="2"/>
+        </g>
+
+        <!-- pulso de corrente percorrendo os fios -->
+        <g class="sb-pulse">
+          <circle r="3.2" fill="var(--accent)" filter="url(#sbPulseGlow)">
+            <animateMotion dur="3s" repeatCount="indefinite" begin="0s" calcMode="linear">
+              <mpath href="#sbWireA0"/>
+            </animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="3s" repeatCount="indefinite" begin="0s"/>
+          </circle>
+          <circle r="3.2" fill="var(--accent)" filter="url(#sbPulseGlow)">
+            <animateMotion dur="3s" repeatCount="indefinite" begin="1s" calcMode="linear">
+              <mpath href="#sbWireA1"/>
+            </animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="3s" repeatCount="indefinite" begin="1s"/>
+          </circle>
+          <circle r="3.2" fill="var(--accent)" filter="url(#sbPulseGlow)">
+            <animateMotion dur="3s" repeatCount="indefinite" begin="2s" calcMode="linear">
+              <mpath href="#sbWireA2"/>
+            </animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="3s" repeatCount="indefinite" begin="2s"/>
+          </circle>
+        </g>
+      </svg>
+    </div>
+    <style>
+      @media (prefers-reduced-motion: reduce) {
+        .sb-power-line .sb-pulse { display: none; }
+      }
+    </style>
+
     <div style="margin-bottom:2rem;">
       <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.35rem;">
         Bem-vindo ao <span style="color:var(--accent)">SetupBoom</span>
@@ -9713,34 +9816,47 @@ Como posso ajudar?</div>
   background:rgba(0,0,0,0.55);
   backdrop-filter:blur(6px);
 ">
-  <div style="
+  <div class="sb-welcome-card" style="
     background:var(--surface);
-    border:1px solid var(--accent);
+    border:1px solid var(--border);
     border-radius:18px;
     padding:2.2rem 2.4rem 1.8rem;
     max-width:340px;width:90%;
     text-align:center;
-    box-shadow:0 0 40px rgba(0,230,118,0.18);
-    animation:sbPopIn 0.3s cubic-bezier(.34,1.56,.64,1);
     position:relative;
   ">
-    <div style="
+    <div class="sb-welcome-logo" style="
       width:58px;height:58px;border-radius:14px;
-      background:#060f0a;border:2px solid var(--accent);
+      background:#060f0a;border:2px solid var(--border);
       display:flex;align-items:center;justify-content:center;
       margin:0 auto 1.1rem;
-      box-shadow:0 0 18px rgba(0,230,118,0.25);
     ">
       <span style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.35rem;background:linear-gradient(90deg,#00e676,#00e5ff,#69f0ae,#00b0ff,#00e676);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:brandShift 4s ease-in-out infinite;">SB</span>
     </div>
+
     <p style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem;">Bem-vindo ao</p>
     <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--accent);margin-bottom:0.4rem;">SetupBoom</h2>
-    <p id="welcomeUserName" style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);margin-bottom:1.2rem;"></p>
-    <p style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);line-height:1.6;margin-bottom:1.6rem;">
-      Obrigado por escolher o <span style="color:var(--accent);font-weight:700;">SetupBoom</span>!<br>
-      Tudo pronto para você começar.
-    </p>
-    <button onclick="closeWelcomeModal()" style="
+    <p id="welcomeUserName" style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);margin-bottom:1rem;"></p>
+
+    <!-- mini linha de energia: pulso de conexão -->
+    <div class="sb-connect-line" aria-hidden="true" style="position:relative;height:14px;width:170px;margin:0 auto 0.9rem;">
+      <div style="position:absolute;top:50%;left:0;right:0;height:2px;background:var(--border);transform:translateY(-50%);"></div>
+      <div style="position:absolute;top:50%;left:0;width:6px;height:6px;border-radius:50%;background:var(--accent2);transform:translate(-50%,-50%);"></div>
+      <div style="position:absolute;top:50%;right:0;width:6px;height:6px;border-radius:50%;background:var(--accent2);transform:translate(50%,-50%);"></div>
+      <div class="sb-connect-pulse" style="position:absolute;top:50%;left:0;width:8px;height:8px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);"></div>
+    </div>
+
+    <div style="position:relative;min-height:2.7rem;margin-bottom:1.5rem;">
+      <p class="sb-msg-connecting" style="position:absolute;inset:0;font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);line-height:1.6;">
+        Estabelecendo conexão com a rede…
+      </p>
+      <p class="sb-msg-ready" style="position:absolute;inset:0;font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);line-height:1.6;">
+        Obrigado por escolher o <span style="color:var(--accent);font-weight:700;">SetupBoom</span>!<br>
+        Tudo pronto para você começar.
+      </p>
+    </div>
+
+    <button class="sb-welcome-btn" onclick="closeWelcomeModal()" style="
       width:100%;padding:0.7rem;
       background:var(--accent);color:#060f0a;
       border:none;border-radius:10px;
@@ -9757,12 +9873,76 @@ Como posso ajudar?</div>
     from { transform:scale(0.85);opacity:0; }
     to   { transform:scale(1);opacity:1; }
   }
-  #welcomeModal { animation: sbFadeIn 0.2s ease; }
-  @keyframes sbFadeIn { from{opacity:0}to{opacity:1} }
+
+  /* ── efeito "ligar energia" ── */
+  @keyframes sbBackdropFlicker {
+    0%,7%   { opacity:0; }
+    8%,10%  { opacity:1; }
+    11%     { opacity:0.25; }
+    13%,100%{ opacity:1; }
+  }
+  #welcomeModal { animation: sbBackdropFlicker 0.5s steps(1,end); }
+
+  @keyframes sbCardPopIn {
+    from { transform:scale(0.85); opacity:0; }
+    to   { transform:scale(1); opacity:1; }
+  }
+  @keyframes sbCardGlowFlicker {
+    0%,10%,19%       { border-color:var(--border); box-shadow:none; }
+    8%,15%,26%,100%  { border-color:var(--accent); box-shadow:0 0 40px rgba(0,230,118,0.18); }
+  }
+  .sb-welcome-card {
+    animation: sbCardPopIn 0.3s cubic-bezier(.34,1.56,.64,1) forwards,
+               sbCardGlowFlicker 0.9s steps(1,end) forwards;
+  }
+
+  @keyframes sbLogoGlowFlicker {
+    0%,10%,19%       { border-color:var(--border); box-shadow:none; }
+    8%,15%,26%,100%  { border-color:var(--accent); box-shadow:0 0 18px rgba(0,230,118,0.25); }
+  }
+  .sb-welcome-logo { animation: sbLogoGlowFlicker 0.9s steps(1,end) forwards; }
+
+  @keyframes sbConnectPulseMove {
+    0%   { left:0%;   opacity:0; }
+    8%   { opacity:1; }
+    88%  { opacity:1; }
+    100% { left:100%; opacity:0; }
+  }
+  .sb-connect-pulse {
+    opacity:0;
+    box-shadow:0 0 8px 2px var(--accent);
+    animation: sbConnectPulseMove 1s cubic-bezier(.4,0,.2,1) 0.3s forwards;
+  }
+
+  @keyframes sbFadeOutMsg { to { opacity:0; } }
+  @keyframes sbFadeInMsg  { to { opacity:1; } }
+  .sb-msg-connecting { animation: sbFadeOutMsg 0.35s ease 1.2s forwards; }
+  .sb-msg-ready       { opacity:0; animation: sbFadeInMsg 0.4s ease 1.3s forwards; }
+
+  @keyframes sbBtnIn {
+    from { opacity:0; transform:translateY(6px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .sb-welcome-btn { opacity:0; animation: sbBtnIn 0.4s ease 1.35s forwards; }
+
   @keyframes brandShift {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #welcomeModal { animation:none; }
+    .sb-welcome-card {
+      animation:none; border-color:var(--accent); box-shadow:0 0 40px rgba(0,230,118,0.18);
+    }
+    .sb-welcome-logo {
+      animation:none; border-color:var(--accent); box-shadow:0 0 18px rgba(0,230,118,0.25);
+    }
+    .sb-connect-pulse   { display:none; }
+    .sb-msg-connecting  { display:none; }
+    .sb-msg-ready       { animation:none; opacity:1; }
+    .sb-welcome-btn     { animation:none; opacity:1; }
   }
 </style>
 

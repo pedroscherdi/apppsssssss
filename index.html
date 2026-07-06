@@ -1787,6 +1787,8 @@ self.addEventListener('fetch', e => {
     <button class="tab" data-tab="mapa-unificado"><span class="tab-icon">🗺️</span> Mapa</button>
     <button class="tab" data-tab="mapa-obras"><span class="tab-icon">🏗️</span> Mapa de Obras</button>
     <button class="tab" data-tab="busca-uc"><span class="tab-icon">🔎</span> Busca UC</button>
+    <button class="tab" data-tab="rastreio-equip"><span class="tab-icon">🔀</span> Hierarquia de Equip.</button>
+
     <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
     <button class="tab" data-tab="rebaixadores"><span class="tab-icon">🔻</span> Rebaixadores</button>
 
@@ -3080,6 +3082,7 @@ self.addEventListener('fetch', e => {
     'mapa':        'Mapa Postes',
     'mapa-obras':  'Mapa de Obras',
     'busca-uc':    'Busca UC',
+    'rastreio-equip': 'Hierarquia de Equipamentos',
     'equipamentos':'Equipamentos',
     'mapa-unificado': 'Mapa',
     'normas-tecnicas':'Normas Técnicas',
@@ -5867,6 +5870,305 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 })();
 </script>
 <!-- ══ FIM BUSCA UC ══ -->
+
+<!-- ══ TAB: RASTREIO DE EQUIPAMENTOS (JUSANTE / MONTANTE) ══ -->
+<style>
+  #tab-rastreio-equip .re-toggle { display:flex; gap:0.5rem; margin-bottom:1rem; }
+  #tab-rastreio-equip .re-toggle button {
+    flex:1; padding:0.55rem 0.8rem; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--muted); font-family:'DM Mono',monospace;
+    font-size:0.78rem; cursor:pointer; transition:all .15s;
+  }
+  #tab-rastreio-equip .re-toggle button.active {
+    background:rgba(0,230,118,0.1); border-color:var(--accent); color:var(--accent); font-weight:600;
+  }
+  #tab-rastreio-equip .re-tree { font-family:'DM Mono',monospace; font-size:0.82rem; }
+  #tab-rastreio-equip .re-tree details { margin-left:0.9rem; border-left:1px dashed var(--border); padding-left:0.8rem; margin-top:0.35rem; }
+  #tab-rastreio-equip .re-tree summary {
+    cursor:pointer; list-style:none; padding:0.35rem 0.6rem; border-radius:6px;
+    background:var(--surface); border:1px solid var(--border); display:inline-flex; align-items:center; gap:0.5rem;
+  }
+  #tab-rastreio-equip .re-tree summary::-webkit-details-marker { display:none; }
+  #tab-rastreio-equip .re-tree summary:hover { border-color:var(--accent); }
+  #tab-rastreio-equip .re-code { color:var(--accent); font-weight:700; }
+  #tab-rastreio-equip .re-tipo { color:var(--accent2); font-size:0.72rem; }
+  #tab-rastreio-equip .re-alim { color:var(--muted); font-size:0.7rem; }
+  #tab-rastreio-equip .re-root-card { margin-bottom:1rem; }
+  #tab-rastreio-equip .re-empty { color:var(--muted); font-size:0.78rem; padding:0.6rem 0; }
+</style>
+<div class="tab-panel" id="tab-rastreio-equip">
+  <div style="max-width:900px;margin:0 auto;">
+
+    <div style="margin-bottom:1.2rem;">
+      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+        Hierarquia de <span style="color:var(--accent)">Equipamentos</span>
+      </h1>
+      <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+        Busca a Jusante e a Montante na Rede
+      </p>
+    </div>
+
+    <div id="re-badge" style="margin-bottom:1rem;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-align:right;"></div>
+
+    <!-- Busca -->
+    <div class="mapa-search-wrap">
+      <input type="text" id="re-input" placeholder="Digite o número do equipamento..." autocomplete="off" oninput="reFilter()" />
+      <button class="btn" onclick="reBuscar()" style="padding:0.7rem 1.1rem;font-size:0.85rem;white-space:nowrap;">🔍 Buscar</button>
+    </div>
+    <div id="re-dropdown" style="display:none;position:relative;top:-0.9rem;margin-bottom:0.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:220px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+
+    <!-- Status -->
+    <div id="re-status" class="mapa-status">
+      <span id="re-status-text">Abra a aba para carregar os dados...</span>
+    </div>
+
+    <!-- Card do equipamento selecionado -->
+    <div id="re-card" class="mapa-info-card re-root-card">
+      <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.5rem;">⚙️ Equipamento selecionado</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
+        <div><div class="mi-label">Nº Equipamento</div><div class="mi-val accent" id="re-codigo">—</div></div>
+        <div><div class="mi-label">Alimentador</div><div class="mi-val" id="re-alimentador">—</div></div>
+        <div><div class="mi-label">Tipo</div><div class="mi-val" id="re-tipo">—</div></div>
+      </div>
+    </div>
+
+    <!-- Alterna direção -->
+    <div class="re-toggle">
+      <button id="re-btn-jusante" class="active" onclick="reSetDirecao('jusante')">🔽 A Jusante</button>
+      <button id="re-btn-montante" onclick="reSetDirecao('montante')">🔼 A Montante</button>
+    </div>
+
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.6rem;" id="re-tree-title">
+      Equipamentos a jusante
+    </div>
+    <div id="re-tree" class="re-tree"></div>
+
+    <div style="margin-top:1.25rem;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">
+      🔀 Hierarquia de Equipamentos · dados da planilha (Google Sheets) · A=Equipamento · B=Alimentador · C=Tipo · D=Equipamentos a jusante
+    </div>
+
+  </div>
+</div><!-- /tab-rastreio-equip -->
+
+<script>
+(function(){
+  // ── Config da planilha ──────────────────────────────────────
+  const RE_SHEET_ID = '1vDGRiM-AUEZQTT_eYG_0BAMezfNGaYLh';
+  const RE_GID = '1049734509';
+  const RE_XLSX_URL = `https://docs.google.com/spreadsheets/d/${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+
+  window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
+  window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
+  window.reCarregado = false;
+  window.reCarregando = false;
+  window.reLoadError = null;
+  window.reDirecao = 'jusante';
+  window.reCodigoAtual = null;
+
+  function reSetStatus(msg, tipo) {
+    const el = document.getElementById('re-status');
+    const txt = document.getElementById('re-status-text');
+    if (txt) txt.textContent = msg;
+    if (el) { el.classList.remove('erro', 'ok'); if (tipo) el.classList.add(tipo); }
+  }
+
+  // Divide a lista de equipamentos a jusante usando os separadores mais comuns
+  function reSplitLista(v) {
+    return String(v || '')
+      .split(/[,;\n\/]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  async function reLoadFromSheets() {
+    window.reLoadError = null;
+    try {
+      const res = await fetch(RE_XLSX_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const buf = await res.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const sheetName = wb.SheetNames[0];
+      const sheet = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+      const equipMap = {};
+      const montanteMap = {};
+
+      rows.slice(1).forEach(row => {
+        const codigo = String(row[0] ?? '').trim();
+        if (!codigo) return;
+        const alimentador = String(row[1] ?? '').trim();
+        const tipo = String(row[2] ?? '').trim();
+        const jusante = reSplitLista(row[3]);
+        const key = codigo.toUpperCase();
+        equipMap[key] = { codigo, alimentador, tipo, jusante };
+      });
+
+      // Constrói o mapa reverso (a montante)
+      Object.keys(equipMap).forEach(key => {
+        equipMap[key].jusante.forEach(filho => {
+          const fk = filho.toUpperCase();
+          if (!montanteMap[fk]) montanteMap[fk] = [];
+          if (!montanteMap[fk].includes(equipMap[key].codigo)) montanteMap[fk].push(equipMap[key].codigo);
+        });
+      });
+
+      window.reEquipMap = equipMap;
+      window.reMontanteMap = montanteMap;
+      return Object.keys(equipMap).length;
+    } catch (e) {
+      window.reLoadError = e.message || String(e);
+      console.error('❌ Erro ao carregar planilha de equipamentos:', e);
+      return 0;
+    }
+  }
+
+  async function reInit() {
+    if (window.reCarregando) {
+      await new Promise(resolve => {
+        const t = setInterval(() => { if (!window.reCarregando) { clearInterval(t); resolve(); } }, 100);
+      });
+      return;
+    }
+    if (!window.reCarregado) {
+      window.reCarregando = true;
+      reSetStatus('🔄 Carregando dados da planilha... aguarde.');
+      const n = await reLoadFromSheets();
+      window.reCarregado = true;
+      window.reCarregando = false;
+      if (n > 0) {
+        reSetStatus(`✅ ${n} equipamento(s) carregado(s). Já pode buscar!`, 'ok');
+        document.getElementById('re-badge').textContent = `${n} equipamentos`;
+      } else {
+        const msg = window.reLoadError
+          ? `⚠️ Erro ao carregar planilha: ${window.reLoadError}`
+          : '⚠️ Nenhum dado carregado da planilha.';
+        reSetStatus(msg, 'erro');
+      }
+    }
+  }
+
+  // ── Busca / autocomplete ────────────────────────────────────
+  let reFilterTimeout = null;
+  window.reFilter = function() {
+    const termo = document.getElementById('re-input').value.trim().toUpperCase();
+    clearTimeout(reFilterTimeout);
+    const dropdown = document.getElementById('re-dropdown');
+    if (termo.length < 1 || !window.reCarregado) { dropdown.style.display = 'none'; return; }
+    const codigos = Object.keys(window.reEquipMap).filter(k => k.includes(termo)).slice(0, 40);
+    if (!codigos.length) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = codigos.map(k => {
+      const eq = window.reEquipMap[k];
+      return `<div class="dropdown-item" data-code="${eq.codigo}" style="padding:0.5rem 0.9rem;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.8rem;">${eq.codigo} <span style="color:var(--muted);font-size:0.72rem;">— ${eq.tipo || 's/tipo'} · ${eq.alimentador || 's/alim.'}</span></div>`;
+    }).join('');
+    dropdown.style.display = 'block';
+    dropdown.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        document.getElementById('re-input').value = el.dataset.code;
+        dropdown.style.display = 'none';
+        reMostrarEquip(el.dataset.code);
+      });
+    });
+  };
+
+  window.reBuscar = async function() {
+    const termo = document.getElementById('re-input').value.trim();
+    if (!termo) { reSetStatus('Digite o número do equipamento.'); return; }
+    await reInit();
+    if (!Object.keys(window.reEquipMap).length) return;
+    const key = termo.toUpperCase();
+    if (!window.reEquipMap[key]) {
+      reSetStatus(`⚠️ Equipamento "${termo}" não encontrado.`, 'erro');
+      return;
+    }
+    document.getElementById('re-dropdown').style.display = 'none';
+    reMostrarEquip(window.reEquipMap[key].codigo);
+  };
+
+  function reMostrarEquip(codigo) {
+    const key = codigo.toUpperCase();
+    const eq = window.reEquipMap[key];
+    if (!eq) return;
+    window.reCodigoAtual = codigo;
+    document.getElementById('re-codigo').textContent = eq.codigo;
+    document.getElementById('re-alimentador').textContent = eq.alimentador || '—';
+    document.getElementById('re-tipo').textContent = eq.tipo || '—';
+    document.getElementById('re-card').classList.add('visible');
+    reSetStatus(`✅ Equipamento ${eq.codigo} localizado.`, 'ok');
+    reRenderArvore();
+    document.getElementById('re-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ── Alterna direção jusante / montante ──────────────────────
+  window.reSetDirecao = function(dir) {
+    window.reDirecao = dir;
+    document.getElementById('re-btn-jusante').classList.toggle('active', dir === 'jusante');
+    document.getElementById('re-btn-montante').classList.toggle('active', dir === 'montante');
+    document.getElementById('re-tree-title').textContent =
+      dir === 'jusante' ? 'Equipamentos a jusante' : 'Equipamentos a montante';
+    reRenderArvore();
+  };
+
+  // Monta recursivamente a árvore de equipamentos numa direção,
+  // com proteção contra ciclos e profundidade excessiva.
+  function reFilhos(codigo, dir) {
+    const key = codigo.toUpperCase();
+    if (dir === 'jusante') {
+      const eq = window.reEquipMap[key];
+      return eq ? eq.jusante : [];
+    }
+    return window.reMontanteMap[key] || [];
+  }
+
+  function reNodeHtml(codigo, dir, visited, depth) {
+    const key = codigo.toUpperCase();
+    const eq = window.reEquipMap[key];
+    const label = eq
+      ? `<span class="re-code">${eq.codigo}</span> <span class="re-tipo">${eq.tipo || 's/tipo'}</span> <span class="re-alim">· ${eq.alimentador || 's/alim.'}</span>`
+      : `<span class="re-code">${codigo}</span> <span class="re-alim">(sem cadastro na planilha)</span>`;
+
+    if (visited.has(key)) {
+      return `<div><span style="opacity:0.7;">↺ ${label} <em style="color:var(--danger);">(já visitado — ciclo evitado)</em></span></div>`;
+    }
+
+    const novoVisited = new Set(visited);
+    novoVisited.add(key);
+    const filhos = reFilhos(codigo, dir);
+
+    if (!filhos.length) {
+      return `<div style="padding:0.35rem 0.6rem;display:inline-block;">${label}</div>`;
+    }
+
+    const childrenHtml = filhos.map(f => reNodeHtml(f, dir, novoVisited, depth + 1)).join('');
+    return `<details><summary>${label} <span style="color:var(--muted);font-size:0.7rem;">(${filhos.length})</span></summary>${childrenHtml}</details>`;
+  }
+
+  function reRenderArvore() {
+    const wrap = document.getElementById('re-tree');
+    if (!window.reCodigoAtual) { wrap.innerHTML = ''; return; }
+    const filhos = reFilhos(window.reCodigoAtual, window.reDirecao);
+    if (!filhos.length) {
+      const txt = window.reDirecao === 'jusante'
+        ? 'Nenhum equipamento a jusante cadastrado.'
+        : 'Nenhum equipamento a montante encontrado (pode ser a origem do alimentador).';
+      wrap.innerHTML = `<div class="re-empty">${txt}</div>`;
+      return;
+    }
+    const visited = new Set([window.reCodigoAtual.toUpperCase()]);
+    wrap.innerHTML = filhos.map(f => reNodeHtml(f, window.reDirecao, visited, 1)).join('');
+  }
+
+  // Enter dispara busca + carrega dados ao abrir a aba
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('re-input');
+    if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(reFilterTimeout); reBuscar(); } });
+    document.addEventListener('click', e => { if (!e.target.closest('#tab-rastreio-equip .mapa-search-wrap')) { const d = document.getElementById('re-dropdown'); if (d) d.style.display = 'none'; } });
+    const tabRE = document.querySelector('[data-tab="rastreio-equip"]');
+    if (tabRE) tabRE.addEventListener('click', () => { reInit(); });
+  });
+})();
+</script>
+<!-- ══ FIM RASTREIO DE EQUIPAMENTOS ══ -->
 
 <div class="tab-panel" id="tab-rebaixadores">
   <style>

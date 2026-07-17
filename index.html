@@ -179,22 +179,6 @@ self.addEventListener('fetch', e => {
     };
     window._fbSignOut = () => signOut(auth);
 
-    // ===== KML compartilhado (Firestore) =====
-    window.kmlAdicionarFS = async function(nome, url) {
-      await addDoc(collection(db, 'kmlLinks'), { nome, url, criadoEm: serverTimestamp() });
-    };
-    window.kmlRemoverFS = async function(id) {
-      await deleteDoc(doc(db, 'kmlLinks', id));
-    };
-    try {
-      onSnapshot(query(collection(db, 'kmlLinks'), orderBy('criadoEm', 'desc')), snap => {
-        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        if (typeof window.renderKmlLista === 'function') window.renderKmlLista(items);
-      }, err => {
-        console.error('Erro ao carregar KMLs:', err);
-      });
-    } catch (e) { console.error('Firestore KML init falhou:', e); }
-
     onAuthStateChanged(auth, user => {
       const loginScreen = document.getElementById('loginScreen');
       const appContent  = document.getElementById('appContent');
@@ -1801,7 +1785,6 @@ self.addEventListener('fetch', e => {
     <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
     <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
     <button class="tab" data-tab="mapa-unificado"><span class="tab-icon">🗺️</span> Mapa</button>
-    <button class="tab" data-tab="kml"><span class="tab-icon">🌍</span> KML</button>
     <button class="tab" data-tab="busca-uc"><span class="tab-icon">🔎</span> Busca UC</button>
     <button class="tab" data-tab="rastreio-equip"><span class="tab-icon">🔀</span> Hierarquia de Equip.</button>
 
@@ -2335,35 +2318,6 @@ self.addEventListener('fetch', e => {
   </div>
   <div id="favLista" style="display:none;">
     <div class="fav-grid" id="favGrid"></div>
-  </div>
-</div>
-
-<!-- TAB: KML -->
-<div class="tab-panel" id="tab-kml">
-  <div class="info-card">
-    <strong>Mapas (Google My Maps):</strong> importe seu .kml em <a href="https://mymaps.google.com" target="_blank" style="color:var(--accent);">mymaps.google.com</a> → <em>Criar novo mapa</em> → <em>Importar</em> → escolha o arquivo. Depois clique em <em>Compartilhar</em>, defina como "qualquer pessoa com o link" e cole o link aqui. Essa lista é <u>compartilhada</u> — o que você adicionar aparece para todo mundo que usa o app, em tempo real.
-  </div>
-
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;">
-    <div style="display:flex;flex-direction:column;gap:0.6rem;">
-      <div>
-        <span class="search-label">Nome</span>
-        <input type="text" id="kmlNomeInput" placeholder="Ex: Traçado Alimentador 03" style="width:100%;"/>
-      </div>
-      <div>
-        <span class="search-label">Link do Google My Maps</span>
-        <input type="text" id="kmlUrlInput" placeholder="https://www.google.com/maps/d/edit?mid=..." style="width:100%;"/>
-      </div>
-      <button class="btn" style="align-self:flex-start;" onclick="kmlAdicionar()">+ Adicionar</button>
-    </div>
-  </div>
-
-  <div id="kmlListaVazia" style="text-align:center;padding:3rem;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.85rem;">
-    🌍 Nenhum mapa salvo ainda.<br/>
-    <span style="font-size:0.75rem;margin-top:0.5rem;display:block;">Cole o link do My Maps acima e clique em Adicionar.</span>
-  </div>
-  <div id="kmlLista" style="display:none;">
-    <div class="fav-grid" id="kmlGrid"></div>
   </div>
 </div>
 
@@ -3125,7 +3079,6 @@ self.addEventListener('fetch', e => {
     'kanban':      'Kanban',
     'campo':       'Campo',
     'mapa':        'Mapa Postes',
-    'kml':         'KML',
     'busca-uc':    'Busca UC',
     'rastreio-equip': 'Hierarquia de Equipamentos',
     'equipamentos':'Equipamentos',
@@ -4127,53 +4080,6 @@ self.addEventListener('fetch', e => {
   function abrirFavorito(code) { document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active')); document.querySelector('[data-tab="consultar"]').classList.add('active'); document.getElementById('tab-consultar').classList.add('active'); document.getElementById('searchInput').value = code; showResults(code); }
   function removerFavorito(code) { favoritos = favoritos.filter(f => f !== code); saveFavoritos(); renderFavoritos(); updateFavBtn(); }
   renderFavoritos();
-
-  // ===== Mapas My Maps (compartilhado entre todos os usuários via Firestore) =====
-  let kmlLinksCache = [];
-
-  async function kmlAdicionar() {
-    const nomeEl = document.getElementById('kmlNomeInput');
-    const urlEl = document.getElementById('kmlUrlInput');
-    const nome = nomeEl.value.trim();
-    const url = urlEl.value.trim();
-    if (!nome || !url) { showToast('Preencha nome e link.', 'error'); return; }
-    try {
-      await window.kmlAdicionarFS(nome, url);
-      nomeEl.value = ''; urlEl.value = '';
-      showToast('🌍 Mapa adicionado para todos!', 'success');
-    } catch (e) {
-      console.error(e);
-      showToast('Erro ao salvar. Veja o console.', 'error');
-    }
-  }
-
-  function kmlAbrirLink(url) {
-    window.open(url, '_blank');
-  }
-
-  async function kmlRemover(id) {
-    try { await window.kmlRemoverFS(id); }
-    catch (e) { console.error(e); showToast('Erro ao remover. Veja o console.', 'error'); }
-  }
-
-  // Chamada pelo listener em tempo real do Firestore (todo mundo recebe a lista atualizada)
-  window.renderKmlLista = function(items) {
-    kmlLinksCache = items || [];
-    const grid = document.getElementById('kmlGrid');
-    const vazia = document.getElementById('kmlListaVazia');
-    const lista = document.getElementById('kmlLista');
-    if (!grid) return;
-    if (!kmlLinksCache.length) { vazia.style.display = 'block'; lista.style.display = 'none'; return; }
-    vazia.style.display = 'none'; lista.style.display = 'block';
-    grid.innerHTML = kmlLinksCache.map(k => `
-      <div class="fav-card" onclick="kmlAbrirLink('${k.url.replace(/'/g,"\\'")}')">
-        <button class="fav-remove" onclick="event.stopPropagation();kmlRemover('${k.id}')">✕</button>
-        <div class="fav-card-code" style="word-break:break-word;">🗺️ ${k.nome}</div>
-        <div style="font-size:0.7rem;color:var(--muted);font-family:'DM Mono',monospace;">clique para abrir</div>
-      </div>`).join('');
-  };
-
-
 
   const CINTA_DATA = [
     ['9/2 kN',  null,null,null,null,null,null,150,160,150,150,160,160,180,180,190],

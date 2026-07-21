@@ -5014,17 +5014,28 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   /* ── Consts ── */
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
-  // Aba Mapa: Blocos de colunas na aba Mapa Postes
-  // Estrutura da aba "Mapa Postes":
-  // Bloco 1: A(0)=num, B(1)=lat, C(2)=lng, D(3)=tipo, E(4)=alt, F(5)=estr
-  // Bloco 2: G(6)=num, H(7)=lat, I(8)=lng, J(9)=tipo, K(10)=alt, L(11)=estr
-  // Bloco 3: M(12)=num, N(13)=lat, O(14)=lng, P(15)=tipo, Q(16)=alt, R(17)=estr
-  // Bloco 4: U(20)=num, V(21)=lat, W(22)=lng, X(23)=tipo, Y(24)=alt, Z(25)=estr
+  // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
+  const POSTES_SHEET_ID = '1rtmWWPnI1oOvviqssugFZOrez8cAglTI4iLYBOMRXsc';
+  const POSTES_GID = '1141415844';
+  const POSTES_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${POSTES_SHEET_ID}`;
+  let _posteAbaNomeCache = null;
+  // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
+  async function resolverAbaPostes() {
+    if (_posteAbaNomeCache) return _posteAbaNomeCache;
+    const meta = await (await fetch(`${POSTES_BASE_URL}?key=${API_KEY}&fields=sheets.properties`)).json();
+    if (meta.error) throw new Error(meta.error.message);
+    const sheet = (meta.sheets || []).find(s => String(s.properties.sheetId) === POSTES_GID);
+    if (!sheet) throw new Error('Aba (gid) não encontrada na planilha de postes');
+    _posteAbaNomeCache = sheet.properties.title;
+    return _posteAbaNomeCache;
+  }
+  // Aba de postes: Blocos de colunas (imagem "POSTES 21/07")
+  // Bloco 1: A(0)=Barramento, B(1)=Latitude, C(2)=Longitude
+  // (D vazio)
+  // Bloco 2: E(4)=Barramento, F(5)=Latitude, G(6)=Longitude
   const BLOCOS_POSTES = [
-    { nome: 0,  lat: 1,  lng: 2,  tipo: 3,  alt: 4,  estr: 5  },  // Bloco 1: A=num, B=lat, C=lng, D=tipo, E=alt, F=estr
-    { nome: 6,  lat: 7,  lng: 8,  tipo: 9,  alt: 10, estr: 11 },  // Bloco 2: G=num, H=lat, I=lng, J=tipo, K=alt, L=estr
-    { nome: 12, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },  // Bloco 3: M=num, N=lat, O=lng, P=tipo, Q=alt, R=estr
-    { nome: 20, lat: 21, lng: 22, tipo: 23, alt: 24, estr: 25 },  // Bloco 4: U=num, V=lat, W=lng, X=tipo, Y=alt, Z=estr
+    { nome: 0, lat: 1, lng: 2 },  // Bloco 1: A=Barramento, B=Latitude, C=Longitude
+    { nome: 4, lat: 5, lng: 6 },  // Bloco 2: E=Barramento, F=Latitude, G=Longitude
   ];
 
   /* ── Haversine ── */
@@ -5096,7 +5107,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muPostesOk) return;
     setMuStatus('loading', 'Carregando postes...');
     try {
-      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_ABA)}!A:AA?key=${API_KEY}`;
+      const abaNome = await resolverAbaPostes();
+      const url = `${POSTES_BASE_URL}/values/${encodeURIComponent(abaNome)}!A:G?key=${API_KEY}`;
       const json = await (await fetch(url)).json();
       if (json.error) throw new Error(json.error.message);
       const rows = json.values || [];
@@ -7651,17 +7663,28 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function() {
   const MAPA_ABA = 'Mapa Postes';
 
-  
-  // Blocos de colunas (índices base-0):
-  // Bloco 1: A(0)=num, B(1)=lat, C(2)=lng, D(3)=tipo, E(4)=alt, F(5)=estr
-  // Bloco 2: G(6)=num, H(7)=lat, I(8)=lng, J(9)=tipo, K(10)=alt, L(11)=estr
-  // Bloco 3: M(12)=num, N(13)=lat, O(14)=lng, P(15)=tipo, Q(16)=alt, R(17)=estr
-  // Bloco 4: U(20)=num, V(21)=lat, W(22)=lng, X(23)=tipo, Y(24)=alt, Z(25)=estr
+  // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
+  const POSTES_SHEET_ID = '1rtmWWPnI1oOvviqssugFZOrez8cAglTI4iLYBOMRXsc';
+  const POSTES_GID = '1141415844';
+  const POSTES_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${POSTES_SHEET_ID}`;
+  let _posteAbaNomeCache = null;
+  // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
+  async function resolverAbaPostes() {
+    if (_posteAbaNomeCache) return _posteAbaNomeCache;
+    const meta = await (await fetch(`${POSTES_BASE_URL}?key=${API_KEY}&fields=sheets.properties`)).json();
+    if (meta.error) throw new Error(meta.error.message);
+    const sheet = (meta.sheets || []).find(s => String(s.properties.sheetId) === POSTES_GID);
+    if (!sheet) throw new Error('Aba (gid) não encontrada na planilha de postes');
+    _posteAbaNomeCache = sheet.properties.title;
+    return _posteAbaNomeCache;
+  }
+  // Blocos de colunas (índices base-0) — imagem "POSTES 21/07":
+  // Bloco 1: A(0)=Barramento, B(1)=Latitude, C(2)=Longitude
+  // (D vazio)
+  // Bloco 2: E(4)=Barramento, F(5)=Latitude, G(6)=Longitude
   const BLOCOS = [
-    { nome: 0,  lat: 1,  lng: 2,  tipo: 3,  alt: 4,  estr: 5  },
-    { nome: 6,  lat: 7,  lng: 8,  tipo: 9,  alt: 10, estr: 11 },
-    { nome: 12, lat: 13, lng: 14, tipo: 15, alt: 16, estr: 17 },
-    { nome: 20, lat: 21, lng: 22, tipo: 23, alt: 24, estr: 25 },
+    { nome: 0, lat: 1, lng: 2 },
+    { nome: 4, lat: 5, lng: 6 },
   ];
   let leafletLoaded = false;
   let mapaMap = null;
@@ -7718,7 +7741,8 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (mapaCarregado) return;
     setStatusMapa('loading', 'Carregando postes da planilha...');
     try {
-      const url = `${BASE_URL}/values/${encodeURIComponent(MAPA_ABA)}!A:AA?key=${API_KEY}`;
+      const abaNome = await resolverAbaPostes();
+      const url = `${POSTES_BASE_URL}/values/${encodeURIComponent(abaNome)}!A:G?key=${API_KEY}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.error) throw new Error(json.error.message);

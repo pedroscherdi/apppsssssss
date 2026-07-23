@@ -142,6 +142,24 @@ self.addEventListener('fetch', e => {
     const auth     = getAuth(app);
     const db       = getFirestore(app);
 
+    // Mural de avisos: escuta em tempo real o documento mural/aviso no Firestore.
+    // Para publicar um aviso, crie/edite no Firestore: coleção "mural", documento "aviso", campo "texto".
+    // Deixar o campo "texto" vazio (ou apagar o documento) esconde o mural.
+    onSnapshot(doc(db, 'mural', 'aviso'), (snap) => {
+      const box = document.getElementById('mural-aviso');
+      const txt = document.getElementById('mural-aviso-texto');
+      if (!box || !txt) return;
+      const texto = snap.exists() ? (snap.data().texto || '').trim() : '';
+      if (texto) {
+        txt.textContent = texto;
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }, (err) => {
+      console.error('Erro ao carregar mural de avisos:', err);
+    });
+
     window._localSignIn = async function() {
       const user = document.getElementById('login-user').value.trim();
       const err  = document.getElementById('login-error');
@@ -1956,6 +1974,14 @@ self.addEventListener('fetch', e => {
       <p style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
         Ferramentas de PCP · Grupo Setup
       </p>
+    </div>
+
+    <div id="mural-aviso" style="display:none;margin-bottom:1.6rem;padding:1rem 1.2rem;background:rgba(255,183,77,0.08);border:1px solid #ffb74d;border-left:4px solid #ffb74d;border-radius:var(--radius);">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+        <span style="font-size:1.05rem;line-height:1;">📌</span>
+        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem;color:#ffb74d;text-transform:uppercase;letter-spacing:0.06em;">Mural de Avisos</span>
+      </div>
+      <div id="mural-aviso-texto" style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);line-height:1.65;white-space:pre-wrap;"></div>
     </div>
 
     <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;">⚡ O que você quer fazer?</div>

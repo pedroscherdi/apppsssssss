@@ -1685,6 +1685,23 @@ self.addEventListener('fetch', e => {
     @media (max-width: 700px) {
       #mapa-leaflet, #equip-leaflet { height:320px; }
     }
+    /* Controle de camadas (Ruas/Satélite) no tema escuro */
+    .leaflet-control-layers {
+      background: var(--surface, #1a1d24) !important;
+      color: #e8e8e8 !important;
+      border: 1px solid var(--border, #333) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    }
+    .leaflet-control-layers-toggle {
+      width: 34px !important; height: 34px !important;
+    }
+    .leaflet-control-layers-expanded {
+      padding: 8px 12px !important;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+    }
+    .leaflet-control-layers label { color: #e8e8e8 !important; margin: 4px 0; }
     .mapa-search-wrap { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
     .mapa-search-wrap input {
       flex:1; min-width:0;
@@ -5094,9 +5111,17 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   function initMuMap() {
     if (muMap) return;
     muMap = L.map('mu-leaflet').setView([-31.7654, -52.3376], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const muRuas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap', maxZoom: 19
     }).addTo(muMap);
+    const muSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',
+      maxZoom: 19
+    });
+    L.control.layers({
+      '🗺️ Ruas': muRuas,
+      '🛰️ Satélite': muSatelite
+    }, null, { position: 'topright', collapsed: true }).addTo(muMap);
     muPostesLayer = L.layerGroup().addTo(muMap);
     muEquipsLayer = L.layerGroup().addTo(muMap);
     muReady = true;

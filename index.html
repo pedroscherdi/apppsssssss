@@ -4874,6 +4874,11 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       <span id="mapa-status-text">Carregando postes da planilha...</span>
     </div>
 
+    <!-- Status dos cabos (carregamento separado, pode levar minutos) -->
+    <div class="mapa-status" id="mapa-cabos-status" style="margin-top:0.5rem;display:none;">
+      <span id="mapa-cabos-status-text">Carregando cabos da planilha...</span>
+    </div>
+
     <!-- Info card -->
     <div class="mapa-info-card" id="mapa-info">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">
@@ -4977,6 +4982,10 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         style="display:flex;align-items:center;gap:0.45rem;background:rgba(255,183,77,0.15);border:2px solid #ffb74d;color:#ffb74d;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
         <span style="width:10px;height:10px;border-radius:50%;background:#ffb74d;flex-shrink:0;"></span> ⚙️ Equipamentos
       </button>
+      <button id="mu-toggle-cabos" onclick="muToggleLayer('cabos')"
+        style="display:flex;align-items:center;gap:0.45rem;background:rgba(33,150,243,0.15);border:2px solid #2196f3;color:#2196f3;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#2196f3;flex-shrink:0;"></span> 🔌 Cabos
+      </button>
       <button class="btn-ghost" id="mu-gps-btn" onclick="muMeLocalizar()" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.35rem 0.9rem;font-size:0.78rem;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
         <span id="mu-gps-label">Me localizar</span>
@@ -4984,7 +4993,13 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       <div id="mu-badge" style="margin-left:auto;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:1rem;">
         <span id="mu-badge-postes"></span>
         <span id="mu-badge-equip"></span>
+        <span id="mu-badge-cabos"></span>
       </div>
+    </div>
+
+    <!-- Status do carregamento de cabos (separado, pode levar minutos) -->
+    <div id="mu-cabos-status" class="mapa-status" style="display:none;margin-bottom:0.5rem;">
+      <span id="mu-cabos-status-text">Carregando cabos...</span>
     </div>
 
     <!-- Busca dupla -->
@@ -5104,12 +5119,17 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // Estado das camadas
   let muLayerPostes = true;
   let muLayerEquip = true;
+  let muLayerCabos = true;
 
   // Dados
   let muPostes = [];
   let muPostesOk = false;
   let muEquips = [];
   let muEquipsOk = false;
+  let muCabos = [];
+  let muCabosOk = false;
+  let muCabosCarregando = false;
+  let muCabosLines = [];
 
   // Marcadores
   let muPosteMarker = null;
@@ -5208,7 +5228,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         btn.style.opacity = '0.45';
         if (muMap && muPostesLayer) muMap.removeLayer(muPostesLayer);
       }
-    } else {
+    } else if (tipo === 'equip') {
       muLayerEquip = !muLayerEquip;
       const btn = document.getElementById('mu-toggle-equip');
       if (muLayerEquip) {
@@ -5219,6 +5239,22 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         btn.style.background = 'rgba(255,183,77,0.04)';
         btn.style.opacity = '0.45';
         if (muMap && muEquipsLayer) muMap.removeLayer(muEquipsLayer);
+      }
+    } else {
+      muLayerCabos = !muLayerCabos;
+      const btn = document.getElementById('mu-toggle-cabos');
+      if (muLayerCabos) {
+        btn.style.background = 'rgba(33,150,243,0.15)';
+        btn.style.opacity = '1';
+      } else {
+        btn.style.background = 'rgba(33,150,243,0.04)';
+        btn.style.opacity = '0.45';
+        muCabosLines.forEach(l => { if (muMap) muMap.removeLayer(l); });
+        muCabosLines = [];
+      }
+      // Redesenha os próximos se já houver um centro definido, pra refletir o toggle na hora
+      if (muCentro && document.getElementById('mu-proximos-wrap').style.display !== 'none') {
+        muMostrarProximos(muProxMode || 'poste');
       }
     }
   };
@@ -5286,6 +5322,116 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (!el) return;
     el.textContent = msg;
     wrap.className = 'mapa-status' + (tipo==='erro'?' erro':tipo==='ok'?' ok':'');
+  }
+
+  function setMuCabosStatus(tipo, msg) {
+    const el = document.getElementById('mu-cabos-status-text');
+    const wrap = document.getElementById('mu-cabos-status');
+    if (!el || !wrap) return;
+    el.textContent = msg;
+    wrap.style.display = 'block';
+    wrap.className = 'mapa-status' + (tipo === 'erro' ? ' erro' : tipo === 'ok' ? ' ok' : '');
+  }
+
+  /* ── Carrega cabos/alimentadores — mesmo padrão de postes/equipamentos ──
+     Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
+     Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
+     já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
+  const CABOS_SHEET_ID = '1JXL9U6bk4eVJgbPXvjrU6L6uySBK3-H7mL_ip1DkNDo';
+  const CABOS_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CABOS_SHEET_ID}`;
+  let _muAbaCabosCache = null;
+
+  async function muResolverAbaCabos() {
+    if (_muAbaCabosCache) return _muAbaCabosCache;
+    const meta = await (await fetch(`${CABOS_BASE_URL}?key=${API_KEY}&fields=sheets.properties`)).json();
+    if (meta.error) throw new Error(meta.error.message);
+    const sheet = (meta.sheets || [])[0];
+    if (!sheet) throw new Error('Nenhuma aba encontrada na planilha de cabos');
+    _muAbaCabosCache = sheet.properties.title;
+    return _muAbaCabosCache;
+  }
+
+  function muParseTrecho(str) {
+    if (!str) return null;
+    const parts = String(str).trim().split(/\s+/);
+    if (parts.length < 2) return null;
+    const pts = parts.map(p => {
+      const c = p.split(',');
+      const lon = parseFloat(c[0]), lat = parseFloat(c[1]);
+      if (isNaN(lat) || isNaN(lon)) return null;
+      return [lat, lon];
+    });
+    if (pts.some(p => !p)) return null;
+    return pts;
+  }
+
+  async function carregarMuCabos() {
+    if (muCabosOk || muCabosCarregando) return;
+    muCabosCarregando = true;
+    setMuCabosStatus('loading', '🔌 Preparando carregamento dos cabos...');
+    try {
+      const abaNome = await muResolverAbaCabos();
+      const url = `${CABOS_BASE_URL}/values/${encodeURIComponent(abaNome)}!A:I?key=${API_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      let text;
+      if (res.body && res.body.getReader) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let received = 0, chunks = '', lastUpdate = 0;
+        const inicio = Date.now();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.length;
+          chunks += decoder.decode(value, { stream: true });
+          const now = Date.now();
+          if (now - lastUpdate > 200) {
+            lastUpdate = now;
+            const seg = Math.round((now - inicio) / 1000);
+            setMuCabosStatus('loading', `🔌 Carregando cabos... ${(received/1048576).toFixed(1)}MB recebidos (${seg}s)`);
+          }
+        }
+        chunks += decoder.decode();
+        text = chunks;
+      } else {
+        text = await res.text();
+      }
+
+      setMuCabosStatus('loading', '🔌 Processando trechos de cabo...');
+      const json = JSON.parse(text);
+      if (json.error) throw new Error(json.error.message);
+      const rows = json.values || [];
+      const todos = [];
+      rows.forEach((row, idx) => {
+        if (idx === 0) return;
+        const g1nome = row[0], g1trecho = row[1];
+        if (g1nome && g1trecho) {
+          const pts = muParseTrecho(g1trecho);
+          if (pts) todos.push({ nome: g1nome, grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
+        }
+        const g2nome = row[3], g2trecho = row[4];
+        if (g2nome && g2trecho) {
+          const pts = muParseTrecho(g2trecho);
+          if (pts) todos.push({ nome: g2nome, grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
+        }
+        const g3nome = row[7], g3trecho = row[8];
+        if (g3nome && g3trecho) {
+          const pts = muParseTrecho(g3trecho);
+          if (pts) todos.push({ nome: g3nome, grupo: 'rosa', p1: pts[0], p2: pts[pts.length - 1] });
+        }
+      });
+      muCabos = todos;
+      muCabosOk = true;
+      document.getElementById('mu-badge-cabos').textContent = `🔌 ${muCabos.length.toLocaleString('pt-BR')} trechos de cabo`;
+      setMuCabosStatus('ok', `✔ ${muCabos.length.toLocaleString('pt-BR')} trechos de cabo carregados`);
+    } catch(e) {
+      console.error('Erro ao carregar cabos:', e);
+      setMuCabosStatus('erro', 'Erro ao carregar cabos: ' + e.message);
+    } finally {
+      muCabosCarregando = false;
+    }
   }
 
   /* ── Filtro Poste (autocomplete) ── */
@@ -5482,6 +5628,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     muProxMarkers.forEach(m => { if (muMap) muMap.removeLayer(m); });
     muProxMarkers = [];
     if (muProxCircle && muMap) { muMap.removeLayer(muProxCircle); muProxCircle = null; }
+    muCabosLines.forEach(l => { if (muMap) muMap.removeLayer(l); });
+    muCabosLines = [];
   }
 
   window.muAtualizarProximos = function() {
@@ -5540,6 +5688,22 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         });
     }
 
+    // Trechos de cabo dentro do raio (azul/rosa) — desenhados pela linha, não entram na lista de "próximos"
+    if (muLayerCabos && muCabosOk) {
+      const CORES_CABO = { azul: '#2196f3', rosa: '#ff2d95' };
+      muCabos.forEach(c => {
+        const midLat = (c.p1[0] + c.p2[0]) / 2, midLng = (c.p1[1] + c.p2[1]) / 2;
+        if (haversine(muCentro.lat, muCentro.lng, midLat, midLng) <= raio) {
+          const linha = L.polyline([c.p1, c.p2], {
+            color: CORES_CABO[c.grupo] || '#2196f3', weight: 4, opacity: 0.9
+          }).addTo(muMap).bindPopup(
+            `<b style="color:${CORES_CABO[c.grupo] || '#2196f3'};">${c.grupo === 'rosa' ? '🔻' : '⚡'} ${c.nome}</b>`
+          );
+          muCabosLines.push(linha);
+        }
+      });
+    }
+
     rows.sort((a,b)=>a.dist-b.dist);
 
     const wrap = document.getElementById('mu-proximos-wrap');
@@ -5576,6 +5740,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           });
           carregarMuPostes();
           carregarMuEquips();
+          carregarMuCabos();
         }
       });
     });
@@ -7813,6 +7978,15 @@ document.querySelectorAll('.tab').forEach(btn => {
   let mapaPostes = [];
   let mapaCarregado = false;
 
+  // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
+  // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
+  const CABOS_SHEET_ID = '1JXL9U6bk4eVJgbPXvjrU6L6uySBK3-H7mL_ip1DkNDo';
+  const CABOS_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CABOS_SHEET_ID}`;
+  let _abaCabosCache = null;
+  let mapaCabos = [];
+  let mapaCabosCarregado = false;
+  let mapaCabosCarregando = false;
+
   // ── Carrega Leaflet dinamicamente ──────────────────────
   function carregarLeaflet(cb) {
     if (leafletLoaded) { cb(); return; }
@@ -7894,6 +8068,118 @@ document.querySelectorAll('.tab').forEach(btn => {
       setStatusMapa('ok', `✔ ${mapaPostes.length.toLocaleString('pt-BR')} postes carregados · Digite para buscar`);
     } catch(e) {
       setStatusMapa('erro', 'Erro ao carregar planilha: ' + e.message);
+    }
+  }
+
+  // ── Resolve o nome da primeira aba da planilha de cabos ──
+  async function resolverAbaCabos() {
+    if (_abaCabosCache) return _abaCabosCache;
+    const meta = await (await fetch(`${CABOS_BASE_URL}?key=${API_KEY}&fields=sheets.properties`)).json();
+    if (meta.error) throw new Error(meta.error.message);
+    const sheet = (meta.sheets || [])[0];
+    if (!sheet) throw new Error('Nenhuma aba encontrada na planilha de cabos');
+    _abaCabosCache = sheet.properties.title;
+    return _abaCabosCache;
+  }
+
+  // "-51.235535,-30.038889,0.0 -51.235508,-30.03889,0.0" (lon,lat,ele lon,lat,ele) -> [[lat,lng],[lat,lng]]
+  function _parseTrecho(str) {
+    if (!str) return null;
+    const parts = String(str).trim().split(/\s+/);
+    if (parts.length < 2) return null;
+    const pts = parts.map(p => {
+      const c = p.split(',');
+      const lon = parseFloat(c[0]), lat = parseFloat(c[1]);
+      if (isNaN(lat) || isNaN(lon)) return null;
+      return [lat, lon];
+    });
+    if (pts.some(p => !p)) return null;
+    return pts;
+  }
+
+  // ── Status persistente do carregamento de cabos (fica visível até terminar) ──
+  function _setCabosStatus(tipo, msg) {
+    const el = document.getElementById('mapa-cabos-status-text');
+    const wrap = document.getElementById('mapa-cabos-status');
+    if (!el || !wrap) return;
+    el.textContent = msg;
+    wrap.style.display = 'block';
+    wrap.className = 'mapa-status' + (tipo === 'erro' ? ' erro' : tipo === 'ok' ? ' ok' : '');
+  }
+
+  // ── Carrega cabos — 3 blocos de colunas (A/B, D/E azul · H/I rosa) ──
+  // Planilha grande (~1,5 milhão de trechos): o carregamento inicial pode levar vários minutos.
+  // Usa leitura em stream pra mostrar % real de progresso (Content-Length), já que é um único download grande.
+  async function carregarCabos() {
+    if (mapaCabosCarregado || mapaCabosCarregando) return;
+    mapaCabosCarregando = true;
+    _setCabosStatus('loading', '🔌 Preparando carregamento dos cabos...');
+    try {
+      const abaNome = await resolverAbaCabos();
+      const url = `${CABOS_BASE_URL}/values/${encodeURIComponent(abaNome)}!A:I?key=${API_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      // A API do Sheets manda a resposta em "chunked" (sem Content-Length), então não dá
+      // pra mostrar % — em vez disso, mostra MB recebidos + tempo decorrido, atualizando ao vivo.
+      let text;
+      if (res.body && res.body.getReader) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let received = 0;
+        let chunks = '';
+        let lastUpdate = 0;
+        const inicio = Date.now();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.length;
+          chunks += decoder.decode(value, { stream: true });
+          const now = Date.now();
+          if (now - lastUpdate > 200) { // limita atualização de tela a 5x/seg
+            lastUpdate = now;
+            const seg = Math.round((now - inicio) / 1000);
+            _setCabosStatus('loading', `🔌 Carregando cabos... ${(received/1048576).toFixed(1)}MB recebidos (${seg}s)`);
+          }
+        }
+        chunks += decoder.decode();
+        text = chunks;
+      } else {
+        text = await res.text();
+      }
+
+      _setCabosStatus('loading', '🔌 Processando trechos de cabo...');
+      const json = JSON.parse(text);
+      if (json.error) throw new Error(json.error.message);
+      const rows = json.values || [];
+      const todos = [];
+      rows.forEach((row, idx) => {
+        if (idx === 0) return; // pula cabeçalho
+        const g1nome = row[0], g1trecho = row[1];
+        if (g1nome && g1trecho) {
+          const pts = _parseTrecho(g1trecho);
+          if (pts) todos.push({ nome: g1nome, grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
+        }
+        const g2nome = row[3], g2trecho = row[4];
+        if (g2nome && g2trecho) {
+          const pts = _parseTrecho(g2trecho);
+          if (pts) todos.push({ nome: g2nome, grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
+        }
+        const g3nome = row[7], g3trecho = row[8];
+        if (g3nome && g3trecho) {
+          const pts = _parseTrecho(g3trecho);
+          if (pts) todos.push({ nome: g3nome, grupo: 'rosa', p1: pts[0], p2: pts[pts.length - 1] });
+        }
+      });
+      mapaCabos = todos;
+      mapaCabosCarregado = true;
+      _setCabosStatus('ok', `✔ ${mapaCabos.length.toLocaleString('pt-BR')} trechos de cabo carregados`);
+      if (typeof showToast === 'function') showToast(`🔌 ${mapaCabos.length.toLocaleString('pt-BR')} trechos de cabo carregados`, 'success');
+    } catch(e) {
+      console.error('Erro ao carregar cabos:', e);
+      _setCabosStatus('erro', 'Erro ao carregar cabos: ' + e.message);
+    } finally {
+      mapaCabosCarregando = false;
     }
   }
 
@@ -7993,11 +8279,40 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   let _proximosMarkers = [];
   let _proximosCircle = null;
+  let _proximosCabosLines = [];
 
   function _limparProximos() {
     _proximosMarkers.forEach(m => { if (mapaMap) mapaMap.removeLayer(m); });
     _proximosMarkers = [];
     if (_proximosCircle && mapaMap) { mapaMap.removeLayer(_proximosCircle); _proximosCircle = null; }
+    _proximosCabosLines.forEach(l => { if (mapaMap) mapaMap.removeLayer(l); });
+    _proximosCabosLines = [];
+  }
+
+  // Distância do ponto (lat,lng) ao trecho de cabo mais próximo do seu meio
+  function _cabosProximos(lat, lng, raio) {
+    if (!mapaCabosCarregado) return [];
+    return mapaCabos.filter(c => {
+      const midLat = (c.p1[0] + c.p2[0]) / 2, midLng = (c.p1[1] + c.p2[1]) / 2;
+      return _haversine(lat, lng, midLat, midLng) <= raio;
+    });
+  }
+
+  // Desenha (em azul/rosa) os trechos de cabo dentro do raio de (lat,lng)
+  function _desenharCabosProximos(lat, lng, raio) {
+    if (!mapaCabosCarregado) return;
+    const cabos = _cabosProximos(lat, lng, raio);
+    const CORES = { azul: '#2196f3', rosa: '#ff2d95' };
+    cabos.forEach(c => {
+      const linha = L.polyline([c.p1, c.p2], {
+        color: CORES[c.grupo] || '#2196f3',
+        weight: 4,
+        opacity: 0.9
+      }).addTo(mapaMap).bindPopup(
+        `<b style="font-family:'DM Mono',monospace;color:${CORES[c.grupo] || '#2196f3'};">${c.grupo === 'rosa' ? '🔻' : '⚡'} ${c.nome}</b>`
+      );
+      _proximosCabosLines.push(linha);
+    });
   }
 
   window.mapaAtualizarProximos = function() {
@@ -8024,6 +8339,9 @@ document.querySelectorAll('.tab').forEach(btn => {
       weight: 1.5,
       dashArray: '6,4'
     }).addTo(mapaMap);
+
+    // Desenha trechos de cabo dentro do raio (azul/rosa)
+    _desenharCabosProximos(poste.lat, poste.lng, raio);
 
     // Filtra postes dentro do raio
     const proximos = mapaPostes
@@ -8182,6 +8500,9 @@ document.querySelectorAll('.tab').forEach(btn => {
       dashArray: '6,4'
     }).addTo(mapaMap);
 
+    // Desenha trechos de cabo dentro do raio (azul/rosa)
+    _desenharCabosProximos(lat, lng, raio);
+
     const proximos = mapaPostes
       .map(p => ({ ...p, dist: _haversine(lat, lng, p.lat, p.lng) }))
       .filter(p => p.dist <= raio)
@@ -8330,6 +8651,7 @@ document.querySelectorAll('.tab').forEach(btn => {
             }
           }, 80));
           carregarPostes();
+          carregarCabos();
         }
       });
     });

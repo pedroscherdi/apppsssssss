@@ -32,7 +32,7 @@
   <!-- Manifest PWA via blob -->
   <link id="pwa-manifest" rel="manifest"/>
 
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- PWA: Gera manifest + registra service worker inline -->
@@ -234,6 +234,11 @@ self.addEventListener('fetch', e => {
       --accent2: #69f0ae;
       --text: #f0f0f0;
       --muted: #6b6b80;
+      /* Texto corrido: cinza levemente puxado pro verde da marca, mais claro que
+         --muted (que fica reservado a labels/uppercase e tem contraste baixo demais
+         para parágrafos). */
+      --prose: #9db3a6;
+      --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
       --danger: #ff6b6b;
       --success: #47ff9a;
       --radius: 10px;
@@ -277,6 +282,7 @@ self.addEventListener('fetch', e => {
       --accent2: #00796b;
       --text: #16191a;
       --muted: #6a7275;
+      --prose: #47534d;
       --danger: #e53935;
       --success: #00c853;
     }
@@ -346,8 +352,10 @@ self.addEventListener('fetch', e => {
       left: 0; top: 0;
       z-index: 2000;
       isolation: isolate;
-      overflow-y: auto;
-      overflow-x: hidden;
+      /* A sidebar em si não rola: quem rola é só a lista de abas (.sidebar-nav).
+         Antes o container inteiro rolava, então numa tela baixa a última aba
+         visível ficava cortada ao meio e o rodapé saía da tela. */
+      overflow: hidden;
     }
     body.light .sidebar {
       background:
@@ -397,11 +405,24 @@ self.addEventListener('fetch', e => {
     /* NAV ITEMS */
     .sidebar-nav {
       flex: 1;
+      min-height: 0;          /* deixa o flex item encolher e ativar o scroll */
+      overflow-y: auto;
+      overscroll-behavior: contain;
       padding: 0.6rem 0.6rem;
       display: flex;
       flex-direction: column;
       gap: 2px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,230,118,0.28) transparent;
     }
+    .sidebar-nav::-webkit-scrollbar { width: 7px; }
+    .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background: rgba(0,230,118,0.24);
+      border-radius: 4px;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(0,230,118,0.4); }
+    .tab { flex-shrink: 0; }  /* sem isso os itens se espremem em vez de rolar */
 
     .tab {
       display: flex;
@@ -433,12 +454,93 @@ self.addEventListener('fetch', e => {
     }
     body.light .tab.active { background: linear-gradient(90deg, rgba(0,168,84,0.14), rgba(0,168,84,0.04)); color: var(--accent); }
 
+    /* Ícones de navegação: SVG de traço herdando a cor do item (fica verde quando
+       ativo, cinza quando não), no lugar dos emojis — que traziam paleta própria
+       e renderizavam diferente em cada sistema. */
     .tab-icon {
-      font-size: 1rem;
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
-      width: 20px;
-      text-align: center;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.9;
     }
+    .tab.active .tab-icon { opacity: 1; }
+
+    /* Ícone maior usado nos cards da home */
+    .card-icon {
+      width: 26px;
+      height: 26px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      color: var(--accent);
+    }
+
+    /* Ícone pequeno inline nos rótulos de seção */
+    .eyebrow-icon {
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: -2px;
+      margin-right: 2px;
+    }
+
+    /* Cards de acesso rápido da home — o hover agora vem do CSS (antes era
+       onmouseover inline, que não permitia elevação nem estado de foco). */
+    .home-card {
+      display: block;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      text-align: left;
+      cursor: pointer;
+      color: inherit;
+      transition: border-color 0.18s ease, background 0.18s ease,
+                  transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .home-card:hover {
+      border-color: var(--accent);
+      background: rgba(0,230,118,0.055);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.34), 0 0 0 1px rgba(0,230,118,0.14);
+    }
+    .home-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .home-card:active { transform: translateY(0); }
+    .home-card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--text);
+      margin: 0.7rem 0 0.3rem;
+    }
+    .home-card-desc {
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: var(--prose);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .home-card, .home-card:hover { transform: none; transition: none; }
+    }
+
+    /* Texto corrido em sans — mono fica reservado a dado, código e label */
+    .prose { font-family: var(--font-body); color: var(--prose); line-height: 1.7; }
+    .prose strong { color: var(--text); font-weight: 600; }
 
     /* SIDEBAR FOOTER */
     .sidebar-footer {
@@ -448,10 +550,19 @@ self.addEventListener('fetch', e => {
     }
     body.light .sidebar-footer { border-top: 1px solid rgba(0,168,84,0.14); }
 
+    /* O appContent é filho flex do body; sem flex-grow ele ficava do tamanho do
+       conteúdo e sobrava faixa morta à direita da tela. min-width:0 deixa tabelas
+       largas encolherem em vez de estourar o layout. */
+    #appContent {
+      flex: 1;
+      min-width: 0;
+    }
+
     /* MAIN CONTENT */
     .main-content {
       margin-left: 230px;
       flex: 1;
+      min-width: 0;
       padding: 1.75rem 2rem;
       min-height: 100vh;
       overflow-y: auto;
@@ -519,6 +630,12 @@ self.addEventListener('fetch', e => {
     .sb-login-vignette {
       position: absolute; inset: 0; z-index: 1; pointer-events: none;
       background: radial-gradient(120% 90% at 50% 50%, transparent 45%, rgba(2,6,4,0.55) 100%);
+    }
+    /* Rede de distribuição animada atrás do card (desenhada em canvas) */
+    .sb-login-grid {
+      position: absolute; inset: 0; z-index: 1;
+      width: 100%; height: 100%;
+      display: block; pointer-events: none;
     }
     .sb-login-card {
       position: relative; z-index: 2;
@@ -1946,6 +2063,7 @@ self.addEventListener('fetch', e => {
 <!-- ========== TELA DE LOGIN ========== -->
 <div id="loginScreen" class="sb-login">
   <div class="sb-login-aurora"></div>
+  <canvas id="sb-login-grid" class="sb-login-grid" aria-hidden="true"></canvas>
   <div class="sb-login-grain"></div>
   <div class="sb-login-vignette"></div>
 
@@ -1985,7 +2103,264 @@ self.addEventListener('fetch', e => {
     </div>
   </div>
 </div>
+
+<script>
+/* ── Rede de distribuição animada na tela de login ─────────────────────────
+   Dois planos de postes com vãos de cabo em catenária, e pulsos de corrente
+   percorrendo os fios — o mesmo motivo que já existe na home, em tela cheia.
+   A cena faz uma panorâmica lenta, então há movimento mesmo entre os pulsos.
+
+   Cuidados: pausa com a aba em segundo plano e quando o login some (é um PWA
+   usado em campo, não faz sentido queimar bateria desenhando o que ninguém vê),
+   e respeita prefers-reduced-motion desenhando a rede estática. */
+(function () {
+  var cv = document.getElementById('sb-login-grid');
+  var loginEl = document.getElementById('loginScreen');
+  if (!cv || !cv.getContext || !loginEl) return;
+
+  var ctx = cv.getContext('2d');
+  var reduzido = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var W = 0, H = 0, planos = [], pulsos = [], raf = null, ultimo = 0, surto = 0;
+
+  function dimensionar() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth || window.innerWidth;
+    H = cv.clientHeight || window.innerHeight;
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    montar();
+  }
+
+  // Cada plano é uma fileira de postes; o de trás é menor, mais apagado e
+  // desliza mais devagar, o que dá a sensação de profundidade.
+  function montar() {
+    var defs = [
+      { baseY: H * 0.90, vao: 290, altura: 215, traco: 1.0, alpha: 0.20, desliza: 3.5, sag: 24 },
+      { baseY: H * 1.10, vao: 440, altura: 330, traco: 1.7, alpha: 0.34, desliza: 8,   sag: 36 }
+    ];
+    planos = defs.map(function (d) {
+      d.n = Math.ceil(W / d.vao) + 3;
+      d.offset = 0;
+      // Geometria da cruzeta, proporcional à altura do poste
+      d.braco = d.altura * 0.19;   // meio-comprimento da cruzeta
+      d.iso   = d.altura * 0.035;  // altura dos 3 isoladores de pino
+      return d;
+    });
+    pulsos = [];
+    if (reduzido) return;
+    for (var i = 0; i < 11; i++) pulsos.push(novoPulso(Math.random()));
+  }
+
+  function novoPulso(t) {
+    var p = planos[Math.random() < 0.45 ? 0 : 1];
+    return {
+      plano: p,
+      vao: Math.floor(Math.random() * (p.n - 1)),
+      fio: Math.floor(Math.random() * 3),
+      t: t || 0,
+      vel: 0.10 + Math.random() * 0.16
+    };
+  }
+
+  // Ponto de fixação de cada condutor. A cruzeta leva 3 isoladores de pino —
+  // um em cada ponta e um no centro, sobre o mastro — então as três fases ficam
+  // espalhadas na horizontal e todas na MESMA altura, apoiadas nos isoladores.
+  function fixacao(p, indice, fio) {
+    var x = indice * p.vao - p.offset;
+    var yc = p.baseY - p.altura;
+    return { x: x + (fio - 1) * p.braco, y: yc - p.iso };
+  }
+
+  // Ponto ao longo da catenária (bezier quadrática) do vão i do plano p.
+  function pontoNoFio(p, vaoIdx, fio, t) {
+    var a = fixacao(p, vaoIdx, fio);
+    var b = fixacao(p, vaoIdx + 1, fio);
+    var cx = (a.x + b.x) / 2;
+    var cy = (a.y + b.y) / 2 + p.sag * 2;
+    var u = 1 - t;
+    return {
+      x: u * u * a.x + 2 * u * t * cx + t * t * b.x,
+      y: u * u * a.y + 2 * u * t * cy + t * t * b.y
+    };
+  }
+
+  function desenharPlano(p) {
+    var yc = p.baseY - p.altura;   // altura da cruzeta
+    ctx.lineWidth = p.traco;
+    ctx.lineCap = 'round';
+
+    // cabos: um vão entre cada par de postes, para cada uma das três fases
+    ctx.strokeStyle = 'rgba(0,230,118,' + p.alpha + ')';
+    ctx.beginPath();
+    for (var i = 0; i < p.n - 1; i++) {
+      var xi = i * p.vao - p.offset;
+      if (xi > W + p.vao || xi + p.vao < -p.vao) continue;
+      for (var f = 0; f < 3; f++) {
+        var a = fixacao(p, i, f);
+        var b = fixacao(p, i + 1, f);
+        ctx.moveTo(a.x, a.y);
+        ctx.quadraticCurveTo((a.x + b.x) / 2, (a.y + b.y) / 2 + p.sag * 2, b.x, b.y);
+      }
+    }
+    ctx.stroke();
+
+    // postes: mastro, cruzeta, mãos-francesas e isoladores
+    ctx.strokeStyle = 'rgba(0,230,118,' + (p.alpha * 1.6) + ')';
+    ctx.beginPath();
+    for (var j = 0; j < p.n; j++) {
+      var x = j * p.vao - p.offset;
+      if (x < -p.braco - 20 || x > W + p.braco + 20) continue;
+
+      // mastro: do chão até a cruzeta
+      ctx.moveTo(x, p.baseY);
+      ctx.lineTo(x, yc);
+
+      // cruzeta
+      ctx.moveTo(x - p.braco, yc);
+      ctx.lineTo(x + p.braco, yc);
+
+      // mãos-francesas apoiando a cruzeta no mastro
+      var mao = p.braco * 0.72;
+      ctx.moveTo(x - mao, yc);
+      ctx.lineTo(x, yc + mao * 0.85);
+      ctx.moveTo(x + mao, yc);
+      ctx.lineTo(x, yc + mao * 0.85);
+
+      // os 3 isoladores de pino: pontas e centro, onde os cabos se apoiam
+      for (var k = -1; k <= 1; k++) {
+        ctx.moveTo(x + k * p.braco, yc);
+        ctx.lineTo(x + k * p.braco, yc - p.iso);
+      }
+    }
+    ctx.stroke();
+  }
+
+  function desenharPulso(q) {
+    var pt = pontoNoFio(q.plano, q.vao, q.fio, q.t);
+    if (pt.x < -20 || pt.x > W + 20) return;
+    // brilho mais forte durante o surto disparado pelo ENTRAR
+    var r = (q.plano.traco > 1 ? 2.6 : 1.9) * (1 + surto * 0.9);
+    var g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, r * 7);
+    g.addColorStop(0, 'rgba(150,255,205,' + (0.85 + surto * 0.15) + ')');
+    g.addColorStop(0.35, 'rgba(0,230,118,0.34)');
+    g.addColorStop(1, 'rgba(0,230,118,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, r * 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(200,255,225,' + (0.9 + surto * 0.1) + ')';
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function quadro(agora) {
+    var dt = Math.min((agora - ultimo) / 1000 || 0, 0.05);
+    ultimo = agora;
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (var i = 0; i < planos.length; i++) {
+      var p = planos[i];
+      if (!reduzido) {
+        p.offset = (p.offset + p.desliza * (1 + surto * 2) * dt) % p.vao;
+      }
+      desenharPlano(p);
+    }
+
+    if (!reduzido) {
+      ctx.globalCompositeOperation = 'lighter';
+      for (var k = 0; k < pulsos.length; k++) {
+        var q = pulsos[k];
+        q.t += q.vel * (1 + surto * 2.5) * dt;
+        if (q.t > 1) {
+          pulsos[k] = novoPulso(0);
+          q = pulsos[k];
+        }
+        desenharPulso(q);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      if (surto > 0) surto = Math.max(0, surto - dt * 1.1);
+    }
+
+    raf = requestAnimationFrame(quadro);
+  }
+
+  function visivel() {
+    // offsetParent é sempre null em elemento position:fixed — não serve de teste
+    // de visibilidade aqui. O login é escondido via display, então checamos isso.
+    return !document.hidden && getComputedStyle(loginEl).display !== 'none';
+  }
+
+  function ligar() {
+    if (raf !== null || !visivel()) return;
+    ultimo = performance.now();
+    raf = requestAnimationFrame(quadro);
+  }
+
+  function desligar() {
+    if (raf === null) return;
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+
+  function reavaliar() { visivel() ? ligar() : desligar(); }
+
+  dimensionar();
+  ligar();
+
+  var tResize;
+  window.addEventListener('resize', function () {
+    clearTimeout(tResize);
+    tResize = setTimeout(dimensionar, 160);
+  });
+  document.addEventListener('visibilitychange', reavaliar);
+  // o login é escondido/mostrado por style inline ao entrar e sair
+  new MutationObserver(reavaliar).observe(loginEl, { attributes: true, attributeFilter: ['style'] });
+
+  // Ao clicar em ENTRAR, manda um surto de corrente pela rede — vira também
+  // um sinal de "processando" enquanto a matrícula é conferida no Firestore.
+  var btn = document.querySelector('.sb-login-btn');
+  if (btn && !reduzido) btn.addEventListener('click', function () { surto = 1; });
+})();
+</script>
 <!-- ===================================== -->
+
+<!-- ========== BIBLIOTECA DE ÍCONES ==========
+     Sprite único referenciado por use/href. Todos os traçados são de
+     traço (sem fill) e herdam stroke/cor de quem os usa, então o mesmo ícone
+     serve na navegação, nos cards e nos rótulos sem duplicar markup. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.6V20h13V9.6"/><path d="M10 20v-5h4v5"/></symbol>
+    <symbol id="i-consultar" viewBox="0 0 24 24"><path d="M4 5.5h13M4 10h8M4 14.5h5"/><circle cx="16" cy="16" r="4"/><path d="M19 19l2.5 2.5"/></symbol>
+    <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 21 21"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-cabo" viewBox="0 0 24 24"><path d="M6 3.5v9.5a4 4 0 0 0 8 0V9a3 3 0 0 1 6 0v11"/><path d="M4 3.5h4M18 20.5h4"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M9.5 3.5h5v3h-5z"/><path d="M14.5 5H17a1.5 1.5 0 0 1 1.5 1.5v13A1.5 1.5 0 0 1 17 21H7a1.5 1.5 0 0 1-1.5-1.5v-13A1.5 1.5 0 0 1 7 5h2.5"/><path d="M9 11h6M9 15h4"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.6 2.6 5.4 5.9.85-4.25 4.15 1 5.9L12 17.05 6.75 19.9l1-5.9L3.5 9.85 9.4 9z"/></symbol>
+    <symbol id="i-parafuso" viewBox="0 0 24 24"><path d="m12 2.8 4 2.3v4.6l-4 2.3-4-2.3V5.1z"/><path d="M12 12v9"/><path d="M9.8 15h4.4M9.8 18h4.4"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2.5 5.5 13.5h5.5l-1 8 7.5-11H12z"/></symbol>
+    <symbol id="i-tracao" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M12 3 4.5 21M12 3l7.5 18"/><path d="M8 12h8"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.6 12.9 4.7a4 4 0 0 1 5.7 5.7l-1.9 1.9"/><path d="M13 17.4l-1.9 1.9a4 4 0 0 1-5.7-5.7l1.9-1.9"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5.5M15 3v5.5"/><path d="M6.5 8.5h11v3.2a5.5 5.5 0 0 1-11 0z"/><path d="M12 17.2V21"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3.5"/><path d="m8 7.5 4-4 4 4"/><path d="M4 16v3a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-3"/></symbol>
+    <symbol id="i-kanban" viewBox="0 0 24 24"><path d="M4 4.5h4.2v15H4zM9.9 4.5h4.2v9.5H9.9zM15.8 4.5H20v12h-4.2z"/></symbol>
+    <symbol id="i-mapa" viewBox="0 0 24 24"><path d="m3 6.5 6-2.5v13.5L3 20zM9 4l6 2.5V20L9 17.5zM15 6.5 21 4v13.5L15 20z"/></symbol>
+    <symbol id="i-busca-uc" viewBox="0 0 24 24"><path d="M10.5 19.5S4.5 14 4.5 9.5a6 6 0 0 1 12 0"/><circle cx="10.5" cy="9.5" r="2.1"/><circle cx="17" cy="16.5" r="3.2"/><path d="M19.4 18.9 21.8 21.3"/></symbol>
+    <symbol id="i-hierarquia" viewBox="0 0 24 24"><path d="M9.5 3h5v4h-5zM3 17h5v4H3zM16 17h5v4h-5z"/><path d="M12 7v5M5.5 17v-3h13v3"/></symbol>
+    <symbol id="i-torre" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M7 21 12 3l5 18"/><path d="M8.6 9h6.8M7.5 14h9"/><path d="M4 5.5h4M16 5.5h4"/></symbol>
+    <symbol id="i-rebaixador" viewBox="0 0 24 24"><path d="M12 3v11.5"/><path d="m8 11 4 4 4-4"/><path d="M5 20h14"/></symbol>
+    <symbol id="i-dinheiro" viewBox="0 0 24 24"><path d="M2.5 6.5h19v11h-19z"/><circle cx="12" cy="12" r="2.8"/><path d="M6 10.5v3M18 10.5v3"/></symbol>
+    <symbol id="i-livro" viewBox="0 0 24 24"><path d="M4 4.8A1.8 1.8 0 0 1 5.8 3H19.5v18H5.8A1.8 1.8 0 0 1 4 19.2z"/><path d="M4 16.6h15.5"/><path d="M8 7.5h7"/></symbol>
+    <symbol id="i-noticias" viewBox="0 0 24 24"><path d="M3 5.5h14v15H3z"/><path d="M17 9.5h4v9a2 2 0 0 1-4 0"/><path d="M6 9.5h8M6 13h8M6 16.5h5"/></symbol>
+    <symbol id="i-predio" viewBox="0 0 24 24"><path d="M4 3.5h11v17.5H4z"/><path d="M15 8.5h5V21h-5"/><path d="M7.3 7.2h1.6M11 7.2h1.6M7.3 11h1.6M11 11h1.6M7.3 14.8h1.6M11 14.8h1.6"/><path d="M9 21v-3h1.9v3"/></symbol>
+    <symbol id="i-ia" viewBox="0 0 24 24"><path d="m11 2.8 1.75 4.35L17 8.9l-4.25 1.75L11 15l-1.75-4.35L5 8.9l4.25-1.75z"/><path d="m18 14.2.9 2.15L21 17.2l-2.1.85-.9 2.15-.9-2.15-2.1-.85 2.1-.85z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5M12 7.9h.01"/></symbol>
+  </defs>
+</svg>
 
 <!-- ========== CONTEÚDO DO APP ========== -->
 <div id="appContent" style="display:none;">
@@ -2002,35 +2377,35 @@ self.addEventListener('fetch', e => {
     <div style="height:3px;background:linear-gradient(90deg,var(--accent),transparent);border-radius:2px;width:45%;opacity:0.3;"></div>
   </div>
   <div class="sidebar-nav">
-    <button class="tab" data-tab="inicio"><span class="tab-icon">🏠</span> Início</button>
-    <button class="tab active" data-tab="consultar"><span class="tab-icon">🔍</span> Consultar</button>
-    <button class="tab" data-tab="buscar"><span class="tab-icon">🔎</span> Buscar Item</button>
-    <button class="tab" data-tab="whereused"><span class="tab-icon">📌</span> Onde é Usado</button>
-    <button class="tab" data-tab="cabos"><span class="tab-icon">🔌</span> Cabos m→kg</button>
-    <button class="tab" data-tab="orcamento-obra"><span class="tab-icon">📋</span> Orçamento de Obra</button>
-    <button class="tab" data-tab="favoritos"><span class="tab-icon">⭐</span> Favoritos</button>
-    <button class="tab" data-tab="parafuso"><span class="tab-icon">🔩</span> Parafuso</button>
-    <button class="tab" data-tab="elos"><span class="tab-icon">⚡</span> Elos</button>
-    <button class="tab" data-tab="tracao"><span class="tab-icon">📐</span> Tração Postes</button>
-    <button class="tab" data-tab="cintas"><span class="tab-icon">🔗</span> Cintas</button>
-    <button class="tab" data-tab="conectores"><span class="tab-icon">🔌</span> Conectores</button>
-    <button class="tab" data-tab="atualizar"><span class="tab-icon">⬆️</span> Atualizar Dados</button>
-    <button class="tab" data-tab="kanban"><span class="tab-icon">📋</span> Kanban</button>
-    <button class="tab" data-tab="mapa-unificado"><span class="tab-icon">🗺️</span> Mapa</button>
-    <button class="tab" data-tab="busca-uc"><span class="tab-icon">🔎</span> Busca UC</button>
-    <button class="tab" data-tab="rastreio-equip"><span class="tab-icon">🔀</span> Hierarquia de Equip.</button>
+    <button class="tab" data-tab="inicio"><svg class="tab-icon" aria-hidden="true"><use href="#i-home"/></svg> Início</button>
+    <button class="tab active" data-tab="consultar"><svg class="tab-icon" aria-hidden="true"><use href="#i-consultar"/></svg> Consultar</button>
+    <button class="tab" data-tab="buscar"><svg class="tab-icon" aria-hidden="true"><use href="#i-buscar"/></svg> Buscar Item</button>
+    <button class="tab" data-tab="whereused"><svg class="tab-icon" aria-hidden="true"><use href="#i-pin"/></svg> Onde é Usado</button>
+    <button class="tab" data-tab="cabos"><svg class="tab-icon" aria-hidden="true"><use href="#i-cabo"/></svg> Cabos m→kg</button>
+    <button class="tab" data-tab="orcamento-obra"><svg class="tab-icon" aria-hidden="true"><use href="#i-clipboard"/></svg> Orçamento de Obra</button>
+    <button class="tab" data-tab="favoritos"><svg class="tab-icon" aria-hidden="true"><use href="#i-star"/></svg> Favoritos</button>
+    <button class="tab" data-tab="parafuso"><svg class="tab-icon" aria-hidden="true"><use href="#i-parafuso"/></svg> Parafuso</button>
+    <button class="tab" data-tab="elos"><svg class="tab-icon" aria-hidden="true"><use href="#i-zap"/></svg> Elos</button>
+    <button class="tab" data-tab="tracao"><svg class="tab-icon" aria-hidden="true"><use href="#i-tracao"/></svg> Tração Postes</button>
+    <button class="tab" data-tab="cintas"><svg class="tab-icon" aria-hidden="true"><use href="#i-link"/></svg> Cintas</button>
+    <button class="tab" data-tab="conectores"><svg class="tab-icon" aria-hidden="true"><use href="#i-plug"/></svg> Conectores</button>
+    <button class="tab" data-tab="atualizar"><svg class="tab-icon" aria-hidden="true"><use href="#i-upload"/></svg> Atualizar Dados</button>
+    <button class="tab" data-tab="kanban"><svg class="tab-icon" aria-hidden="true"><use href="#i-kanban"/></svg> Kanban</button>
+    <button class="tab" data-tab="mapa-unificado"><svg class="tab-icon" aria-hidden="true"><use href="#i-mapa"/></svg> Mapa</button>
+    <button class="tab" data-tab="busca-uc"><svg class="tab-icon" aria-hidden="true"><use href="#i-busca-uc"/></svg> Busca UC</button>
+    <button class="tab" data-tab="rastreio-equip"><svg class="tab-icon" aria-hidden="true"><use href="#i-hierarquia"/></svg> Hierarquia de Equip.</button>
 
-    <button class="tab" data-tab="alimentadores"><span class="tab-icon">⚡</span> Alimentadores</button>
-    <button class="tab" data-tab="rebaixadores"><span class="tab-icon">🔻</span> Rebaixadores</button>
+    <button class="tab" data-tab="alimentadores"><svg class="tab-icon" aria-hidden="true"><use href="#i-torre"/></svg> Alimentadores</button>
+    <button class="tab" data-tab="rebaixadores"><svg class="tab-icon" aria-hidden="true"><use href="#i-rebaixador"/></svg> Rebaixadores</button>
 
     <!-- Divisor -->
     <div style="height:1px;background:var(--border);margin:0.5rem 0.3rem;"></div>
 
-    <button class="tab" data-tab="orcamento"><span class="tab-icon">💰</span> Orçamento</button>
-    <button class="tab" data-tab="normas-tecnicas"><span class="tab-icon">📘</span> Normas Técnicas</button>
-    <button class="tab" data-tab="noticias"><span class="tab-icon">📰</span> Notícias</button>
-    <button class="tab" data-tab="quem-somos"><span class="tab-icon">🏢</span> Quem Somos</button>
-    <button class="tab" data-tab="ia" style="margin-top:0.3rem;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:8px;"><span class="tab-icon">🤖</span> IA</button>
+    <button class="tab" data-tab="orcamento"><svg class="tab-icon" aria-hidden="true"><use href="#i-dinheiro"/></svg> Orçamento</button>
+    <button class="tab" data-tab="normas-tecnicas"><svg class="tab-icon" aria-hidden="true"><use href="#i-livro"/></svg> Normas Técnicas</button>
+    <button class="tab" data-tab="noticias"><svg class="tab-icon" aria-hidden="true"><use href="#i-noticias"/></svg> Notícias</button>
+    <button class="tab" data-tab="quem-somos"><svg class="tab-icon" aria-hidden="true"><use href="#i-predio"/></svg> Quem Somos</button>
+    <button class="tab" data-tab="ia" style="margin-top:0.3rem;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:8px;"><svg class="tab-icon" aria-hidden="true"><use href="#i-ia"/></svg> IA</button>
   </div>
   <div class="sidebar-footer">
     <!-- Botao instalar PWA -->
@@ -2073,9 +2448,11 @@ self.addEventListener('fetch', e => {
 
 <!-- TAB: INÍCIO -->
 <div class="tab-panel" id="tab-inicio">
-  <div style="max-width:680px;margin:0 auto;padding-top:1rem;">
+  <div style="max-width:1040px;margin:0 auto;padding-top:1rem;">
 
-    <div class="sb-power-line" aria-hidden="true" style="margin:0 0 1.4rem;line-height:0;">
+    <!-- viewBox de 680 com preserveAspectRatio="none": manter o desenho na largura
+         natural evita que os postes estiquem agora que a home é mais larga. -->
+    <div class="sb-power-line" aria-hidden="true" style="margin:0 0 1.4rem;line-height:0;max-width:680px;">
       <svg viewBox="0 0 680 130" preserveAspectRatio="none" style="width:100%;height:auto;display:block;max-height:110px;">
         <defs>
           <filter id="sbPulseGlow" x="-60%" y="-60%" width="220%" height="220%">
@@ -2189,78 +2566,60 @@ self.addEventListener('fetch', e => {
 
     <div id="mural-aviso" style="display:none;margin-bottom:1.6rem;padding:1rem 1.2rem;background:rgba(255,183,77,0.08);border:1px solid #ffb74d;border-left:4px solid #ffb74d;border-radius:var(--radius);">
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
-        <span style="font-size:1.05rem;line-height:1;">📌</span>
+        <svg aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:#ffb74d;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><use href="#i-pin"/></svg>
         <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem;color:#ffb74d;text-transform:uppercase;letter-spacing:0.06em;">Mural de Avisos</span>
       </div>
-      <div id="mural-aviso-texto" style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);line-height:1.65;white-space:pre-wrap;"></div>
+      <div id="mural-aviso-texto" style="font-family:var(--font-body);font-size:0.88rem;color:var(--text);line-height:1.65;white-space:pre-wrap;"></div>
     </div>
 
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;">⚡ O que você quer fazer?</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.85rem;margin-bottom:2rem;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;"><svg class="eyebrow-icon" aria-hidden="true"><use href="#i-zap"/></svg> O que você quer fazer?</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1rem;margin-bottom:2.25rem;">
 
-      <button onclick="document.querySelector('[data-tab=consultar]').click()"
-        style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.05)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="font-size:1.6rem;margin-bottom:0.6rem;">🔍</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:0.25rem;">Consultar Estrutura</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;">Veja os componentes de uma BOM pelo código da estrutura.</div>
+      <button class="home-card" onclick="document.querySelector('[data-tab=consultar]').click()">
+        <svg class="card-icon" aria-hidden="true"><use href="#i-consultar"/></svg>
+        <div class="home-card-title">Consultar Estrutura</div>
+        <div class="home-card-desc">Veja os componentes de uma BOM pelo código da estrutura.</div>
       </button>
 
-      <button onclick="document.querySelector('[data-tab=buscar]').click()"
-        style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.05)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="font-size:1.6rem;margin-bottom:0.6rem;">🔎</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:0.25rem;">Buscar Item</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;">Converta código ↔ descrição de qualquer material.</div>
+      <button class="home-card" onclick="document.querySelector('[data-tab=buscar]').click()">
+        <svg class="card-icon" aria-hidden="true"><use href="#i-buscar"/></svg>
+        <div class="home-card-title">Buscar Item</div>
+        <div class="home-card-desc">Converta código ↔ descrição de qualquer material.</div>
       </button>
 
-      <button onclick="document.querySelector('[data-tab=whereused]').click()"
-        style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.05)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="font-size:1.6rem;margin-bottom:0.6rem;">📌</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:0.25rem;">Onde é Usado</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;">Descubra em quais estruturas um item aparece.</div>
+      <button class="home-card" onclick="document.querySelector('[data-tab=whereused]').click()">
+        <svg class="card-icon" aria-hidden="true"><use href="#i-pin"/></svg>
+        <div class="home-card-title">Onde é Usado</div>
+        <div class="home-card-desc">Descubra em quais estruturas um item aparece.</div>
       </button>
 
-      <button onclick="document.querySelector('[data-tab=cabos]').click()"
-        style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.05)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="font-size:1.6rem;margin-bottom:0.6rem;">🔌</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:0.25rem;">Cabos m → kg</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;">Calcule peso de cabos elétricos a partir do comprimento.</div>
+      <button class="home-card" onclick="document.querySelector('[data-tab=cabos]').click()">
+        <svg class="card-icon" aria-hidden="true"><use href="#i-cabo"/></svg>
+        <div class="home-card-title">Cabos m → kg</div>
+        <div class="home-card-desc">Calcule peso de cabos elétricos a partir do comprimento.</div>
       </button>
 
-      <button onclick="document.querySelector('[data-tab=kanban]').click()"
-        style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.05)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="font-size:1.6rem;margin-bottom:0.6rem;">📋</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:0.25rem;">Kanban</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;">Gerencie tarefas e acompanhe o andamento dos projetos.</div>
+      <button class="home-card" onclick="document.querySelector('[data-tab=kanban]').click()">
+        <svg class="card-icon" aria-hidden="true"><use href="#i-kanban"/></svg>
+        <div class="home-card-title">Kanban</div>
+        <div class="home-card-desc">Gerencie tarefas e acompanhe o andamento dos projetos.</div>
       </button>
 
-      <button onclick="document.querySelector('[data-tab=favoritos]').click()"
-        style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;cursor:pointer;transition:border-color 0.2s,background 0.2s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.05)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="font-size:1.6rem;margin-bottom:0.6rem;">⭐</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:0.25rem;">Favoritos</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.5;">Acesse rapidamente as estruturas que você salvou.</div>
+      <button class="home-card" onclick="document.querySelector('[data-tab=favoritos]').click()">
+        <svg class="card-icon" aria-hidden="true"><use href="#i-star"/></svg>
+        <div class="home-card-title">Favoritos</div>
+        <div class="home-card-desc">Acesse rapidamente as estruturas que você salvou.</div>
       </button>
 
     </div>
 
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;">ℹ️ Sobre o SetupBoom</div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem 1.5rem;margin-bottom:2rem;line-height:1.7;">
-      <p style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-bottom:0.85rem;">
-        O <strong style="color:var(--text)">SetupBoom</strong> é uma ferramenta interna do setor de <strong style="color:var(--text)">PCP</strong> do Grupo Setup, desenvolvida para centralizar consultas de estrutura de materiais (BOM), cálculos técnicos e gestão de tarefas — tudo em um único lugar, sem depender de planilhas avulsas.
+    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;"><svg class="eyebrow-icon" aria-hidden="true"><use href="#i-info"/></svg> Sobre o SetupBoom</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem 1.6rem;margin-bottom:2rem;">
+      <p class="prose" style="font-size:0.9rem;max-width:68ch;margin-bottom:0.9rem;">
+        O <strong>SetupBoom</strong> é uma ferramenta interna do setor de <strong>PCP</strong> do Grupo Setup, desenvolvida para centralizar consultas de estrutura de materiais (BOM), cálculos técnicos e gestão de tarefas — tudo em um único lugar, sem depender de planilhas avulsas.
       </p>
-      <p style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">
-        Os dados são carregados direto do <strong style="color:var(--text)">Google Sheets</strong> e ficam disponíveis mesmo offline após o primeiro acesso.
+      <p class="prose" style="font-size:0.9rem;max-width:68ch;">
+        Os dados são carregados direto do <strong>Google Sheets</strong> e ficam disponíveis mesmo offline após o primeiro acesso.
       </p>
     </div>
 
@@ -10865,5 +11224,32 @@ Como posso ajudar?</div>
       }
     });
   </script>
+
+<script>
+/* ── Normalização da árvore de abas ────────────────────────────────────────
+   O HTML tem </div> extraviados: só 13 dos 26 .tab-panel estão dentro de
+   .main-content. Os outros ficaram como irmãos dentro de #appContent, que é
+   display:flex — então viravam colunas ao lado do conteúdo e apareciam
+   empurrados para o meio/direita da tela (ex.: "Orçamento de Obra"), sem a
+   margem da sidebar nem o padding do container.
+
+   Isto realoca todos os painéis para dentro de .main-content, que é onde
+   deveriam estar. Roda antes de qualquer mapa/canvas ser inicializado (esses
+   só montam ao clicar na aba), então nada é destruído no processo.
+
+   Correção definitiva: arrumar os </div> no HTML e remover este bloco. */
+(function () {
+  var main = document.querySelector('.main-content');
+  if (!main) return;
+  var foraDoLugar = [].filter.call(
+    document.querySelectorAll('.tab-panel'),
+    function (p) { return p.parentElement !== main; }
+  );
+  foraDoLugar.forEach(function (p) { main.appendChild(p); });
+  if (foraDoLugar.length) {
+    console.info('[SetupBoom] ' + foraDoLugar.length + ' aba(s) realocada(s) para .main-content');
+  }
+})();
+</script>
 </body>
 </html>

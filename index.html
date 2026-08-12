@@ -2030,6 +2030,65 @@ self.addEventListener('fetch', e => {
       font-size: 0.8rem;
     }
     .leaflet-control-layers label { color: #e8e8e8 !important; margin: 4px 0; }
+
+    /* ── Anotação do mapa (evidência de emergência) ── */
+    .anot-barra {
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+      margin-bottom: 0.6rem;
+    }
+    .anot-grupo {
+      display: flex; gap: 0.25rem; padding: 0.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .anot-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+      min-width: 56px; padding: 0.4rem 0.5rem;
+      background: none; border: none; border-radius: 7px;
+      color: var(--muted); cursor: pointer;
+      font-size: 0.95rem; line-height: 1.1;
+    }
+    .anot-btn span {
+      font-family: 'DM Mono', monospace; font-size: 0.58rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .anot-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .anot-btn.ativo { background: rgba(0,230,118,0.14); color: var(--accent); }
+    .anot-cores { align-items: center; }
+    .anot-cor {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid transparent; cursor: pointer; padding: 0;
+    }
+    .anot-cor.ativa { border-color: var(--text); transform: scale(1.12); }
+    .anot-enviar {
+      margin-left: auto;
+      background: linear-gradient(135deg, #00e676, #00c853);
+      color: #052e1a; border: none; border-radius: 10px;
+      padding: 0.6rem 1.1rem; cursor: pointer;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.82rem;
+    }
+    .anot-enviar:disabled { opacity: 0.6; cursor: default; }
+    .anot-obs { margin-bottom: 0.6rem; }
+    .anot-obs input {
+      width: 100%; padding: 0.6rem 0.85rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text);
+      font-family: var(--font-body); font-size: 0.85rem;
+    }
+    .anot-obs input:focus { outline: none; border-color: var(--accent); }
+    .anot-dica {
+      position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+      z-index: 6; pointer-events: none; opacity: 0;
+      background: rgba(6,15,10,0.9); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.35rem 0.9rem;
+      font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--accent2);
+      transition: opacity 0.25s ease; white-space: nowrap; max-width: 92%;
+    }
+    .anot-dica.on { opacity: 1; }
+    @media (max-width: 560px) {
+      .anot-enviar { margin-left: 0; width: 100%; }
+      .anot-btn { min-width: 48px; }
+    }
     .mapa-search-wrap { display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
     .mapa-search-wrap input {
       flex:1; min-width:0;
@@ -5580,8 +5639,35 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       </div>
     </div>
 
-    <!-- MAPA -->
-    <div id="mu-leaflet" style="height:480px;border-radius:12px;border:1px solid var(--border);overflow:hidden;"></div>
+    <!-- MAPA + CAMADA DE ANOTAÇÃO -->
+    <div class="anot-barra">
+      <div class="anot-grupo">
+        <button type="button" class="anot-btn" data-fer="mover" onclick="muAnotFerramenta('mover')" title="Mover o mapa">✋<span>Mover</span></button>
+        <button type="button" class="anot-btn" data-fer="caneta" onclick="muAnotFerramenta('caneta')" title="Desenhar à mão livre">✏️<span>Desenhar</span></button>
+        <button type="button" class="anot-btn" data-fer="seta" onclick="muAnotFerramenta('seta')" title="Puxar uma seta">↗<span>Seta</span></button>
+        <button type="button" class="anot-btn" data-fer="texto" onclick="muAnotFerramenta('texto')" title="Escrever no ponto">T<span>Texto</span></button>
+      </div>
+
+      <div class="anot-grupo anot-cores" id="anot-cores"></div>
+
+      <div class="anot-grupo">
+        <button type="button" class="anot-btn" onclick="muAnotDesfazer()" title="Desfazer o último">↩<span>Desfazer</span></button>
+        <button type="button" class="anot-btn" onclick="muAnotLimpar()" title="Apagar tudo">🗑<span>Limpar</span></button>
+      </div>
+
+      <button type="button" class="anot-enviar" onclick="muAnotExportar()">📤 Gerar evidência</button>
+    </div>
+
+    <div class="anot-obs" id="anot-obs-wrap">
+      <input type="text" id="anot-obs" maxlength="90"
+             placeholder="Ocorrência / equipe (aparece na imagem)" autocomplete="off" />
+    </div>
+
+    <div id="mu-mapa-wrap" style="position:relative;">
+      <div id="mu-leaflet" style="height:480px;border-radius:12px;border:1px solid var(--border);overflow:hidden;"></div>
+      <canvas id="mu-anot" style="position:absolute;inset:0;width:100%;height:100%;border-radius:12px;pointer-events:none;touch-action:none;z-index:5;"></canvas>
+      <div id="anot-dica" class="anot-dica"></div>
+    </div>
 
     <!-- Tabela de resultados próximos -->
     <div id="mu-proximos-wrap" style="display:none;margin-top:1rem;">
@@ -5698,12 +5784,14 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   function initMuMap() {
     if (muMap) return;
     muMap = L.map('mu-leaflet').setView([-31.7654, -52.3376], 10);
+    // crossOrigin nos tiles: sem isso o canvas fica "tainted" e a exportação
+    // da evidência em PNG falha silenciosamente. OSM e Esri mandam CORS.
     const muRuas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19
+      attribution: '© OpenStreetMap', maxZoom: 19, crossOrigin: true
     }).addTo(muMap);
     const muSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',
-      maxZoom: 19
+      maxZoom: 19, crossOrigin: true
     });
     L.control.layers({
       '🗺️ Ruas': muRuas,
@@ -5712,6 +5800,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     muPostesLayer = L.layerGroup().addTo(muMap);
     muEquipsLayer = L.layerGroup().addTo(muMap);
     muReady = true;
+    // exposto para a camada de anotações, que vive num script separado
+    window.muMapa = muMap;
+    if (typeof window.muAnotLigar === 'function') window.muAnotLigar();
   }
 
   /* ── Alterna camada ── */
@@ -11249,6 +11340,352 @@ Como posso ajudar?</div>
   if (foraDoLugar.length) {
     console.info('[SetupBoom] ' + foraDoLugar.length + ' aba(s) realocada(s) para .main-content');
   }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ANOTAÇÃO DO MAPA — evidência de emergência
+     A equipe desenha e escreve em cima do mapa e gera uma imagem para mandar.
+
+     Decisão central: as anotações são guardadas em LAT/LNG, não em pixels.
+     Guardar em pixel parece mais simples, mas o desenho descolaria do poste
+     assim que alguém arrastasse ou desse zoom — e aí a evidência mentiria
+     sobre onde o serviço foi feito. Em lat/lng, o traço fica grudado no lugar.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  "use strict";
+
+  var CORES = ["#ff3b30", "#ffd60a", "#00e676", "#ffffff"];
+
+  var cv, ctx, wrap;
+  var ligado = false;
+  var ferramenta = "mover";
+  var cor = CORES[0];
+  var anots = [];          // {tipo, cor, pts|de/para|em, txt}
+  var rascunho = null;     // traço/seta em andamento
+  var dicaTimer = null;
+
+  function mapa() { return window.muMapa || null; }
+
+  function dica(msg) {
+    var el = document.getElementById("anot-dica");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("on");
+    clearTimeout(dicaTimer);
+    dicaTimer = setTimeout(function () { el.classList.remove("on"); }, 2600);
+  }
+
+  /* ---------------- paleta ---------------- */
+
+  function montarCores() {
+    var box = document.getElementById("anot-cores");
+    if (!box || box.children.length) return;
+    CORES.forEach(function (c, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "anot-cor" + (i === 0 ? " ativa" : "");
+      b.style.background = c;
+      b.setAttribute("aria-label", "Cor " + (i + 1));
+      b.addEventListener("click", function () {
+        cor = c;
+        [].forEach.call(box.children, function (o) { o.classList.remove("ativa"); });
+        b.classList.add("ativa");
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ---------------- ligar na instância do mapa ---------------- */
+
+  window.muAnotLigar = function () {
+    if (ligado) return;
+    var m = mapa();
+    cv = document.getElementById("mu-anot");
+    wrap = document.getElementById("mu-mapa-wrap");
+    if (!m || !cv || !wrap) return;
+
+    ctx = cv.getContext("2d");
+    montarCores();
+    ajustarTamanho();
+
+    // redesenha junto com o mapa: 'move' dispara durante o arrasto inteiro,
+    // então o traço acompanha em vez de piscar fora de lugar
+    m.on("move zoom zoomend viewreset resize", redesenhar);
+    window.addEventListener("resize", function () { ajustarTamanho(); redesenhar(); });
+
+    cv.addEventListener("pointerdown", aoApertar);
+    cv.addEventListener("pointermove", aoArrastar);
+    cv.addEventListener("pointerup", aoSoltar);
+    cv.addEventListener("pointercancel", aoSoltar);
+    cv.addEventListener("pointerleave", aoSoltar);
+
+    ligado = true;
+    redesenhar();
+  };
+
+  function ajustarTamanho() {
+    if (!cv || !wrap) return;
+    var r = wrap.getBoundingClientRect();
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(r.width * dpr);
+    cv.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  /* ---------------- conversões ---------------- */
+
+  function paraTela(ll) {
+    var p = mapa().latLngToContainerPoint([ll.lat, ll.lng]);
+    return { x: p.x, y: p.y };
+  }
+
+  function paraMapa(ev) {
+    var r = cv.getBoundingClientRect();
+    var p = mapa().containerPointToLatLng([ev.clientX - r.left, ev.clientY - r.top]);
+    return { lat: p.lat, lng: p.lng };
+  }
+
+  /* ---------------- desenho ---------------- */
+
+  function redesenhar() {
+    if (!ctx || !mapa()) return;
+    var r = wrap.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    anots.forEach(desenharUm);
+    if (rascunho) desenharUm(rascunho);
+  }
+
+  function desenharUm(a) {
+    ctx.save();
+    ctx.strokeStyle = a.cor;
+    ctx.fillStyle = a.cor;
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    // contorno escuro por baixo: sem isso, traço claro some no satélite e
+    // traço escuro some no mapa de ruas
+    ctx.shadowColor = "rgba(0,0,0,0.75)";
+    ctx.shadowBlur = 4;
+
+    if (a.tipo === "traco" && a.pts.length) {
+      ctx.beginPath();
+      a.pts.forEach(function (ll, i) {
+        var p = paraTela(ll);
+        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+
+    } else if (a.tipo === "seta") {
+      var d = paraTela(a.de), h = paraTela(a.para);
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(h.x, h.y);
+      ctx.stroke();
+      var ang = Math.atan2(h.y - d.y, h.x - d.x);
+      var t = 15;
+      ctx.beginPath();
+      ctx.moveTo(h.x, h.y);
+      ctx.lineTo(h.x - t * Math.cos(ang - Math.PI / 7), h.y - t * Math.sin(ang - Math.PI / 7));
+      ctx.lineTo(h.x - t * Math.cos(ang + Math.PI / 7), h.y - t * Math.sin(ang + Math.PI / 7));
+      ctx.closePath();
+      ctx.fill();
+
+    } else if (a.tipo === "texto") {
+      var p2 = paraTela(a.em);
+      ctx.shadowBlur = 0;
+      ctx.font = "700 15px system-ui, -apple-system, 'Segoe UI', sans-serif";
+      var larg = ctx.measureText(a.txt).width;
+      var padX = 9, alt = 27;
+      var bx = p2.x + 12, by = p2.y - alt / 2;
+
+      ctx.fillStyle = "rgba(6,15,10,0.88)";
+      ctx.strokeStyle = a.cor;
+      ctx.lineWidth = 1.6;
+      arredondado(bx, by, larg + padX * 2, alt, 7);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = a.cor;
+      ctx.textBaseline = "middle";
+      ctx.fillText(a.txt, bx + padX, by + alt / 2 + 0.5);
+
+      // ponto-âncora, para saber a que poste o texto se refere
+      ctx.beginPath();
+      ctx.arc(p2.x, p2.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.6)";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function arredondado(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  /* ---------------- interação ---------------- */
+
+  function aoApertar(ev) {
+    if (ferramenta === "mover") return;
+    ev.preventDefault();
+    cv.setPointerCapture(ev.pointerId);
+    var ll = paraMapa(ev);
+
+    if (ferramenta === "caneta") {
+      rascunho = { tipo: "traco", cor: cor, pts: [ll] };
+    } else if (ferramenta === "seta") {
+      rascunho = { tipo: "seta", cor: cor, de: ll, para: ll };
+    } else if (ferramenta === "texto") {
+      var txt = window.prompt("O que foi feito neste ponto?");
+      if (txt && txt.trim()) {
+        anots.push({ tipo: "texto", cor: cor, em: ll, txt: txt.trim().slice(0, 60) });
+        redesenhar();
+      }
+    }
+  }
+
+  function aoArrastar(ev) {
+    if (!rascunho) return;
+    ev.preventDefault();
+    var ll = paraMapa(ev);
+    if (rascunho.tipo === "traco") rascunho.pts.push(ll);
+    else rascunho.para = ll;
+    redesenhar();
+  }
+
+  function aoSoltar() {
+    if (!rascunho) return;
+    // clique seco com a caneta não vira traço de 1 ponto
+    if (rascunho.tipo !== "traco" || rascunho.pts.length > 1) anots.push(rascunho);
+    rascunho = null;
+    redesenhar();
+  }
+
+  /* ---------------- controles ---------------- */
+
+  window.muAnotFerramenta = function (f) {
+    if (!ligado) window.muAnotLigar();
+    ferramenta = f;
+    [].forEach.call(document.querySelectorAll(".anot-btn[data-fer]"), function (b) {
+      b.classList.toggle("ativo", b.getAttribute("data-fer") === f);
+    });
+    // o canvas só intercepta o toque quando há ferramenta ativa; em "mover"
+    // ele fica transparente ao ponteiro e o mapa arrasta normalmente
+    if (cv) cv.style.pointerEvents = (f === "mover") ? "none" : "auto";
+    if (f === "texto") dica("Toque no ponto para escrever");
+    else if (f === "caneta") dica("Arraste para desenhar");
+    else if (f === "seta") dica("Arraste de onde para onde");
+  };
+
+  window.muAnotDesfazer = function () {
+    if (!anots.length) { dica("Nada para desfazer"); return; }
+    anots.pop();
+    redesenhar();
+  };
+
+  window.muAnotLimpar = function () {
+    if (!anots.length) return;
+    if (!window.confirm("Apagar todas as marcações do mapa?")) return;
+    anots = [];
+    redesenhar();
+  };
+
+  /* ---------------- exportar evidência ---------------- */
+
+  function carregarH2C(cb, erro) {
+    if (window.html2canvas) { cb(); return; }
+    var s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    s.onload = cb;
+    s.onerror = erro;
+    document.head.appendChild(s);
+  }
+
+  window.muAnotExportar = function () {
+    var m = mapa();
+    if (!m) { dica("Abra o mapa primeiro"); return; }
+    var btn = document.querySelector(".anot-enviar");
+    var txtOriginal = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = "Gerando..."; }
+
+    function encerrar(msg) {
+      if (btn) { btn.disabled = false; btn.textContent = txtOriginal; }
+      if (msg) dica(msg);
+    }
+
+    carregarH2C(function () {
+      window.html2canvas(wrap, {
+        useCORS: true, allowTaint: false, logging: false,
+        backgroundColor: "#0d1f14", scale: 2
+      }).then(function (mapaCv) {
+        var faixa = 92 * 2;                       // mesma escala do html2canvas
+        var out = document.createElement("canvas");
+        out.width = mapaCv.width;
+        out.height = mapaCv.height + faixa;
+        var o = out.getContext("2d");
+
+        o.fillStyle = "#060f0a";
+        o.fillRect(0, 0, out.width, out.height);
+        o.drawImage(mapaCv, 0, 0);
+
+        // faixa de identificação: sem data/hora não vale como evidência
+        var y0 = mapaCv.height;
+        o.fillStyle = "#0d1f14";
+        o.fillRect(0, y0, out.width, faixa);
+        o.fillStyle = "#00e676";
+        o.fillRect(0, y0, 8, faixa);
+
+        var obs = (document.getElementById("anot-obs") || {}).value || "";
+        var agora = new Date();
+        var quando = agora.toLocaleDateString("pt-BR") + " às " +
+                     agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+        o.textBaseline = "middle";
+        o.fillStyle = "#f0f0f0";
+        o.font = "700 30px system-ui, -apple-system, 'Segoe UI', sans-serif";
+        o.fillText(obs.trim() || "Registro de campo", 40, y0 + faixa * 0.36);
+
+        o.fillStyle = "#8fa899";
+        o.font = "400 24px ui-monospace, Consolas, monospace";
+        o.fillText(quando + "  ·  SetupBoom  ·  Grupo Setup", 40, y0 + faixa * 0.72);
+
+        out.toBlob(function (blob) {
+          if (!blob) { encerrar("Não consegui gerar a imagem"); return; }
+          var nome = "evidencia-" + agora.toISOString().slice(0, 16).replace(/[:T]/g, "-") + ".png";
+          var arq = new File([blob], nome, { type: "image/png" });
+
+          // no celular, abre a folha de compartilhamento (WhatsApp incluso);
+          // no computador, cai no download
+          if (navigator.canShare && navigator.canShare({ files: [arq] })) {
+            navigator.share({ files: [arq], title: "Evidência de campo" })
+              .then(function () { encerrar(); })
+              .catch(function () { encerrar(); });
+          } else {
+            var a = document.createElement("a");
+            a.download = nome;
+            a.href = URL.createObjectURL(blob);
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+            encerrar("Imagem salva");
+          }
+        }, "image/png");
+      }).catch(function () {
+        encerrar("Falhou ao capturar o mapa");
+      });
+    }, function () { encerrar("Sem internet para carregar o gerador"); });
+  };
+
+  // se o mapa já existir quando este script rodar, liga na hora
+  if (window.muMapa) window.muAnotLigar();
 })();
 </script>
 </body>

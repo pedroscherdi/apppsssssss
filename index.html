@@ -68,7 +68,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
-  if (url.includes('googleapis.com') || url.includes('gstatic.com') || url.includes('firebasejs') || url.includes('fonts.google')) return;
+  // open-meteo fica de fora do cache: o SW responde cache-first, e previsão
+  // servida do cache ficaria congelada na primeira leitura do dia.
+  if (url.includes('googleapis.com') || url.includes('gstatic.com') || url.includes('firebasejs') || url.includes('fonts.google') || url.includes('open-meteo.com')) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -534,6 +536,87 @@ self.addEventListener('fetch', e => {
       line-height: 1.55;
       color: var(--prose);
     }
+
+    /* ── Tempo nas bases ─────────────────────────────────────────────── */
+    .bases-tempo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+      gap: 0.7rem;
+      margin-bottom: 2.25rem;
+    }
+    .base-card {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      min-width: 0;
+    }
+    .base-card__ico {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .base-card__txt { min-width: 0; }
+    .base-card__nome {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .base-card__temp {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.32rem;
+      line-height: 1.15;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .base-card__cond {
+      font-family: var(--font-body);
+      font-size: 0.74rem;
+      line-height: 1.35;
+      color: var(--prose);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* estados sem número: ícone e texto perdem o destaque */
+    .base-card--vazio .base-card__ico { stroke: var(--muted); }
+    .base-card--vazio .base-card__temp {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+    .base-card--carregando { animation: basePulse 1.4s ease-in-out infinite; }
+    @keyframes basePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+    @media (prefers-reduced-motion: reduce) {
+      .base-card--carregando { animation: none; }
+    }
+
+    .tempo-recarregar {
+      background: none;
+      border: none;
+      padding: 0;
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .tempo-recarregar:hover { color: var(--accent); }
+    .tempo-recarregar:disabled { cursor: default; opacity: 0.5; }
     @media (prefers-reduced-motion: reduce) {
       .home-card, .home-card:hover { transform: none; transition: none; }
     }
@@ -2418,6 +2501,14 @@ self.addEventListener('fetch', e => {
     <symbol id="i-predio" viewBox="0 0 24 24"><path d="M4 3.5h11v17.5H4z"/><path d="M15 8.5h5V21h-5"/><path d="M7.3 7.2h1.6M11 7.2h1.6M7.3 11h1.6M11 11h1.6M7.3 14.8h1.6M11 14.8h1.6"/><path d="M9 21v-3h1.9v3"/></symbol>
     <symbol id="i-ia" viewBox="0 0 24 24"><path d="m11 2.8 1.75 4.35L17 8.9l-4.25 1.75L11 15l-1.75-4.35L5 8.9l4.25-1.75z"/><path d="m18 14.2.9 2.15L21 17.2l-2.1.85-.9 2.15-.9-2.15-2.1-.85 2.1-.85z"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5M12 7.9h.01"/></symbol>
+
+    <!-- Tempo nas bases (códigos WMO da Open-Meteo) -->
+    <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.4M12 19v2.4M4.2 12H1.8M22.2 12h-2.4M6.5 6.5 4.8 4.8M19.2 19.2l-1.7-1.7M17.5 6.5l1.7-1.7M4.8 19.2l1.7-1.7"/></symbol>
+    <symbol id="i-parcial" viewBox="0 0 24 24"><path d="M8.5 6.2a3.4 3.4 0 0 1 6.4 1.1"/><path d="M8.5 3.2v1.6M3.9 7.8h1.6M5.3 4.6 6.4 5.7"/><path d="M7 20.4h9.6a3.7 3.7 0 0 0 .3-7.4 5.2 5.2 0 0 0-10 1.2A3.2 3.2 0 0 0 7 20.4z"/></symbol>
+    <symbol id="i-nublado" viewBox="0 0 24 24"><path d="M6.8 19.6h10a4 4 0 0 0 .3-8 5.6 5.6 0 0 0-10.7 1.3 3.45 3.45 0 0 0 .4 6.7z"/></symbol>
+    <symbol id="i-chuva" viewBox="0 0 24 24"><path d="M6.8 15.8h10a4 4 0 0 0 .3-8 5.6 5.6 0 0 0-10.7 1.3 3.45 3.45 0 0 0 .4 6.7z"/><path d="M8.6 18.6l-1 2.6M12.4 18.6l-1 2.6M16.2 18.6l-1 2.6"/></symbol>
+    <symbol id="i-tempestade" viewBox="0 0 24 24"><path d="M6.8 15.4h10a4 4 0 0 0 .3-8 5.6 5.6 0 0 0-10.7 1.3 3.45 3.45 0 0 0 .4 6.7z"/><path d="m13 17.4-3.4 3.2h3l-1 2.6"/></symbol>
+    <symbol id="i-neblina" viewBox="0 0 24 24"><path d="M6.8 14.4h10a4 4 0 0 0 .3-8 5.6 5.6 0 0 0-10.7 1.3 3.45 3.45 0 0 0 .4 6.7z"/><path d="M4.5 18h15M7 21h10"/></symbol>
   </defs>
 </svg>
 
@@ -2630,6 +2721,147 @@ self.addEventListener('fetch', e => {
       </div>
       <div id="mural-aviso-texto" style="font-family:var(--font-body);font-size:0.88rem;color:var(--text);line-height:1.65;white-space:pre-wrap;"></div>
     </div>
+
+    <div style="display:flex;align-items:center;gap:0.5rem;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;">
+      <svg class="eyebrow-icon" aria-hidden="true"><use href="#i-sol"/></svg>
+      <span>Tempo nas bases</span>
+      <button type="button" class="tempo-recarregar" id="tempo-recarregar">atualizar</button>
+    </div>
+    <div class="bases-tempo" id="bases-tempo"></div>
+
+    <script>
+    (function () {
+      /* Tempo agora nas quatro bases. Fonte: Open-Meteo — sem chave, sem
+         cadastro e com CORS liberado, então roda direto do navegador.
+         O service worker responde cache-first, então a chamada precisa ficar
+         fora do cache dele (há uma exceção para open-meteo.com lá em cima),
+         senão a previsão congela na primeira leitura do dia. */
+      var BASES = [
+        { nome: 'Pelotas',    lat: -31.7649, lon: -52.3371 },
+        { nome: 'Rio Grande', lat: -32.0350, lon: -52.0986 },
+        { nome: 'Bagé',       lat: -31.3314, lon: -54.1069 },
+        { nome: 'Camaquã',    lat: -30.8511, lon: -51.8122 }
+      ];
+
+      var VALIDADE = 10 * 60 * 1000;   // relê depois de 10 min
+      var caixa = document.getElementById('bases-tempo');
+      var btn = document.getElementById('tempo-recarregar');
+      var buscando = false;
+      var lido = 0;
+
+      /* Códigos WMO da Open-Meteo agrupados no que interessa para campo. */
+      function condicao(c) {
+        if (c === 0)  return { txt: 'Céu limpo',        ico: 'i-sol' };
+        if (c === 1)  return { txt: 'Predom. limpo',    ico: 'i-sol' };
+        if (c === 2)  return { txt: 'Parcial. nublado', ico: 'i-parcial' };
+        if (c === 3)  return { txt: 'Nublado',          ico: 'i-nublado' };
+        if (c === 45 || c === 48)   return { txt: 'Névoa',    ico: 'i-neblina' };
+        if (c >= 51 && c <= 57)     return { txt: 'Garoa',    ico: 'i-chuva' };
+        if (c >= 61 && c <= 67)     return { txt: 'Chuva',    ico: 'i-chuva' };
+        if (c >= 71 && c <= 77)     return { txt: 'Neve',     ico: 'i-neblina' };
+        if (c >= 80 && c <= 82)     return { txt: 'Pancadas de chuva', ico: 'i-chuva' };
+        if (c === 85 || c === 86)   return { txt: 'Pancadas de neve',  ico: 'i-neblina' };
+        if (c >= 95)                return { txt: 'Trovoada', ico: 'i-tempestade' };
+        return { txt: 'Sem leitura', ico: 'i-nublado' };
+      }
+
+      function cartao(nome, ico, valor, detalhe, vazio) {
+        var d = document.createElement('div');
+        d.className = 'base-card' + (vazio ? ' ' + vazio : '');
+        var svg = '<svg class="base-card__ico" aria-hidden="true"><use href="#' + ico + '"/></svg>';
+        d.innerHTML = svg + '<div class="base-card__txt">' +
+          '<div class="base-card__nome"></div>' +
+          '<div class="base-card__temp"></div>' +
+          '<div class="base-card__cond"></div></div>';
+        // textContent para nunca interpolar resposta de API como HTML
+        d.querySelector('.base-card__nome').textContent = nome;
+        d.querySelector('.base-card__temp').textContent = valor;
+        d.querySelector('.base-card__cond').textContent = detalhe;
+        return d;
+      }
+
+      function pintar(cartoes) {
+        caixa.innerHTML = '';
+        cartoes.forEach(function (c) { caixa.appendChild(c); });
+      }
+
+      function esqueleto() {
+        pintar(BASES.map(function (b) {
+          return cartao(b.nome, 'i-nublado', '—', 'carregando…', 'base-card--vazio base-card--carregando');
+        }));
+      }
+
+      function falha(motivo) {
+        pintar(BASES.map(function (b) {
+          return cartao(b.nome, 'i-nublado', '—', motivo, 'base-card--vazio');
+        }));
+      }
+
+      function buscar() {
+        if (buscando) return;
+        buscando = true;
+        btn.disabled = true;
+        esqueleto();
+
+        if (!navigator.onLine) {
+          buscando = false;
+          btn.disabled = false;
+          falha('sem conexão');
+          return;
+        }
+
+        var url = 'https://api.open-meteo.com/v1/forecast'
+          + '?latitude='  + BASES.map(function (b) { return b.lat; }).join(',')
+          + '&longitude=' + BASES.map(function (b) { return b.lon; }).join(',')
+          + '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m'
+          + '&timezone=America%2FSao_Paulo';
+
+        fetch(url, { cache: 'no-store' })
+          .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          })
+          .then(function (dados) {
+            // com várias coordenadas a API devolve um array, na mesma ordem
+            var lista = Array.isArray(dados) ? dados : [dados];
+            pintar(BASES.map(function (b, i) {
+              var at = lista[i] && lista[i].current;
+              if (!at || at.temperature_2m == null) {
+                return cartao(b.nome, 'i-nublado', '—', 'sem leitura', 'base-card--vazio');
+              }
+              var cond = condicao(at.weather_code);
+              var extra = [];
+              if (at.relative_humidity_2m != null) extra.push(at.relative_humidity_2m + '% umid.');
+              if (at.wind_speed_10m != null) extra.push(Math.round(at.wind_speed_10m) + ' km/h');
+              return cartao(
+                b.nome,
+                cond.ico,
+                Math.round(at.temperature_2m) + '°',
+                cond.txt + (extra.length ? ' · ' + extra.join(' · ') : '')
+              );
+            }));
+            lido = Date.now();
+          })
+          .catch(function (e) {
+            console.warn('[SetupBoom] tempo nas bases falhou:', e);
+            falha('indisponível');
+          })
+          .then(function () {
+            buscando = false;
+            btn.disabled = false;
+          });
+      }
+
+      function buscarSeVelho() {
+        if (Date.now() - lido > VALIDADE) buscar();
+      }
+
+      btn.addEventListener('click', buscar);
+      document.querySelector('[data-tab="inicio"]').addEventListener('click', buscarSeVelho);
+      window.addEventListener('online', buscarSeVelho);
+      buscar();
+    })();
+    </script>
 
     <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.85rem;"><svg class="eyebrow-icon" aria-hidden="true"><use href="#i-zap"/></svg> O que você quer fazer?</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1rem;margin-bottom:2.25rem;">

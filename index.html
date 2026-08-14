@@ -5804,6 +5804,18 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         .mu-top-controls { flex-direction: column; align-items: stretch !important; }
         #mu-badge { margin-left: 0 !important; margin-top: 0.5rem; justify-content: space-between; }
       }
+      /* distância escrita sobre a linha que liga dois postes marcados */
+      .leaflet-tooltip.mu-dist-tip {
+        background: #7c4dff;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+        color: #fff;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 2px 7px;
+      }
+      .leaflet-tooltip.mu-dist-tip::before { display: none; }
     </style>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin-bottom:0.75rem;" id="mu-search-grid">
       <!-- Busca Poste -->
@@ -5875,6 +5887,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
           <a id="mu-p-gmaps" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;padding:0.35rem 0.85rem;font-size:0.73rem;">Maps ↗</a>
           <button class="btn" onclick="muMostrarProximos('poste')" style="font-size:0.73rem;padding:0.35rem 0.85rem;">📡 Próximos</button>
+          <button class="btn" id="mu-p-marcar" onclick="muMarcarPosteAtual()" style="font-size:0.73rem;padding:0.35rem 0.85rem;background:#7c4dff;color:#fff;">📌 Marcar</button>
         </div>
       </div>
     </div>
@@ -5902,6 +5915,18 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           style="flex:1;min-width:100px;accent-color:var(--accent);" />
         <span id="mu-raio-val" style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--accent);font-weight:700;min-width:48px;text-align:right;">200m</span>
         <button class="btn-ghost" onclick="muAtualizarProximos()" style="font-size:0.75rem;padding:0.3rem 0.85rem;white-space:nowrap;">🔄</button>
+      </div>
+    </div>
+
+    <!-- Postes marcados — comparação de distância entre pontos fixados -->
+    <div id="mu-marcados-wrap" style="display:none;margin-bottom:0.75rem;">
+      <div style="background:var(--surface);border:1px solid #7c4dff44;border-radius:var(--radius);padding:0.65rem 1rem;">
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.55rem;">
+          <span style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:#b388ff;">📌 Postes marcados</span>
+          <span id="mu-marcados-resumo" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);"></span>
+          <button class="btn-ghost" onclick="muLimparMarcados()" style="margin-left:auto;font-size:0.72rem;padding:0.28rem 0.8rem;">🗑 Limpar</button>
+        </div>
+        <div id="mu-marcados-lista" style="display:flex;flex-direction:column;gap:0.3rem;"></div>
       </div>
     </div>
 
@@ -5946,6 +5971,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
               <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Nome/Nº</th>
               <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Distância</th>
               <th style="padding:0.5rem 0.9rem;text-align:left;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Info</th>
+              <th style="padding:0.5rem 0.9rem;text-align:right;font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);">Marcar</th>
             </tr>
           </thead>
           <tbody id="mu-proximos-tbody"></tbody>
@@ -5991,6 +6017,11 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   let muProxCircle = null;
   let muPostesLayer = null;
   let muEquipsLayer = null;
+
+  // Postes fixados manualmente para comparar distância entre eles
+  let muMarcados = [];        // [{num, lat, lng}]
+  let muMarcadosLayer = null;
+  let muPosteSel = null;      // último poste aberto no card
 
   // Seleção atual para "próximos"
   let muCentro = null; // {lat, lng}
@@ -6065,6 +6096,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     }, null, { position: 'topright', collapsed: true }).addTo(muMap);
     muPostesLayer = L.layerGroup().addTo(muMap);
     muEquipsLayer = L.layerGroup().addTo(muMap);
+    muMarcadosLayer = L.layerGroup().addTo(muMap);
     muReady = true;
     // exposto para a camada de anotações, que vive num script separado
     window.muMapa = muMap;
@@ -6337,6 +6369,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     setMuStatus('ok', `⚡ Poste ${p.num} localizado`);
     muCentro = { lat: p.lat, lng: p.lng };
     muProxMode = 'poste';
+    muPosteSel = { num: p.num, lat: p.lat, lng: p.lng };
+    muAtualizarBotaoMarcar();
 
     // Plota no mapa
     carregarLeafletMU(() => {
@@ -6409,6 +6443,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     setMuStatus('ok', `⚡ Poste ${closest.num} encontrado a ${Math.round(minDist)}m`);
     muCentro = { lat: closest.lat, lng: closest.lng };
     muProxMode = 'poste';
+    muPosteSel = { num: closest.num, lat: closest.lat, lng: closest.lng };
+    muAtualizarBotaoMarcar();
 
     // Plota no mapa
     carregarLeafletMU(() => {
@@ -6636,6 +6672,143 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     }
   };
 
+  /* ══ Postes marcados ══
+     Fixa postes no mapa e mede a distância entre eles em cadeia (1→2→3...).
+     Serve pra responder "esses dois postes estão perto?" sem precisar do raio. */
+
+  const MU_MARC_COR = '#7c4dff';
+
+  function muIndiceMarcado(num) {
+    return muMarcados.findIndex(m => m.num === num);
+  }
+
+  function muAtualizarBotaoMarcar() {
+    const btn = document.getElementById('mu-p-marcar');
+    if (!btn) return;
+    const marcado = muPosteSel && muIndiceMarcado(muPosteSel.num) >= 0;
+    btn.textContent = marcado ? '📌 Desmarcar' : '📌 Marcar';
+    btn.style.background = marcado ? 'transparent' : MU_MARC_COR;
+    btn.style.color = marcado ? MU_MARC_COR : '#fff';
+    btn.style.border = `1px solid ${MU_MARC_COR}`;
+  }
+
+  // Marca/desmarca um poste qualquer. Sem argumento, usa o que está no card.
+  window.muMarcarPoste = function(num, lat, lng) {
+    const idx = muIndiceMarcado(num);
+    if (idx >= 0) {
+      muMarcados.splice(idx, 1);
+    } else {
+      muMarcados.push({ num, lat, lng });
+    }
+    carregarLeafletMU(() => {
+      initMuMap();
+      muRedesenharMarcados();
+      muAtualizarBotaoMarcar();
+    });
+  };
+
+  window.muMarcarPosteAtual = function() {
+    if (!muPosteSel) { setMuStatus('erro', 'Selecione um poste antes de marcar.'); return; }
+    muMarcarPoste(muPosteSel.num, muPosteSel.lat, muPosteSel.lng);
+  };
+
+  window.muRemoverMarcado = function(num) {
+    const idx = muIndiceMarcado(num);
+    if (idx < 0) return;
+    muMarcados.splice(idx, 1);
+    muRedesenharMarcados();
+    muAtualizarBotaoMarcar();
+  };
+
+  window.muLimparMarcados = function() {
+    muMarcados = [];
+    muRedesenharMarcados();
+    muAtualizarBotaoMarcar();
+  };
+
+  window.muIrParaMarcado = function(num) {
+    const m = muMarcados.find(x => x.num === num);
+    if (!m || !muMap) return;
+    muMap.setView([m.lat, m.lng], 18);
+  };
+
+  // Enquadra todos os marcados de uma vez — útil pra comparar dois postes distantes
+  window.muEnquadrarMarcados = function() {
+    if (!muMap || muMarcados.length < 2) return;
+    muMap.fitBounds(muMarcados.map(m => [m.lat, m.lng]), { padding: [50, 50] });
+  };
+
+  function muFmtDist(m) {
+    return m < 1000 ? `${Math.round(m)}m` : `${(m / 1000).toFixed(2)}km`;
+  }
+
+  function muRedesenharMarcados() {
+    // a lista sempre reflete o estado, mesmo se o mapa ainda não tiver subido
+    if (!muMarcadosLayer) { muRenderListaMarcados(); return; }
+    muMarcadosLayer.clearLayers();
+
+    muMarcados.forEach((m, i) => {
+      const icon = L.divIcon({
+        html: `<div style="width:26px;height:26px;border-radius:50%;background:${MU_MARC_COR};border:3px solid #fff;
+                 box-shadow:0 0 10px rgba(124,77,255,0.8);display:flex;align-items:center;justify-content:center;
+                 color:#fff;font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:700;">${i + 1}</div>`,
+        className: '', iconAnchor: [13, 13]
+      });
+      L.marker([m.lat, m.lng], { icon, zIndexOffset: 1000 })
+        .addTo(muMarcadosLayer)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:${MU_MARC_COR};">📌 ${i + 1} · ${m.num}</b><br>${m.lat.toFixed(6)}, ${m.lng.toFixed(6)}`);
+    });
+
+    // Liga os marcados em cadeia, com a distância escrita em cima de cada trecho
+    for (let i = 1; i < muMarcados.length; i++) {
+      const a = muMarcados[i - 1], b = muMarcados[i];
+      const d = haversine(a.lat, a.lng, b.lat, b.lng);
+      L.polyline([[a.lat, a.lng], [b.lat, b.lng]], {
+        color: MU_MARC_COR, weight: 2.5, opacity: 0.9, dashArray: '7,5'
+      }).addTo(muMarcadosLayer)
+        .bindTooltip(muFmtDist(d), {
+          permanent: true, direction: 'center', className: 'mu-dist-tip'
+        });
+    }
+
+    muRenderListaMarcados();
+  }
+
+  function muRenderListaMarcados() {
+    const wrap = document.getElementById('mu-marcados-wrap');
+    const lista = document.getElementById('mu-marcados-lista');
+    const resumo = document.getElementById('mu-marcados-resumo');
+    if (!wrap || !lista) return;
+
+    if (!muMarcados.length) { wrap.style.display = 'none'; lista.innerHTML = ''; return; }
+    wrap.style.display = 'block';
+
+    if (muMarcados.length === 1) {
+      resumo.textContent = '1 poste · marque outro para medir a distância';
+    } else {
+      const total = muMarcados.slice(1).reduce((s, m, i) =>
+        s + haversine(muMarcados[i].lat, muMarcados[i].lng, m.lat, m.lng), 0);
+      resumo.innerHTML = `${muMarcados.length} postes · percurso ${muFmtDist(total)} · <a href="#" onclick="muEnquadrarMarcados();return false;" style="color:#b388ff;">enquadrar todos</a>`;
+    }
+
+    lista.innerHTML = muMarcados.map((m, i) => {
+      const dPrev = i > 0
+        ? haversine(muMarcados[i-1].lat, muMarcados[i-1].lng, m.lat, m.lng)
+        : null;
+      const perto = dPrev !== null && dPrev <= 30;
+      const numEsc = String(m.num).replace(/'/g, "\\'");
+      return `<div style="display:flex;align-items:center;gap:0.6rem;font-family:'DM Mono',monospace;font-size:0.78rem;">
+        <span style="width:20px;height:20px;border-radius:50%;background:${MU_MARC_COR};color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.66rem;font-weight:700;flex-shrink:0;">${i+1}</span>
+        <span onclick="muIrParaMarcado('${numEsc}')" style="color:var(--text);cursor:pointer;text-decoration:underline dotted;">${m.num}</span>
+        ${dPrev !== null
+          ? `<span style="color:${perto ? '#00e676' : 'var(--muted)'};font-weight:${perto ? '700' : '400'};">↔ ${muFmtDist(dPrev)} do ${i}${perto ? ' · colados' : ''}</span>`
+          : `<span style="color:var(--muted);">ponto de partida</span>`}
+        <button onclick="muRemoverMarcado('${numEsc}')" title="Remover"
+          style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;line-height:1;padding:0 0.2rem;">×</button>
+      </div>`;
+    }).join('');
+  }
+
   window.muMostrarProximos = function(mode) {
     if (!muCentro || !muMap) return;
     muProxMode = mode || muProxMode || 'poste';
@@ -6717,10 +6890,17 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         <td style="padding:0.45rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.8rem;color:${r.kind==='poste'?'var(--accent)':'#ffb74d'};font-weight:700;">${r.label}</td>
         <td style="padding:0.45rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent);">${Math.round(r.dist)}m</td>
         <td style="padding:0.45rem 0.9rem;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">${r.info}</td>
+        <td style="padding:0.45rem 0.9rem;text-align:right;">${
+          r.kind === 'poste'
+            ? `<button onclick="muMarcarPoste('${String(r.label).replace(/'/g,"\\'")}',${r.lat},${r.lng})"
+                 title="Marcar/desmarcar este poste"
+                 style="background:none;border:1px solid #7c4dff;color:#b388ff;border-radius:12px;cursor:pointer;font-size:0.72rem;padding:0.15rem 0.6rem;font-family:'DM Mono',monospace;">📌</button>`
+            : ''
+        }</td>
       </tr>`).join('');
       wrap.style.display = 'block';
     } else {
-      tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem;text-align:center;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">Nenhum elemento em ${raio}m.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="padding:1rem;text-align:center;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);">Nenhum elemento em ${raio}m.</td></tr>`;
       wrap.style.display = 'block';
     }
   };

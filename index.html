@@ -2181,6 +2181,7 @@ self.addEventListener('fetch', e => {
       transition:border-color 0.2s;
     }
     .mapa-search-wrap input:focus { outline:none; border-color:var(--accent); }
+    #mapa-lat:focus, #mapa-lng:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(0,230,118,0.15); }
     .mapa-info-card {
       display:none; background:var(--surface); border:1px solid var(--border);
       border-radius:var(--radius); padding:1rem 1.25rem; margin-bottom:1.25rem;
@@ -5646,6 +5647,23 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       <div id="mapa-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
     </div>
 
+    <!-- Busca por Coordenadas (Lat/Lng) -->
+    <div style="margin-top:1rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+      <div style="font-family:'DM Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem;">📍 Ou buscar por coordenadas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.6rem;align-items:flex-end;">
+        <div>
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.35rem;">Latitude</label>
+          <input type="number" id="mapa-lat" placeholder="-23.5505" step="0.0001" style="width:100%;padding:0.6rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:0.9rem;transition:border-color 0.2s;" onkeypress="if(event.key==='Enter') window.mapaBuscarPorCoordenadas()" />
+        </div>
+        <div>
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.35rem;">Longitude</label>
+          <input type="number" id="mapa-lng" placeholder="-46.6333" step="0.0001" style="width:100%;padding:0.6rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:0.9rem;transition:border-color 0.2s;" onkeypress="if(event.key==='Enter') window.mapaBuscarPorCoordenadas()" />
+        </div>
+        <button class="btn" onclick="window.mapaBuscarPorCoordenadas()" style="white-space:nowrap;padding:0.6rem 1.2rem;font-size:0.85rem;">🔍 Buscar</button>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);margin-top:0.5rem;">Exemplo: -23.5505, -46.6333 (São Paulo, SP)</div>
+    </div>
+
     <!-- Status -->
     <div class="mapa-status" id="mapa-status" style="margin-top:0.75rem;">
       <span id="mapa-status-text">Carregando postes da planilha...</span>
@@ -5787,7 +5805,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         #mu-badge { margin-left: 0 !important; margin-top: 0.5rem; justify-content: space-between; }
       }
     </style>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;" id="mu-search-grid">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin-bottom:0.75rem;" id="mu-search-grid">
       <!-- Busca Poste -->
       <div style="position:relative;">
         <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.35rem;">⚡ Poste</div>
@@ -5821,6 +5839,22 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           <button class="btn" onclick="muBuscarCabo()" style="padding:0.4rem 0.75rem;font-size:0.78rem;white-space:nowrap;background:#2196f3;color:#fff;">🔍</button>
         </div>
         <div id="mu-cabo-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid #2196f3;border-radius:var(--radius);max-height:200px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.5);"></div>
+      </div>
+      <!-- Busca por Coordenadas -->
+      <div style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.09em;color:#9c27b0;margin-bottom:0.35rem;">📍 Latitude</div>
+          <input type="number" id="mu-lat-input" placeholder="-23.5505" step="0.0001" autocomplete="off"
+            style="width:100%;padding:0.4rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;transition:border-color 0.2s;"
+            onkeydown="if(event.key==='Enter')window.muBuscarCoordenadas()" />
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.09em;color:#9c27b0;margin-bottom:0.35rem;">📍 Longitude</div>
+          <input type="number" id="mu-lng-input" placeholder="-46.6333" step="0.0001" autocomplete="off"
+            style="width:100%;padding:0.4rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;transition:border-color 0.2s;"
+            onkeydown="if(event.key==='Enter')window.muBuscarCoordenadas()" />
+        </div>
+        <button class="btn" onclick="window.muBuscarCoordenadas()" style="padding:0.4rem 0.75rem;font-size:0.78rem;white-space:nowrap;grid-column:1/-1;background:#9c27b0;">🔍 Coord</button>
       </div>
     </div>
 
@@ -6317,6 +6351,78 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ ${p.num}</b><br>Lat: ${p.lat.toFixed(6)}<br>Lng: ${p.lng.toFixed(6)}`)
         .openPopup();
       muMap.setView([p.lat, p.lng], 17);
+      document.getElementById('mu-raio-ctrl').style.display = 'block';
+      muLimparProximos();
+      document.getElementById('mu-proximos-wrap').style.display = 'none';
+      setTimeout(() => muMap.invalidateSize(), 80);
+    });
+  };
+
+  window.muBuscarCoordenadas = function() {
+    const latVal = parseFloat(document.getElementById('mu-lat-input').value);
+    const lngVal = parseFloat(document.getElementById('mu-lng-input').value);
+
+    if (isNaN(latVal) || isNaN(lngVal)) {
+      setMuStatus('erro', 'Latitude e longitude inválidas.');
+      return;
+    }
+
+    if (latVal < -90 || latVal > 90 || lngVal < -180 || lngVal > 180) {
+      setMuStatus('erro', 'Coordenadas fora do intervalo válido.');
+      return;
+    }
+
+    if (!muPostes || muPostes.length === 0) {
+      setMuStatus('erro', 'Aguarde o carregamento dos dados.');
+      return;
+    }
+
+    // Haversine distance
+    const haversine = (lat1, lng1, lat2, lng2) => {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+      return R * 2 * Math.asin(Math.sqrt(a));
+    };
+
+    let closest = null, minDist = Infinity;
+    muPostes.forEach(p => {
+      const dist = haversine(latVal, lngVal, p.lat, p.lng);
+      if (dist < minDist) { minDist = dist; closest = p; }
+    });
+
+    if (!closest || minDist > 500) {
+      setMuStatus('erro', 'Nenhum poste encontrado a menos de 500m.');
+      return;
+    }
+
+    // Preenche card
+    document.getElementById('mu-p-num').textContent  = closest.num;
+    document.getElementById('mu-p-estr').textContent = closest.estr || '—';
+    document.getElementById('mu-p-tipo').textContent = closest.tipo || '—';
+    document.getElementById('mu-p-alt').textContent  = closest.alt  || '—';
+    document.getElementById('mu-p-coord').textContent = `${closest.lat.toFixed(6)}, ${closest.lng.toFixed(6)}`;
+    document.getElementById('mu-p-gmaps').href = `https://maps.google.com/?q=${closest.lat},${closest.lng}`;
+    document.getElementById('mu-poste-card').classList.add('visible');
+
+    setMuStatus('ok', `⚡ Poste ${closest.num} encontrado a ${Math.round(minDist)}m`);
+    muCentro = { lat: closest.lat, lng: closest.lng };
+    muProxMode = 'poste';
+
+    // Plota no mapa
+    carregarLeafletMU(() => {
+      initMuMap();
+      if (muPosteMarker) muMap.removeLayer(muPosteMarker);
+      const icon = L.divIcon({
+        html: `<div style="width:16px;height:16px;border-radius:50%;background:#00e676;border:3px solid #fff;box-shadow:0 0 14px #00e676;"></div>`,
+        className: '', iconAnchor:[8,8]
+      });
+      muPosteMarker = L.marker([closest.lat, closest.lng], {icon})
+        .addTo(muMap)
+        .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ ${closest.num}</b><br>Lat: ${closest.lat.toFixed(6)}<br>Lng: ${closest.lng.toFixed(6)}`)
+        .openPopup();
+      muMap.setView([closest.lat, closest.lng], 17);
       document.getElementById('mu-raio-ctrl').style.display = 'block';
       muLimparProximos();
       document.getElementById('mu-proximos-wrap').style.display = 'none';
@@ -9600,6 +9706,87 @@ document.querySelectorAll('.tab').forEach(btn => {
     };
 
     recognition.start();
+  };
+
+  // ── Busca poste mais próximo por coordenadas ──────────
+  window.mapaBuscarPorCoordenadas = function() {
+    const latVal = parseFloat(document.getElementById('mapa-lat').value);
+    const lngVal = parseFloat(document.getElementById('mapa-lng').value);
+    const infoEl = document.getElementById('mapa-info');
+
+    if (isNaN(latVal) || isNaN(lngVal)) {
+      setStatusMapa('erro', 'Informe latitude e longitude válidas.');
+      infoEl.classList.remove('visible');
+      return;
+    }
+
+    if (latVal < -90 || latVal > 90) {
+      setStatusMapa('erro', 'Latitude deve estar entre -90 e 90.');
+      infoEl.classList.remove('visible');
+      return;
+    }
+
+    if (lngVal < -180 || lngVal > 180) {
+      setStatusMapa('erro', 'Longitude deve estar entre -180 e 180.');
+      infoEl.classList.remove('visible');
+      return;
+    }
+
+    if (!mapaCarregado || mapaPostes.length === 0) {
+      setStatusMapa('erro', 'Aguarde a planilha terminar de carregar.');
+      return;
+    }
+
+    // Encontra o poste mais próximo
+    let closest = null;
+    let minDist = Infinity;
+
+    mapaPostes.forEach(p => {
+      const dist = _haversine(latVal, lngVal, p.lat, p.lng);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = p;
+      }
+    });
+
+    if (!closest || minDist > 500) {
+      setStatusMapa('erro', `Nenhum poste encontrado a menos de 500m de distância.`);
+      infoEl.classList.remove('visible');
+      return;
+    }
+
+    setStatusMapa('ok', `⚡ Poste ${closest.num} localizado a ${Math.round(minDist)}m!`);
+
+    // Reseta estado GPS ao buscar por coordenadas
+    _mapaGpsAtual = null;
+
+    // Preenche info card
+    document.getElementById('mi-barramento').textContent = closest.num;
+    document.getElementById('mi-lat').textContent = closest.lat.toFixed(6);
+    document.getElementById('mi-lng').textContent = closest.lng.toFixed(6);
+    document.getElementById('mi-tipo').textContent = closest.tipo || '—';
+    document.getElementById('mi-alt').textContent = closest.alt || '—';
+    document.getElementById('mi-estr').textContent = closest.estr || '—';
+    document.getElementById('mi-maps-link').href = `https://maps.google.com/?q=${closest.lat},${closest.lng}`;
+
+    // Armazena o poste atual
+    window._mapaPosteAtual = closest;
+
+    infoEl.classList.add('visible');
+
+    // Plota pin no mapa
+    if (mapaMarker) mapaMap.removeLayer(mapaMarker);
+    mapaMarker = L.marker([closest.lat, closest.lng]).addTo(mapaMap)
+      .bindPopup(`<b style="font-family:'DM Mono',monospace;color:#00e676;">⚡ Poste ${closest.num}</b><br>Lat: ${closest.lat.toFixed(6)}<br>Lng: ${closest.lng.toFixed(6)}`)
+      .openPopup();
+    mapaMap.setView([closest.lat, closest.lng], 17);
+
+    // Mostra controle de raio
+    document.getElementById('mapa-proximos-ctrl').style.display = 'block';
+    // Limpa proximos anteriores
+    document.getElementById('mapa-proximos-wrap').style.display = 'none';
+    // Limpa marcadores de proximos
+    _limparProximos();
   };
 
   // Enter no input

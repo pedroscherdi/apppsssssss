@@ -1655,6 +1655,10 @@ self.addEventListener('fetch', e => {
     textarea {
       background: rgba(255, 214, 0, 0.10) !important;
       border-color: rgba(255, 214, 0, 0.50) !important;
+      /* sem isto o texto digitado cai no preto padrao do navegador
+         e some no fundo escuro */
+      color: var(--text) !important;
+      caret-color: var(--accent);
     }
 
     input[type="text"]:focus,
@@ -1669,11 +1673,26 @@ self.addEventListener('fetch', e => {
       outline: none !important;
     }
 
+    /* No tema escuro o placeholder precisa ser um amarelo claro:
+       o tom oliva antigo sumia contra o fundo. */
     input[type="text"]::placeholder,
     input[type="number"]::placeholder,
     input[type="date"]::placeholder,
+    input[type="email"]::placeholder,
+    input[type="password"]::placeholder,
+    input[type="search"]::placeholder,
     textarea::placeholder {
-      color: rgba(170, 138, 0, 0.65);
+      color: rgba(255, 224, 130, 0.55);
+    }
+
+    body.light input[type="text"]::placeholder,
+    body.light input[type="number"]::placeholder,
+    body.light input[type="date"]::placeholder,
+    body.light input[type="email"]::placeholder,
+    body.light input[type="password"]::placeholder,
+    body.light input[type="search"]::placeholder,
+    body.light textarea::placeholder {
+      color: rgba(140, 108, 0, 0.70);
     }
 
     /* Tema claro — amarelo um pouco mais escuro pra contrastar */
@@ -1685,6 +1704,7 @@ self.addEventListener('fetch', e => {
     body.light textarea {
       background: rgba(255, 214, 0, 0.16) !important;
       border-color: rgba(160, 118, 0, 0.55) !important;
+      color: var(--text) !important;
     }
 
     body.light input[type="text"]:focus,

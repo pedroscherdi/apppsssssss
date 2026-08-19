@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+no android<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <!-- Google Analytics GA4 -->
@@ -12220,19 +12220,32 @@ Como posso ajudar?</div>
   function aoApertar(ev) {
     if (ferramenta === "mover") return;
     ev.preventDefault();
-    cv.setPointerCapture(ev.pointerId);
     var ll = paraMapa(ev);
+
+    // O texto nao arrasta nada, entao nao captura o ponteiro. Capturar aqui
+    // era o que quebrava no Android: o prompt trava a thread, o pointerup nao
+    // chega, a captura fica presa no canvas e, dali em diante, TODO toque -
+    // inclusive nos botoes da barra - e redirecionado para ca. Ficava
+    // impossivel trocar para "Mover".
+    if (ferramenta === "texto") {
+      // fora do handler: dialogo modal aberto de dentro de um evento de toque
+      // atrapalha o fim do gesto (e alguns navegadores ate o suprimem)
+      setTimeout(function () {
+        var txt = window.prompt("O que foi feito neste ponto?");
+        if (txt && txt.trim()) {
+          anots.push({ tipo: "texto", cor: cor, em: ll, txt: txt.trim().slice(0, 60) });
+          redesenhar();
+        }
+      }, 0);
+      return;
+    }
+
+    cv.setPointerCapture(ev.pointerId);
 
     if (ferramenta === "caneta") {
       rascunho = { tipo: "traco", cor: cor, pts: [ll] };
     } else if (ferramenta === "seta") {
       rascunho = { tipo: "seta", cor: cor, de: ll, para: ll };
-    } else if (ferramenta === "texto") {
-      var txt = window.prompt("O que foi feito neste ponto?");
-      if (txt && txt.trim()) {
-        anots.push({ tipo: "texto", cor: cor, em: ll, txt: txt.trim().slice(0, 60) });
-        redesenhar();
-      }
     }
   }
 
@@ -12245,7 +12258,15 @@ Como posso ajudar?</div>
     redesenhar();
   }
 
-  function aoSoltar() {
+  function aoSoltar(ev) {
+    // solta a captura SEMPRE, mesmo sem rascunho: captura presa e o que deixava
+    // a barra de ferramentas inalcancavel
+    try {
+      if (ev && ev.pointerId != null && cv.hasPointerCapture(ev.pointerId)) {
+        cv.releasePointerCapture(ev.pointerId);
+      }
+    } catch (e) { }
+
     if (!rascunho) return;
     // clique seco com a caneta não vira traço de 1 ponto
     if (rascunho.tipo !== "traco" || rascunho.pts.length > 1) anots.push(rascunho);

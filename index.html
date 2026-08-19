@@ -12432,6 +12432,20 @@ Como posso ajudar?</div>
   .mnb-tabela tr.demora td.tempo { color:#ffc107; font-weight:600; }
   .mnb-rodape { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-top:0.8rem; font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; }
   .mnb-aviso { border-color:rgba(255,107,107,0.35); color:var(--danger); }
+
+  /* No celular a tabela cheia pedia 820px numa tela de ~390: virava o dobro da
+     tela em rolagem lateral. Aqui ela passa a caber, escondendo as duas colunas
+     que menos servem no bolso - a subestacao (ja aparece no alimentador) e o
+     numero da ocorrencia. */
+  @media (max-width: 700px) {
+    #tab-manobradas h1 { font-size: 1.5rem; }
+    .mnb-num { font-size: 2rem; }
+    .mnb-tabela table { min-width: 0; }
+    .mnb-tabela th, .mnb-tabela td { padding: 0.55rem 0.5rem; }
+    .mnb-tabela th:nth-child(4), .mnb-tabela td:nth-child(4),
+    .mnb-tabela th:nth-child(7), .mnb-tabela td:nth-child(7) { display: none; }
+    .mnb-tabela td.local { min-width: 0; }
+  }
 </style>
 
 <script>
@@ -12638,27 +12652,4 @@ Como posso ajudar?</div>
 
   // trocar o dia pode significar trocar de aba na planilha (foto x historico)
   $('mnbDia').addEventListener('change', function () {
-    if (mnbAbaDoFiltro() !== mnbAbaLida) { mnbCarregar(); } else if (mnbLinhas.length) { mnbDesenhar(); }
-  });
-
-  function mnbAtiva() {
-    const p = $('tab-manobradas');
-    return p && p.classList.contains('active');
-  }
-
-  // So carrega quando a aba e aberta - nao gasta chamada de API de quem nunca entra.
-  const btn = document.querySelector('[data-tab="manobradas"]');
-  if (btn) {
-    btn.addEventListener('click', function () {
-      if (!mnbLinhas.length) { mnbCarregar(); }
-      if (!mnbRelogio) {
-        mnbRelogio = setInterval(function () {
-          if (mnbAtiva()) { mnbCarregar(); } else if (mnbLinhas.length) { mnbDesenhar(); }
-        }, MNB_INTERVALO);
-      }
-    });
-  }
-})();
-</script>
-</body>
-</html>
+    if (mnbAbaDoFiltro() !== mnbAbaLida) { mnbCarregar

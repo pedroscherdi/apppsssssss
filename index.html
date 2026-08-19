@@ -2516,6 +2516,7 @@ self.addEventListener('fetch', e => {
     <symbol id="i-hierarquia" viewBox="0 0 24 24"><path d="M9.5 3h5v4h-5zM3 17h5v4H3zM16 17h5v4h-5z"/><path d="M12 7v5M5.5 17v-3h13v3"/></symbol>
     <symbol id="i-torre" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M7 21 12 3l5 18"/><path d="M8.6 9h6.8M7.5 14h9"/><path d="M4 5.5h4M16 5.5h4"/></symbol>
     <symbol id="i-rebaixador" viewBox="0 0 24 24"><path d="M12 3v11.5"/><path d="m8 11 4 4 4-4"/><path d="M5 20h14"/></symbol>
+    <symbol id="i-chave" viewBox="0 0 24 24"><path d="M2.5 17h3.2M18.3 17h3.2"/><circle cx="7.2" cy="17" r="1.5"/><circle cx="16.8" cy="17" r="1.5"/><path d="m8.5 15.9 7.1-6.2"/></symbol>
     <symbol id="i-dinheiro" viewBox="0 0 24 24"><path d="M2.5 6.5h19v11h-19z"/><circle cx="12" cy="12" r="2.8"/><path d="M6 10.5v3M18 10.5v3"/></symbol>
     <symbol id="i-livro" viewBox="0 0 24 24"><path d="M4 4.8A1.8 1.8 0 0 1 5.8 3H19.5v18H5.8A1.8 1.8 0 0 1 4 19.2z"/><path d="M4 16.6h15.5"/><path d="M8 7.5h7"/></symbol>
     <symbol id="i-noticias" viewBox="0 0 24 24"><path d="M3 5.5h14v15H3z"/><path d="M17 9.5h4v9a2 2 0 0 1-4 0"/><path d="M6 9.5h8M6 13h8M6 16.5h5"/></symbol>
@@ -2568,6 +2569,7 @@ self.addEventListener('fetch', e => {
 
     <button class="tab" data-tab="alimentadores"><svg class="tab-icon" aria-hidden="true"><use href="#i-torre"/></svg> Alimentadores</button>
     <button class="tab" data-tab="rebaixadores"><svg class="tab-icon" aria-hidden="true"><use href="#i-rebaixador"/></svg> Rebaixadores</button>
+    <button class="tab" data-tab="manobradas"><svg class="tab-icon" aria-hidden="true"><use href="#i-chave"/></svg> Equip. Manobrados</button>
 
     <!-- Divisor -->
     <div style="height:1px;background:var(--border);margin:0.5rem 0.3rem;"></div>
@@ -3130,6 +3132,67 @@ self.addEventListener('fetch', e => {
 </div>
 
 <!-- TAB: ONDE É USADO -->
+<div class="tab-panel" id="tab-manobradas">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <div style="margin-bottom:1.5rem;">
+      <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
+        Equipamentos <span style="color:var(--accent)">Manobrados</span>
+      </h1>
+      <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
+        Chaves manobradas · leitura do OPER · Google Sheets
+      </p>
+    </div>
+
+    <div class="info-card" id="mnbInfo">
+      <strong>De onde vem:</strong> o monitor que roda na máquina do plantão lê a
+      <em>Lista de Chaves Manobradas</em> do OPER a cada 3 minutos e reescreve a aba
+      <code>Atual</code> da planilha com a lista completa daquele momento — é por isso
+      que chave fechada some daqui. O histórico dos dias anteriores vem da aba
+      <code>Chaves</code>. Esta tela só lê: não conversa com o OPER e não altera nada.
+    </div>
+
+    <div class="mnb-topo">
+      <div>
+        <div class="mnb-num" id="mnbNum">—</div>
+        <div class="mnb-legenda" id="mnbLegenda">chaves manobradas</div>
+      </div>
+      <span class="mnb-selo" id="mnbSelo" style="display:none;"></span>
+      <div class="mnb-espaco"></div>
+      <button class="btn-ghost" id="mnbBtnAtualizar" style="font-size:0.78rem;padding:0.45rem 1rem;">↻ Atualizar</button>
+    </div>
+
+    <div class="mnb-filtros">
+      <input type="search" id="mnbBusca" placeholder="filtrar por chave, alimentador, localidade…" autocomplete="off"/>
+      <select id="mnbDia">
+        <option value="hoje">Hoje</option>
+        <option value="ontem">Ontem</option>
+        <option value="7">Últimos 7 dias</option>
+        <option value="tudo">Tudo</option>
+      </select>
+      <label><input type="checkbox" id="mnbSoDemora"/> só as abertas há mais de 6 h</label>
+    </div>
+
+    <div class="mnb-tabela">
+      <table>
+        <thead>
+          <tr>
+            <th>Hora</th><th>Chave</th><th>Pos.</th><th>SE</th>
+            <th>Alim.</th><th>Localidade</th><th>Ocorrência</th><th>Aberta há</th>
+          </tr>
+        </thead>
+        <tbody id="mnbCorpo"></tbody>
+      </table>
+    </div>
+
+    <div class="mnb-rodape">
+      <span id="mnbStatus">toque em Atualizar para carregar</span>
+      <span id="mnbFonte"></span>
+    </div>
+
+  </div>
+</div>
+
 <div class="tab-panel" id="tab-whereused">
   <div class="info-card">
     <strong>Onde é usado:</strong> pesquise pelo <strong>Código do Item</strong> para descobrir em quais estruturas ele aparece e com qual quantidade.
@@ -3975,6 +4038,7 @@ self.addEventListener('fetch', e => {
 
   // Mapa de labels das abas para o topbar mobile
   const TAB_LABELS = {
+    'manobradas':  'Equip. Manobrados',
     'consultar':   'Consultar',
     'buscar':      'Buscar Item',
     'whereused':   'Onde é Usado',
@@ -12305,6 +12369,274 @@ Como posso ajudar?</div>
 
   // se o mapa já existir quando este script rodar, liga na hora
   if (window.muMapa) window.muAnotLigar();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: EQUIPAMENTOS MANOBRADOS  (monitor do OPER)        -->
+<!-- ══════════════════════════════════════════════════════ -->
+<style>
+  .mnb-topo {
+    display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:1.1rem 1.35rem; margin-bottom:1rem;
+  }
+  .mnb-num {
+    font-family:'Syne',sans-serif; font-size:2.6rem; font-weight:800;
+    line-height:1; letter-spacing:-0.03em; color:var(--text);
+  }
+  .mnb-legenda { font-size:0.8rem; color:var(--muted); }
+  .mnb-espaco { flex:1; }
+  .mnb-selo {
+    background:rgba(0,230,118,0.12); color:var(--accent);
+    border:1px solid rgba(0,230,118,0.35); border-radius:999px;
+    padding:0.25rem 0.8rem; font-size:0.76rem; font-weight:600;
+  }
+  .mnb-filtros { display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap; margin-bottom:0.9rem; }
+  .mnb-filtros input[type="search"], .mnb-filtros select {
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:0.5rem 0.75rem; font-family:var(--font-body); font-size:0.85rem;
+  }
+  .mnb-filtros input[type="search"] { flex:1 1 240px; min-width:170px; }
+  .mnb-filtros label { display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--muted); cursor:pointer; }
+  .mnb-tabela {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); overflow-x:auto;
+  }
+  .mnb-tabela table { min-width:820px; }
+  .mnb-tabela td.local { font-family:var(--font-body); font-size:0.82rem; white-space:normal; min-width:180px; }
+  .mnb-tabela td.ocor  { color:var(--muted); font-size:0.75rem; }
+  .mnb-tabela td.tempo { text-align:right; color:var(--muted); }
+  .mnb-tabela tr.recente td:first-child { box-shadow:inset 3px 0 0 var(--accent); }
+  .mnb-tabela tr.demora td.tempo { color:#ffc107; font-weight:600; }
+  .mnb-rodape { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-top:0.8rem; font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; }
+  .mnb-aviso { border-color:rgba(255,107,107,0.35); color:var(--danger); }
+</style>
+
+<script>
+(function () {
+  // A aba "Chaves" e as colunas abaixo sao as que o apps-script-planilha.gs grava.
+  // Se o monitor estiver mandando para OUTRA planilha, troque o id aqui.
+  // Duas abas na planilha, com as MESMAS colunas:
+  //   Atual  - a foto da lista de agora, reescrita pelo monitor a cada volta.
+  //            E so aqui que chave fechada some; por isso ela manda no "hoje".
+  //   Chaves - o historico, que so cresce. Serve para olhar dias anteriores.
+  const MNB_ABA_HOJE   = 'Atual';
+  const MNB_ABA_HIST   = 'Chaves';
+  // Planilha so das chaves manobradas - separada da planilha de materiais do
+  // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
+  // com o link pode ver", senao a chave de API nao consegue ler.
+  const MNB_PLANILHA   = '1zz4eboeklJzBHPhjkaHNhOGBwUc5WTLNiY04FVA3DpI';
+  const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
+  const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
+  const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
+
+  let mnbLinhas = [], mnbCarregando = false, mnbRelogio = null, mnbUltima = null;
+  let mnbAbaLida = null;
+
+  function mnbAbaDoFiltro() {
+    return document.getElementById('mnbDia').value === 'hoje' ? MNB_ABA_HOJE : MNB_ABA_HIST;
+  }
+
+  const $ = function (id) { return document.getElementById(id); };
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Aceita "dd/MM/yyyy HH:mm", com ou sem segundos, e tambem o que o Sheets
+  // devolver ja formatado de outro jeito.
+  function mnbData(txt) {
+    if (!txt) { return null; }
+    const m = String(txt).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (m) {
+      return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+    }
+    const d = new Date(txt);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function mnbHoras(d) { return (Date.now() - d.getTime()) / 3600000; }
+
+  function mnbTempo(d) {
+    const min = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+    if (min < 60) { return min + ' min'; }
+    return Math.floor(min / 60) + 'h ' + String(min % 60).padStart(2, '0') + 'm';
+  }
+
+  function mnbMesmoDia(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  async function mnbCarregar() {
+    if (mnbCarregando) { return; }
+    const chave = (typeof API_KEY !== 'undefined') ? API_KEY : '';
+    if (!MNB_PLANILHA || !chave) { mnbErro('planilha ou chave de API não configurada nesta página'); return; }
+    mnbCarregando = true;
+    $('mnbStatus').textContent = 'lendo a planilha…';
+
+    const aba = mnbAbaDoFiltro();
+    try {
+      const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + MNB_PLANILHA +
+                  '/values/' + encodeURIComponent(aba + '!A:L') + '?key=' + chave;
+      const r = await fetch(url);
+      if (!r.ok) {
+        if (r.status === 400) {
+          mnbErro('a aba "' + aba + '" ainda não existe na planilha — ligue o envio no ' +
+                  'planilha.json do monitor (ativo: true) para ela começar a ser preenchida');
+        } else {
+          mnbErro('a planilha respondeu ' + r.status);
+        }
+        return;
+      }
+      const js = await r.json();
+      mnbLinhas = mnbMontar(js.values || []);
+      mnbAbaLida = aba;
+      mnbUltima = new Date();
+      mnbDesenhar();
+    } catch (e) {
+      mnbErro('sem resposta da planilha: ' + e.message);
+    } finally {
+      mnbCarregando = false;
+    }
+  }
+
+  function mnbErro(msg) {
+    $('mnbInfo').classList.add('mnb-aviso');
+    $('mnbInfo').innerHTML = '<strong>Não deu para carregar:</strong> ' + esc(msg) + '.';
+    $('mnbStatus').textContent = 'falhou';
+    $('mnbNum').textContent = '—';
+  }
+
+  // O que chega da planilha e um diario de eventos (INICIAL / NOVA /
+  // TEMPO_EXCEDIDO), com a mesma chave aparecendo mais de uma vez. Aqui isso
+  // vira uma linha por chave, igual ao painel do plantao.
+  function mnbMontar(valores) {
+    if (valores.length < 2) { return []; }
+    const cab = valores[0].map(function (c) { return String(c).trim(); });
+    const col = {};
+    cab.forEach(function (nome, i) { col[nome] = i; });
+
+    const porChave = {};
+    for (let i = 1; i < valores.length; i++) {
+      const v = valores[i];
+      const pega = function (nome) { return col[nome] === undefined ? '' : (v[col[nome]] || ''); };
+
+      const barramento = String(pega('Barramento')).trim();
+      if (!barramento) { continue; }
+
+      const dt = mnbData(pega('DataHora'));
+      if (!dt) { continue; }
+
+      const id = barramento + '|' + pega('Ocorrencia') + '|' + pega('DataHora');
+      const detectado = mnbData(pega('Detectado'));
+
+      if (!porChave[id]) {
+        porChave[id] = {
+          dt: dt, detectado: detectado, barramento: barramento,
+          posicao: String(pega('Posicao')).trim(), subestacao: String(pega('Subestacao')).trim(),
+          alimentador: String(pega('Alimentador')).trim(), localidade: String(pega('Localidade')).trim(),
+          ocorrencia: String(pega('Ocorrencia')).trim(), demorou: false
+        };
+      }
+      if (String(pega('Evento')).trim() === 'TEMPO_EXCEDIDO') { porChave[id].demorou = true; }
+      // fica com a deteccao mais antiga: e quando a chave apareceu de fato
+      if (detectado && (!porChave[id].detectado || detectado < porChave[id].detectado)) {
+        porChave[id].detectado = detectado;
+      }
+    }
+
+    return Object.keys(porChave).map(function (k) { return porChave[k]; })
+                 .sort(function (a, b) { return b.dt - a.dt; });
+  }
+
+  function mnbDesenhar() {
+    const termo   = $('mnbBusca').value.trim().toLowerCase();
+    const dia     = $('mnbDia').value;
+    const soDem   = $('mnbSoDemora').checked;
+    const agora   = new Date();
+
+    const lista = mnbLinhas.filter(function (c) {
+      if (dia === 'hoje'  && !mnbMesmoDia(c.dt, agora)) { return false; }
+      if (dia === 'ontem') {
+        const ontem = new Date(agora.getTime() - 86400000);
+        if (!mnbMesmoDia(c.dt, ontem)) { return false; }
+      }
+      if (dia === '7' && mnbHoras(c.dt) > 168) { return false; }
+      if (soDem && mnbHoras(c.dt) < MNB_ALERTA_H) { return false; }
+      if (!termo) { return true; }
+      return [c.barramento, c.posicao, c.subestacao, c.alimentador, c.localidade, c.ocorrencia]
+             .join(' ').toLowerCase().indexOf(termo) >= 0;
+    });
+
+    const recentes = lista.filter(function (c) {
+      return c.detectado && (Date.now() - c.detectado.getTime()) / 60000 <= MNB_RECENTE_M;
+    }).length;
+
+    $('mnbNum').textContent = lista.length;
+    $('mnbLegenda').textContent = 'chave' + (lista.length === 1 ? '' : 's') + ' manobrada' +
+      (lista.length === 1 ? '' : 's') + ' · ' +
+      (dia === 'hoje' ? 'hoje' : dia === 'ontem' ? 'ontem' : dia === '7' ? 'últimos 7 dias' : 'tudo');
+
+    const selo = $('mnbSelo');
+    if (recentes > 0) {
+      selo.textContent = '+' + recentes + (recentes === 1 ? ' nova' : ' novas') + ' nos últimos ' + MNB_RECENTE_M + ' min';
+      selo.style.display = '';
+    } else {
+      selo.style.display = 'none';
+    }
+
+    $('mnbCorpo').innerHTML = lista.length === 0
+      ? '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem;">nenhuma chave para este filtro</td></tr>'
+      : lista.map(function (c) {
+          const nova   = c.detectado && (Date.now() - c.detectado.getTime()) / 60000 <= MNB_RECENTE_M;
+          const demora = c.demorou || mnbHoras(c.dt) >= MNB_ALERTA_H;
+          const hora   = String(c.dt.getHours()).padStart(2, '0') + ':' + String(c.dt.getMinutes()).padStart(2, '0');
+          return '<tr class="' + (nova ? 'recente ' : '') + (demora ? 'demora' : '') + '">' +
+                 '<td>' + hora + '</td>' +
+                 '<td>' + esc(c.barramento) + '</td>' +
+                 '<td>' + esc(c.posicao) + '</td>' +
+                 '<td>' + esc(c.subestacao) + '</td>' +
+                 '<td>' + esc(c.alimentador) + '</td>' +
+                 '<td class="local">' + esc(c.localidade) + '</td>' +
+                 '<td class="ocor">' + esc(c.ocorrencia) + '</td>' +
+                 '<td class="tempo">' + mnbTempo(c.dt) + '</td>' +
+                 '</tr>';
+        }).join('');
+
+    $('mnbStatus').textContent = mnbLinhas.length + ' registro(s) na planilha';
+    $('mnbFonte').textContent  = mnbUltima ? 'lido às ' + mnbUltima.toLocaleTimeString('pt-BR') : '';
+  }
+
+  // ---- ligacoes ----
+  $('mnbBtnAtualizar').addEventListener('click', function () { mnbCarregar(); });
+  ['mnbBusca', 'mnbSoDemora'].forEach(function (id) {
+    $(id).addEventListener('input', function () { if (mnbLinhas.length) { mnbDesenhar(); } });
+    $(id).addEventListener('change', function () { if (mnbLinhas.length) { mnbDesenhar(); } });
+  });
+
+  // trocar o dia pode significar trocar de aba na planilha (foto x historico)
+  $('mnbDia').addEventListener('change', function () {
+    if (mnbAbaDoFiltro() !== mnbAbaLida) { mnbCarregar(); } else if (mnbLinhas.length) { mnbDesenhar(); }
+  });
+
+  function mnbAtiva() {
+    const p = $('tab-manobradas');
+    return p && p.classList.contains('active');
+  }
+
+  // So carrega quando a aba e aberta - nao gasta chamada de API de quem nunca entra.
+  const btn = document.querySelector('[data-tab="manobradas"]');
+  if (btn) {
+    btn.addEventListener('click', function () {
+      if (!mnbLinhas.length) { mnbCarregar(); }
+      if (!mnbRelogio) {
+        mnbRelogio = setInterval(function () {
+          if (mnbAtiva()) { mnbCarregar(); } else if (mnbLinhas.length) { mnbDesenhar(); }
+        }, MNB_INTERVALO);
+      }
+    });
+  }
 })();
 </script>
 </body>

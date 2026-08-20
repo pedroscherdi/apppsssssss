@@ -12775,5 +12775,77 @@ Como posso ajudar?</div>
 })();
 </script>
 
+
+<!-- ===== Expandir (tela cheia) no mapa unificado - aditivo ===== -->
+<script id="mu-expandir">
+(function () {
+  if (document.getElementById('mu-expandir-estilo')) return;
+  var st = document.createElement('style');
+  st.id = 'mu-expandir-estilo';
+  st.textContent =
+    '.mu-expandido{position:fixed!important;inset:0!important;z-index:100000!important;'
+    + 'width:100vw!important;height:100vh!important;height:100dvh!important;margin:0!important;'
+    + 'border-radius:0!important;background:var(--bg,#060f0a);}'
+    + '.mu-expandido #mu-leaflet{height:100%!important;border-radius:0!important;border:0!important;}'
+    + '.mu-expandido #mu-anot{height:100%!important;}'
+    + '.mu-expandir-btn{display:flex!important;align-items:center;justify-content:center;'
+    + 'width:32px!important;height:32px!important;font-size:17px!important;line-height:1!important;'
+    + 'background:var(--surface,#0d1f14)!important;color:var(--accent,#00e676)!important;'
+    + 'border:1px solid var(--border,#1a3325)!important;text-decoration:none!important;}'
+    + '.mu-expandir-btn:hover{background:var(--bg,#060f0a)!important;}';
+  document.head.appendChild(st);
+
+  var pronto = false;
+  function montar(map) {
+    if (pronto) return;
+    var wrap = document.getElementById('mu-mapa-wrap');
+    if (!map || !wrap || !window.L) return;
+    pronto = true;
+    var expandido = false, botao = null;
+
+    function toggle() {
+      expandido = !expandido;
+      wrap.classList.toggle('mu-expandido', expandido);
+      document.body.style.overflow = expandido ? 'hidden' : '';
+      if (botao) {
+        botao.innerHTML = expandido ? '\u2715' : '\u26F6';   // X : quadrado 4 cantos
+        botao.title = expandido ? 'Reduzir mapa' : 'Expandir mapa';
+      }
+      setTimeout(function () {
+        try { map.invalidateSize(); } catch (e) {}
+        window.dispatchEvent(new Event('resize'));   // avisa a camada de anotacao
+      }, 80);
+    }
+
+    var Ctrl = L.Control.extend({
+      options: { position: 'topleft' },
+      onAdd: function () {
+        var a = L.DomUtil.create('a', 'leaflet-bar leaflet-control mu-expandir-btn');
+        a.href = '#';
+        a.title = 'Expandir mapa';
+        a.setAttribute('role', 'button');
+        a.setAttribute('aria-label', 'Expandir mapa');
+        a.innerHTML = '\u26F6';
+        L.DomEvent.disableClickPropagation(a);
+        L.DomEvent.on(a, 'click', function (e) { L.DomEvent.stop(e); toggle(); });
+        botao = a;
+        return a;
+      }
+    });
+    map.addControl(new Ctrl());
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && expandido) toggle();
+    });
+  }
+
+  var n = 0, t = setInterval(function () {
+    n++;
+    if (window.muMapa) { montar(window.muMapa); clearInterval(t); }
+    else if (n > 240) clearInterval(t);
+  }, 500);
+})();
+</script>
+
 </body>
 </html>

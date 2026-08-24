@@ -12932,5 +12932,205 @@ Como posso ajudar?</div>
 })();
 </script>
 
+
+
+
+<script id="info-postes-planilha">
+/* ===========================================================================
+   INFO DOS POSTES — planilha "info postes"
+   Ao selecionar um poste, busca o número na planilha e completa o card com
+   altura, esforço, material, tensão e as estruturas.
+
+   Atende os dois cards de poste do site (o do Mapa Unificado e o do painel
+   #tab-mapa, que hoje está sem botão de aba). Não toca no HTML: os campos
+   novos são criados via DOM e o gancho é um MutationObserver no número do
+   poste — assim funciona em qualquer caminho de seleção (busca, clique no
+   pin, GPS) sem alterar nenhuma das funções existentes.
+   =========================================================================== */
+(function () {
+  'use strict';
+
+  var SHEET_ID = '1xSPrp45dAX051K2H9A_G9rft8beQE-UZ7TAvpMr77qQ';
+  var ABA      = 'Página1';
+  var CHAVE    = (typeof API_KEY !== 'undefined' && API_KEY)
+                 ? API_KEY : 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
+
+  // colunas: A=número, B=Altura, C=Esforço, D=Material, E=Tensão, F=Estruturas
+  var COL = { num: 0, altura: 1, esforco: 2, material: 3, tensao: 4, estrut: 5 };
+
+  // os dois cards de poste do site
+  var CARDS = [
+    { num: 'mu-p-num',      estr: 'mu-p-estr', alt: 'mu-p-alt',
+      tipo: 'mu-p-tipo',    pre: 'mu-p' },        // Mapa Unificado
+    { num: 'mi-barramento', estr: 'mi-estr',   alt: 'mi-alt',
+      tipo: 'mi-tipo',      pre: 'mi' }           // painel #tab-mapa (legado)
+  ];
+
+  var indice = null;      // { chave -> linha }
+  var carregando = null;  // promise em voo, para não buscar duas vezes
+
+  /* ---- chave de comparação: "0819052", "819052" e 819052 batem ---- */
+  function chave(v) {
+    var t = String(v == null ? '' : v).trim().toUpperCase();
+    if (!t) return '';
+    return /^\d+$/.test(t) ? String(parseInt(t, 10)) : t;
+  }
+
+  function carregar() {
+    if (indice) return Promise.resolve(indice);
+    if (carregando) return carregando;
+
+    var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID +
+              '/values/' + encodeURIComponent(ABA) + '!A:F?key=' + CHAVE;
+
+    carregando = fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.error) throw new Error(d.error.message);
+        var linhas = d.values || [];
+        var mapa = {};
+        // pula o cabeçalho: a 1ª linha só tem rótulo se a coluna A estiver vazia
+        var comeco = (linhas.length && !chave(linhas[0][COL.num])) ? 1 : 0;
+        for (var i = comeco; i < linhas.length; i++) {
+          var k = chave(linhas[i][COL.num]);
+          if (k) mapa[k] = linhas[i];
+        }
+        indice = mapa;
+        console.log('[info-postes] ' + Object.keys(mapa).length +
+                    ' postes carregados da planilha');
+        return indice;
+      })
+      .catch(function (e) {
+        console.warn('[info-postes] falhou:', e.message);
+        carregando = null;   // deixa tentar de novo na próxima seleção
+        throw e;
+      });
+
+    return carregando;
+  }
+
+  /* ---- campos extras, no mesmo padrão dos que já existem no card ---- */
+  function montarCampos(cfg) {
+    var refVal = document.getElementById(cfg.estr);
+    if (!refVal) return false;
+    if (document.getElementById(cfg.pre + '-esforco')) return true;  // já montado
+
+    var grade = refVal.parentElement.parentElement;
+
+    // a linha dos botões é a única célula da grade sem .mi-label
+    var ancora = null;
+    for (var i = 0; i < grade.children.length; i++) {
+      if (!grade.children[i].querySelector('.mi-label')) {
+        ancora = grade.children[i];
+        break;
+      }
+    }
+
+    [[cfg.pre + '-esforco',  'Esforço Físico'],
+     [cfg.pre + '-material', 'Material'],
+     [cfg.pre + '-tensao',   'Tensão']].forEach(function (par) {
+      var wrap = document.createElement('div');
+      var lab  = document.createElement('div');
+      lab.className = 'mi-label';
+      lab.textContent = par[1];
+      var val  = document.createElement('div');
+      val.className = 'mi-val';
+      val.id = par[0];
+      val.textContent = '—';
+      wrap.appendChild(lab);
+      wrap.appendChild(val);
+      if (ancora) grade.insertBefore(wrap, ancora);
+      else grade.appendChild(wrap);
+    });
+
+    // "Tipo": a planilha não tem esse dado, então ficava com travessão fixo.
+    // Escondido por aqui em vez de apagar do HTML — mexer na marcação desse
+    // arquivo desloca o site inteiro.
+    var tipo = document.getElementById(cfg.tipo);
+    if (tipo && tipo.parentElement) tipo.parentElement.style.display = 'none';
+
+    return true;
+  }
+
+  function escrever(id, valor) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = (valor == null || valor === '') ? '—' : String(valor);
+  }
+
+  function limpar(cfg, texto) {
+    escrever(cfg.alt, texto);
+    escrever(cfg.estr, texto);
+    escrever(cfg.pre + '-esforco', texto);
+    escrever(cfg.pre + '-material', texto);
+    escrever(cfg.pre + '-tensao', texto);
+  }
+
+  function preencher(cfg) {
+    var el = document.getElementById(cfg.num);
+    if (!el) return;
+    var num = (el.textContent || '').trim();
+    if (!num || num === '—') { cfg._ultimo = null; return; }
+    if (num === cfg._ultimo) return;    // o observer dispara mais de uma vez
+    cfg._ultimo = num;
+
+    montarCampos(cfg);
+    limpar(cfg, '...');
+
+    carregar().then(function (mapa) {
+      var atual = document.getElementById(cfg.num);
+      if (!atual || (atual.textContent || '').trim() !== num) return;  // já trocou
+
+      var linha = mapa[chave(num)];
+      if (!linha) { limpar(cfg, 'não consta'); return; }
+
+      escrever(cfg.alt,  linha[COL.altura]);
+      escrever(cfg.estr, linha[COL.estrut]);
+      escrever(cfg.pre + '-esforco',  linha[COL.esforco]);
+      escrever(cfg.pre + '-material', linha[COL.material]);
+      var t = linha[COL.tensao];
+      escrever(cfg.pre + '-tensao', (t && /^\d+$/.test(String(t).trim()))
+                                    ? Number(t).toLocaleString('pt-BR') + ' V' : t);
+    }).catch(function () {
+      limpar(cfg, 'erro ao ler planilha');
+    });
+  }
+
+  /* ---- gancho: observa o número do poste em cada card ---- */
+  function ligar(cfg) {
+    if (cfg._ligado) return true;
+    var alvo = document.getElementById(cfg.num);
+    if (!alvo) return false;
+    cfg._ligado = true;
+    montarCampos(cfg);
+    new MutationObserver(function () { preencher(cfg); })
+      .observe(alvo, { childList: true, characterData: true, subtree: true });
+    preencher(cfg);                  // caso já tenha um poste selecionado
+    console.log('[info-postes] ligado ao card #' + cfg.num);
+    return true;
+  }
+
+  function tentarTodos() {
+    var faltando = 0;
+    CARDS.forEach(function (cfg) { if (!ligar(cfg)) faltando++; });
+    return faltando === 0;
+  }
+
+  function iniciar() {
+    carregar().catch(function () {});   // adianta o download
+    if (tentarTodos()) return;
+    // um card pode só existir depois que a aba abre; tenta por até ~60s
+    var n = 0;
+    var t = setInterval(function () {
+      if (tentarTodos() || ++n > 600) clearInterval(t);
+    }, 100);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar);
+  } else {
+    iniciar();
+  }
+})();
+</script>
 </body>
 </html>

@@ -12252,15 +12252,23 @@ Como posso ajudar?</div>
     // inclusive nos botoes da barra - e redirecionado para ca. Ficava
     // impossivel trocar para "Mover".
     if (ferramenta === "texto") {
-      // fora do handler: dialogo modal aberto de dentro de um evento de toque
-      // atrapalha o fim do gesto (e alguns navegadores ate o suprimem)
-      setTimeout(function () {
-        var txt = window.prompt("O que foi feito neste ponto?");
-        if (txt && txt.trim()) {
-          anots.push({ tipo: "texto", cor: cor, em: ll, txt: txt.trim().slice(0, 60) });
-          redesenhar();
+      // Nada de window.prompt aqui. Chamado de dentro de um setTimeout ele roda
+      // SEM ativacao do usuario, e no Chrome do Android o dialogo nativo pode ser
+      // suprimido (ou devolver null calado para sempre, se alguem marcou "impedir
+      // esta pagina de criar mais dialogos"). O toque no mapa nao fazia nada e a
+      // ferramenta parecia travada. Caixa na propria pagina resolve: nao trava a
+      // thread, nao depende de ativacao e o teclado abre sozinho.
+      // Seguro extra: se sobrou captura de ponteiro de um gesto anterior, ela
+      // redirecionaria TODO toque para o canvas e a barra ficaria inalcancavel.
+      try {
+        if (cv.hasPointerCapture && cv.hasPointerCapture(ev.pointerId)) {
+          cv.releasePointerCapture(ev.pointerId);
         }
-      }, 0);
+      } catch (e) { }
+      pedirTexto(function (txt) {
+        anots.push({ tipo: "texto", cor: cor, em: ll, txt: txt.slice(0, 60) });
+        redesenhar();
+      });
       return;
     }
 
@@ -12299,6 +12307,84 @@ Como posso ajudar?</div>
   }
 
   /* ---------------- controles ---------------- */
+
+  /* ---------------- caixa de texto (no lugar do prompt nativo) ---------------- */
+
+  function pedirTexto(aoConfirmar) {
+    var fundo = document.getElementById("anot-txt-fundo");
+
+    if (!fundo) {
+      var css = document.createElement("style");
+      css.textContent =
+        '#anot-txt-fundo{position:fixed;inset:0;z-index:4000;display:none;align-items:center;' +
+          'justify-content:center;padding:1rem;background:rgba(0,0,0,0.66);' +
+          '-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}' +
+        '#anot-txt-fundo.aberto{display:flex;}' +
+        '#anot-txt-caixa{width:100%;max-width:420px;background:var(--surface);' +
+          'border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;' +
+          'box-shadow:0 18px 50px rgba(0,0,0,0.55);}' +
+        '#anot-txt-caixa h4{font-family:\'Syne\',sans-serif;font-weight:800;font-size:0.95rem;' +
+          'color:var(--accent);margin:0 0 0.8rem;line-height:1.3;}' +
+        '#anot-txt-input{width:100%;background:var(--bg);border:1px solid var(--border);' +
+          'border-radius:8px;padding:0.75rem 0.8rem;color:var(--text);font-family:inherit;' +
+          'font-size:1rem;outline:none;}' +
+        '#anot-txt-input:focus{border-color:var(--accent);}' +
+        '#anot-txt-acoes{display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1rem;}' +
+        '#anot-txt-acoes button{border-radius:8px;padding:0.65rem 1.15rem;font-family:inherit;' +
+          'font-size:0.85rem;font-weight:700;cursor:pointer;border:1px solid var(--border);' +
+          'background:transparent;color:var(--muted);}' +
+        '#anot-txt-acoes button#anot-txt-ok{background:var(--accent);border-color:var(--accent);color:#04120a;}';
+      document.head.appendChild(css);
+
+      // position:fixed de proposito: filho do body em position:fixed nao vira
+      // item flex e por isso nao desloca o #appContent
+      fundo = document.createElement("div");
+      fundo.id = "anot-txt-fundo";
+      fundo.innerHTML =
+        '<div id="anot-txt-caixa">' +
+          '<h4>O que foi feito neste ponto?</h4>' +
+          '<input type="text" id="anot-txt-input" maxlength="60" autocomplete="off" ' +
+                 'enterkeyhint="done" placeholder="Ex: poste substituido" />' +
+          '<div id="anot-txt-acoes">' +
+            '<button type="button" id="anot-txt-cancelar">Cancelar</button>' +
+            '<button type="button" id="anot-txt-ok">Anotar</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(fundo);
+    }
+
+    var campo = document.getElementById("anot-txt-input");
+    var btnOk = document.getElementById("anot-txt-ok");
+    var btnCancelar = document.getElementById("anot-txt-cancelar");
+
+    // propriedades on*, e nao addEventListener: reabrir a caixa nao empilha handler
+    function fechar() {
+      fundo.classList.remove("aberto");
+      try { campo.blur(); } catch (e) { }   // faz o teclado do Android descer
+      btnOk.onclick = null;
+      btnCancelar.onclick = null;
+      fundo.onclick = null;
+      campo.onkeydown = null;
+    }
+
+    function confirmar() {
+      var v = (campo.value || "").trim();
+      fechar();
+      if (v) aoConfirmar(v);
+    }
+
+    campo.value = "";
+    fundo.classList.add("aberto");
+    btnOk.onclick = confirmar;
+    btnCancelar.onclick = fechar;
+    fundo.onclick = function (e) { if (e.target === fundo) fechar(); };
+    campo.onkeydown = function (e) {
+      if (e.key === "Enter") { e.preventDefault(); confirmar(); }
+      else if (e.key === "Escape") { e.preventDefault(); fechar(); }
+    };
+    // o foco tem que vir depois de pintar, senao o Android nao abre o teclado
+    setTimeout(function () { try { campo.focus(); } catch (e) { } }, 60);
+  }
 
   window.muAnotFerramenta = function (f) {
     if (!ligado) window.muAnotLigar();
@@ -13123,6 +13209,191 @@ Como posso ajudar?</div>
     var t = setInterval(function () {
       if (tentarTodos() || ++n > 600) clearInterval(t);
     }, 100);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar);
+  } else {
+    iniciar();
+  }
+})();
+</script>
+
+<!-- SETEMBRO AMARELO: laco amarelo sobre o "m" de SetupBoom, na tela de login.
+     Bloco 100% aditivo: nenhum HTML existente e movido. O JS quebra o texto
+     do <span> verde em "Boo" + um <span> so com o "m" e pendura o laco
+     (position:absolute) dentro dele, apoiado na propria letra. -->
+<script id="laco-setembro">
+(function () {
+  var CSS = [
+    /* O site tem "#loginScreen .sbl2-wordmark span{color:var(--accent);display:block}",
+       e essa regra pega QUALQUER span aninhado. Sem repetir o prefixo aqui, o
+       envelope do "m" viraria display:block no celular e a letra cairia sozinha
+       para a linha de baixo. display:inline (nunca inline-block: inline-block
+       cria ponto de quebra e o "m" desce em tela estreita). */
+    '#loginScreen .sbl2-wordmark span#sb-laco-m{display:inline;position:relative;color:inherit;}',
+    /* Medidas em em sao so o fallback: o JS reescreve em px a partir da altura
+       real do glifo (o wordmark usa clamp(), entao o tamanho muda com a tela). */
+    '#sb-laco-fita{',
+      'position:absolute;left:92%;bottom:0.10em;',
+      'width:0.40em;height:0.58em;',
+      'transform:translateX(-50%) rotate(-15deg);transform-origin:50% 60%;',
+      'pointer-events:none;overflow:visible;',
+      'filter:drop-shadow(0 1px 3px rgba(0,0,0,0.55)) drop-shadow(0 0 10px rgba(0,0,0,0.35));',
+      '}',
+    /* "Sua vida importa" ao lado da assinatura, no amarelo do laco. Herda
+       DM Mono, caixa alta e o tracking de .14em da propria .sbl2-tag. */
+    '#loginScreen .sbl2-tag #sb-vida{color:#FFC400;}',
+    /* No celular a linha nao cabe: o separador some e a frase vira linha propria. */
+    '@media (max-width:859px){',
+      '#loginScreen .sbl2-tag #sb-vida-sep{display:none;}',
+      '#loginScreen .sbl2-tag #sb-vida{display:block;margin-top:0.5em;}',
+      '}',
+    '@media (prefers-reduced-motion:no-preference){',
+      '#sb-laco-fita{animation:sbLacoEntra 0.5s cubic-bezier(0.22,1,0.36,1) both;}',
+      '@keyframes sbLacoEntra{from{opacity:0;transform:translateX(-50%) rotate(-15deg) scale(0.82);}',
+      'to{opacity:1;transform:translateX(-50%) rotate(-15deg) scale(1);}}',
+      '}'
+  ].join('');
+
+  var SVG =
+    '<svg id="sb-laco-fita" viewBox="0 0 44 64" fill="none" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+        '<linearGradient id="sbLacoGrad" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#FFE566"/><stop offset="1" stop-color="#FFC400"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      '<g stroke-linecap="round" stroke-linejoin="round" stroke-width="9">' +
+        /* fita de tras (mais escura) sobe pela esquerda */
+        '<path d="M33 59C30 50 25 45 22 38C19 30 10 27 10 18C10 10 15.5 6 22 6" stroke="#E5A700"/>' +
+        /* fita da frente sobe pela direita e cruza por cima */
+        '<path d="M11 59C14 50 19 45 22 38C25 30 34 27 34 18C34 10 28.5 6 22 6" stroke="url(#sbLacoGrad)"/>' +
+      '</g>' +
+    '</svg>';
+
+  var cv = null;
+
+  /* Onde fica a perna de FORA do "m" (a terceira haste, do lado direito).
+     Desenha o glifo num canvas e le uma linha de pixels logo acima da base,
+     onde so existem as tres hastes: o ultimo bloco preenchido e a perna de
+     fora. Assim funciona em qualquer fonte/tamanho, sem chute de porcentagem. */
+  function centroPernaDireita(fonte, larguraM, alturaX) {
+    try {
+      var c = document.createElement('canvas');
+      var margem = 4;
+      c.width  = Math.ceil(larguraM) + margem * 2;
+      c.height = Math.ceil(alturaX) + margem * 2;
+      var ctx = c.getContext('2d');
+      ctx.font = fonte;
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#000';
+      var base = c.height - margem;
+      ctx.fillText('m', margem, base);
+
+      var linha = Math.round(base - alturaX * 0.12);   // abaixo dos arcos
+      var px = ctx.getImageData(0, linha, c.width, 1).data;
+      var blocos = [], ini = -1;
+      for (var x = 0; x < c.width; x++) {
+        var cheio = px[x * 4 + 3] > 90;
+        if (cheio && ini < 0) ini = x;
+        if (!cheio && ini >= 0) { blocos.push([ini, x - 1]); ini = -1; }
+      }
+      if (ini >= 0) blocos.push([ini, c.width - 1]);
+      if (blocos.length < 2) return null;              // nao achou as hastes
+      var ultimo = blocos[blocos.length - 1];
+      return {
+        centro: (ultimo[0] + ultimo[1]) / 2 - margem,  // meio da perna de fora
+        fim:    ultimo[1] - margem                     // borda direita da letra
+      };
+    } catch (e) {
+      return null;                                     // canvas bloqueado: fica no fallback
+    }
+  }
+
+  /* Apoia o laco NA letra: base na linha de base do "m" e altura proporcional
+     a altura real do glifo (altura de x), medida com o canvas na fonte que
+     estiver valendo. Sem a metrica, o CSS em em ja deixa perto. */
+  function ajustar() {
+    var env = document.getElementById('sb-laco-m');
+    var fita = document.getElementById('sb-laco-fita');
+    if (!env || !fita) return;
+
+    var cs = getComputedStyle(env);
+    var fonte = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    cv = cv || document.createElement('canvas');
+    var ctx = cv.getContext('2d');
+    ctx.font = fonte;
+
+    var med = ctx.measureText('m');
+    var alturaX = med.actualBoundingBoxAscent;      // topo do "m" acima da base
+    var descida = med.fontBoundingBoxDescent;       // base ate o fim da caixa
+    if (!alturaX || !isFinite(alturaX)) return;
+
+    var alt = alturaX * 1.12;                       // sobra so um respiro no topo
+    fita.style.height = alt.toFixed(1) + 'px';
+    fita.style.width  = (alt * 44 / 64).toFixed(1) + 'px';
+    /* Pontas descem 18% da altura da letra abaixo da linha de base. */
+    fita.style.bottom = (descida - alturaX * 0.18).toFixed(1) + 'px';
+
+    /* Ancorado na borda direita da letra: com translateX(-50%), metade do laco
+       cobre a perna de fora e metade fica para fora do "m". */
+    var perna = centroPernaDireita(fonte, med.width, alturaX);
+    fita.style.left = (perna === null ? '92%' : perna.fim.toFixed(1) + 'px');
+  }
+
+  /* Frase de conscientizacao logo apos "Ferramentas de campo . Grupo Setup". */
+  function porFrase() {
+    var tag = document.querySelector('#loginScreen .sbl2-tag');
+    if (!tag || document.getElementById('sb-vida')) return;
+
+    var sep = document.createElement('span');
+    sep.id = 'sb-vida-sep';
+    sep.textContent = ' · ';
+
+    var frase = document.createElement('span');
+    frase.id = 'sb-vida';
+    frase.textContent = 'Sua vida importa';
+
+    tag.appendChild(sep);
+    tag.appendChild(frase);
+  }
+
+  function porLaco() {
+    var alvo = document.querySelector('#loginScreen .sbl2-wordmark span');
+    if (!alvo || document.getElementById('sb-laco-m')) return !!alvo;
+
+    var txt = alvo.textContent || '';
+    if (txt.length < 2) return false;
+
+    var estilo = document.createElement('style');
+    estilo.id = 'sb-laco-css';
+    estilo.textContent = CSS;
+    document.head.appendChild(estilo);
+
+    var env = document.createElement('span');
+    env.id = 'sb-laco-m';
+    env.textContent = txt.slice(-1);          // o "m" de Boom
+    env.insertAdjacentHTML('beforeend', SVG);
+
+    alvo.textContent = txt.slice(0, -1);      // sobra "Boo"
+    alvo.appendChild(env);
+
+    porFrase();
+    ajustar();
+    /* a Syne vem de webfont: sem esperar o load, a medida sai da fonte de fallback */
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustar);
+    window.addEventListener('resize', ajustar);
+    return true;
+  }
+
+  /* A tela de login ja esta no DOM no load, mas o poll cobre o caso de ela ser
+     remontada depois (logout, troca de rota). Para sozinho quando aplica. */
+  function iniciar() {
+    if (porLaco()) return;
+    var tentativas = 0;
+    var t = setInterval(function () {
+      if (porLaco() || ++tentativas > 60) clearInterval(t);
+    }, 150);
   }
 
   if (document.readyState === 'loading') {

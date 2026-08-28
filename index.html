@@ -13783,5 +13783,85 @@ Como posso ajudar?</div>
   else criar();
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     Aba Cabos: o cálculo passa a acrescentar 5% ao vão por conta da flecha.
+     Padrão aditivo — script antes do ÚLTIMO </body>, nada de mexer no HTML
+     perto dos .tab-panel.
+     ══════════════════════════════════════════════════════════════════════ -->
+<script id="cabos-flecha">
+(function () {
+  'use strict';
+
+  /* O cabo não vai reto de poste a poste: ele barriga. O comprimento real
+     do condutor é maior que o vão medido no mapa, e 5% é a folga adotada. */
+  var FLECHA = 0.05;
+
+  function pt(v, casas) {
+    return v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+  }
+
+  function preparar() {
+    var res = document.getElementById('caboResultado');
+    var itemMetros = document.getElementById('resMetros');
+    if (!res || !itemMetros || document.getElementById('resFlecha')) return false;
+
+    /* linha nova logo depois de "Distância", para o número corrigido
+       aparecer em vez de o total subir 5% sem explicação */
+    var caixa = itemMetros.parentNode;
+    var novo = document.createElement('div');
+    novo.className = caixa.className;
+    novo.innerHTML =
+      '<span class="cabo-res-label">Com flecha (+' + (FLECHA * 100) + '%)</span>' +
+      '<span class="cabo-res-val" id="resFlecha">—</span>';
+    caixa.parentNode.insertBefore(novo, caixa.nextSibling);
+
+    var aviso = document.querySelector('#tab-cabos .info-card');
+    if (aviso) {
+      var frase = document.createElement('span');
+      frase.textContent = ' O total já acrescenta ' + (FLECHA * 100) +
+        '% ao vão informado para compensar a flecha do cabo.';
+      aviso.appendChild(frase);
+    }
+    return true;
+  }
+
+  function novoCalculo() {
+    var metros = parseFloat(document.getElementById('caboMetros').value);
+    var fasesVal = parseInt(document.getElementById('caboFases').value, 10);
+
+    /* caboSelecionado é `let` no topo de um script clássico: não está em
+       window, mas o binding léxico global é visível daqui. */
+    var cabo = (typeof caboSelecionado !== 'undefined') ? caboSelecionado : null;
+
+    if (!cabo) { showToast('Selecione um cabo primeiro.', 'error'); return; }
+    if (isNaN(metros) || metros <= 0) { showToast('Informe uma distância válida em metros.', 'error'); return; }
+
+    var comFlecha = metros * (1 + FLECHA);
+    var kg = comFlecha * fasesVal * cabo.ppm;
+
+    document.getElementById('resNome').textContent = cabo.nome;
+    document.getElementById('resPpm').textContent = cabo.ppm.toFixed(4) + ' kg/m';
+    document.getElementById('resMetros').textContent = metros.toLocaleString('pt-BR') + ' m';
+
+    var alvo = document.getElementById('resFlecha');
+    if (alvo) alvo.textContent = pt(comFlecha, 2) + ' m';
+
+    var fasesText = fasesVal + (fasesVal === 1 ? ' fase' : ' fases');
+    if (fasesVal === 4) fasesText = '3 fases + neutro';
+    document.getElementById('resFases').textContent = fasesText;
+    document.getElementById('resKg').textContent = pt(kg, 3) + ' kg';
+    document.getElementById('caboResultado').style.display = 'block';
+  }
+
+  function ligar() {
+    preparar();
+    window.calcularCabo = novoCalculo;   /* o botão usa onclick="calcularCabo()" */
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar);
+  else ligar();
+})();
+</script>
 </body>
 </html>

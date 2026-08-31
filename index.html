@@ -2226,6 +2226,17 @@ self.addEventListener('fetch', e => {
     /* ══ FIM TAB: MAPA ═══════════════════════════════════════════════ */
 
   </style>
+
+  <!-- MODO ESCURO (31/08/2026) — decidido aqui, antes da primeira pintura.
+       Se ficasse no bloco lá do fim do body, a tela piscaria clara antes
+       de virar escura. O resto do modo escuro está no fim do arquivo. -->
+  <script>
+    try {
+      if (localStorage.getItem('sbModo') === 'escuro') {
+        document.documentElement.setAttribute('data-sb', 'escuro');
+      }
+    } catch (e) { /* navegador com storage bloqueado: segue no claro */ }
+  </script>
 </head>
 <body class="light">
   <div class="sb-corner-badge" aria-hidden="true">
@@ -2821,7 +2832,7 @@ self.addEventListener('fetch', e => {
     </style>
 
     <div style="margin-bottom:2rem;">
-      <h1 style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.35rem;">
+      <h1 id="homeSaudacao" style="font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.35rem;">
         Bem-vindo ao <span style="color:var(--accent)">SetupBoom</span>
       </h1>
       <p style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
@@ -11414,9 +11425,9 @@ Como posso ajudar?</div>
       <span style="font-family:'Syne',sans-serif;font-weight:900;font-size:1.35rem;background:linear-gradient(90deg,#00e676,#00e5ff,#69f0ae,#00b0ff,#00e676);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:brandShift 4s ease-in-out infinite;">SB</span>
     </div>
 
-    <p style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem;">Bem-vindo ao</p>
-    <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--accent);margin-bottom:0.4rem;">SetupBoom</h2>
-    <p id="welcomeUserName" style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);margin-bottom:1rem;"></p>
+    <p style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem;">Bem-vindo ao SetupBoom</p>
+    <h2 id="welcomeUserName" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;line-height:1.15;color:var(--accent);margin-bottom:0.3rem;">Bem-vindo</h2>
+    <p id="welcomeUserFull" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:1rem;"></p>
 
     <!-- mini linha de energia: pulso de conexão -->
     <div class="sb-connect-line" aria-hidden="true" style="position:relative;height:14px;width:170px;margin:0 auto 0.9rem;">
@@ -11528,9 +11539,29 @@ Como posso ajudar?</div>
 
 <script>
   function showWelcomeModal(name) {
-    var modal = document.getElementById('welcomeModal');
+    var modal  = document.getElementById('welcomeModal');
     var nameEl = document.getElementById('welcomeUserName');
-    if (nameEl && name) nameEl.textContent = 'Olá, ' + name + '!';
+    var fullEl = document.getElementById('welcomeUserFull');
+
+    // O Firestore devolve o nome completo (ex.: "Christian Braga de Souza").
+    // A saudação usa só o primeiro nome; o completo fica na linha de baixo.
+    var limpo     = (name || '').toString().trim().replace(/\s+/g, ' ');
+    var primeiro  = limpo.split(' ')[0] || '';
+    var soNumero  = /^\d+$/.test(limpo);   // sem cadastro de nome, sobra a matrícula
+
+    if (nameEl) nameEl.textContent = (!limpo || soNumero) ? 'Bem-vindo' : 'Olá, ' + primeiro;
+    if (fullEl) {
+      // Só entra em cena quando não há nome pra saudar; senão repetiria o "Olá, X".
+      fullEl.textContent  = soNumero ? 'Matrícula ' + limpo : '';
+      fullEl.style.display = fullEl.textContent ? 'block' : 'none';
+    }
+
+    // O título da home acompanha: "Bem-vindo ao SetupBoom" vira "Bem-vindo, Pedro".
+    var homeEl = document.getElementById('homeSaudacao');
+    if (homeEl && primeiro && !soNumero) {
+      homeEl.innerHTML = 'Bem-vindo, <span style="color:var(--accent)">' +
+                         primeiro.replace(/[<&]/g, '') + '</span>';
+    }
     modal.style.display = 'flex';
   }
   function closeWelcomeModal() {
@@ -13861,6 +13892,585 @@ Como posso ajudar?</div>
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar);
   else ligar();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODO ESCURO (31/08/2026)
+     Bloco aditivo antes do ÚLTIMO </body>. Apagar este bloco (mais o
+     script de 4 linhas no <head>) devolve o site ao tema único claro.
+
+     Por que atributo no <html> e não classe no <body>: o bloco
+     "sb-tema-unico" fixa a paleta em :root, body, body.light e
+     body[data-theme], e um MutationObserver devolve .light ao <body> se
+     alguém mexer. O escuro liga data-sb="escuro" no <html> — que aquele
+     observador não vigia — e ganha por especificidade sem brigar com ele.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="sb-modo-escuro">
+
+  /* ── Paleta ─────────────────────────────────────────────────────────────
+     Preto esverdeado, não cinza neutro: o verde da marca vira a luz do
+     ambiente em vez de um adesivo colado por cima. E o neon volta a ser
+     cor de LETRA — #00e676 sobre #060d0a dá 10,9:1, enquanto sobre o
+     branco do tema claro dava 1,67:1 e teve de virar #0a8f4f. */
+  html[data-sb="escuro"] body,
+  html[data-sb="escuro"] body.light,
+  html[data-sb="escuro"] body.light[data-theme] {
+    --bg:      #060d0a;
+    --surface: #0f1b15;
+    --border:  rgba(105, 240, 174, 0.14);
+
+    --accent:      #00e676;
+    --accent2:     #69f0ae;
+    --accent-vivo: #00e676;
+    --accent-ink:  #04160c;
+
+    --text:    #e9f3ed;
+    --muted:   #7d9187;
+    --prose:   #b2c5ba;
+    --danger:  #ff6b6b;
+    --success: #00e676;
+    color-scheme: dark;
+  }
+
+  /* ── Aurora ─────────────────────────────────────────────────────────────
+     Três manchas de luz presas à janela (background-attachment:fixed), não
+     um elemento novo: elemento posicionado por cima de conteúdo estático
+     acabaria tapando alguma aba das 27. Assim é impossível cobrir nada.
+     O deslocamento é lento e de poucos por cento — para dar a impressão de
+     uma sala iluminada, não de um protetor de tela. */
+  html[data-sb="escuro"] body {
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(46vmax 34vmax at 12% 4%,  rgba(0, 230, 118, 0.13), transparent 62%),
+      radial-gradient(38vmax 30vmax at 88% 16%, rgba(0, 176, 255, 0.09), transparent 64%),
+      radial-gradient(52vmax 40vmax at 62% 98%, rgba(105, 240, 174, 0.08), transparent 66%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    animation: sbAuroraDeriva 48s ease-in-out infinite alternate;
+  }
+  @keyframes sbAuroraDeriva {
+    from { background-position: 0% 0%,   100% 0%,   50% 100%; }
+    to   { background-position: 6% 3%,   94% 6%,    56% 94%;  }
+  }
+
+  /* ── Superfícies ────────────────────────────────────────────────────────
+     No escuro, profundidade não vem de sombra (preto sobre preto some) —
+     vem de luz na borda de cima, como se houvesse uma fonte acima da tela.
+     O gradiente é de 4,5% e some no meio do cartão. */
+  html[data-sb="escuro"] .card,
+  html[data-sb="escuro"] .base-card,
+  html[data-sb="escuro"] .fav-card,
+  html[data-sb="escuro"] .kb-card,
+  html[data-sb="escuro"] .sheets-status,
+  html[data-sb="escuro"] .sb-welcome-card {
+    background:
+      linear-gradient(180deg, rgba(233, 243, 237, 0.045), rgba(233, 243, 237, 0) 44%),
+      var(--surface);
+    box-shadow:
+      inset 0 1px 0 rgba(233, 243, 237, 0.07),
+      0 1px 2px rgba(0, 0, 0, 0.55),
+      0 20px 44px -28px rgba(0, 0, 0, 0.95);
+  }
+  html[data-sb="escuro"] .card:hover,
+  html[data-sb="escuro"] .base-card:hover,
+  html[data-sb="escuro"] .fav-card:hover,
+  html[data-sb="escuro"] .kb-card:hover {
+    border-color: rgba(0, 230, 118, 0.42);
+    box-shadow:
+      inset 0 1px 0 rgba(233, 243, 237, 0.09),
+      0 0 0 1px rgba(0, 230, 118, 0.10),
+      0 22px 48px -26px rgba(0, 0, 0, 0.95);
+  }
+
+  /* Barra lateral em vidro, mantendo o brilho radial do canto superior
+     esquerdo que o desenho original já tinha. */
+  html[data-sb="escuro"] nav.sidebar {
+    background:
+      radial-gradient(140% 60% at 0% 0%, rgba(0, 230, 118, 0.12), transparent 60%),
+      rgba(9, 18, 13, 0.72);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    backdrop-filter: blur(18px) saturate(1.35);
+    border-right: 1px solid var(--border);
+  }
+
+  /* ── Desfazendo o tema claro dentro do escuro ───────────────────────────
+     O <body> continua com a classe .light no modo escuro: o MutationObserver
+     do tema único a devolve toda vez que sai. Então as regras "body.light …"
+     seguem valendo — e a dos itens da barra lateral crava letra quase preta
+     (rgba(13,31,20,0.5)), que sobre o fundo escuro simplesmente some.
+     Desfazer aqui é mais seguro do que desligar o observador. */
+  html[data-sb="escuro"] body.light .tab {
+    color: rgba(233, 243, 237, 0.58);
+  }
+  html[data-sb="escuro"] body.light .tab:hover {
+    background: rgba(233, 243, 237, 0.07);
+    color: var(--text);
+  }
+  html[data-sb="escuro"] body.light .tab.active {
+    color: var(--accent);
+  }
+  html[data-sb="escuro"] body.light .sidebar-footer {
+    border-top-color: rgba(0, 230, 118, 0.16);
+  }
+
+  /* Aba ativa: a barra vira uma fresta de luz, com halo curto. */
+  html[data-sb="escuro"] .tab.active {
+    background: linear-gradient(90deg, rgba(0, 230, 118, 0.17), rgba(0, 230, 118, 0.03)) !important;
+    box-shadow: inset 3px 0 0 var(--accent-vivo), 0 0 24px -8px rgba(0, 230, 118, 0.55);
+  }
+  html[data-sb="escuro"] .tab:hover { background: rgba(0, 230, 118, 0.07); }
+
+  /* Campos: no escuro o branco cravado cega. Sem !important de propósito,
+     para que qualquer estilo mais específico de aba continue mandando. */
+  html[data-sb="escuro"] input,
+  html[data-sb="escuro"] select,
+  html[data-sb="escuro"] textarea {
+    background: rgba(233, 243, 237, 0.04);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  html[data-sb="escuro"] ::placeholder { color: var(--muted); }
+
+  /* ── Mapa ───────────────────────────────────────────────────────────────
+     Só o painel de tiles é escurecido. Nada de invert(): satélite fica
+     irreconhecível e as ruas viram negativo. Brilho e saturação a menos
+     baixam o mapa para o nível da interface, e os 2.860 pinos e os
+     contornos das seccionais ficam intocados, em outros painéis. */
+  html[data-sb="escuro"] .leaflet-tile-pane {
+    filter: brightness(0.72) saturate(0.82) contrast(1.06);
+  }
+  html[data-sb="escuro"] .leaflet-bar a {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  /* Rolagem discreta, verde só no polegar. */
+  html[data-sb="escuro"] * { scrollbar-color: rgba(0, 230, 118, 0.45) transparent; }
+  html[data-sb="escuro"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+  html[data-sb="escuro"] ::-webkit-scrollbar-track { background: transparent; }
+  html[data-sb="escuro"] ::-webkit-scrollbar-thumb {
+    background: rgba(0, 230, 118, 0.30);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  /* ── Botão ──────────────────────────────────────────────────────────────
+     O #themeToggle já existe na barra lateral desde sempre; o tema único o
+     escondeu. Aqui ele volta, com outra função e outra cara. */
+  #themeToggle {
+    display: inline-flex !important;
+    align-items: center; justify-content: center; gap: 0.45rem;
+    width: 100%; padding: 0.5rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(233,243,237,0.06), rgba(233,243,237,0)), var(--surface);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.2,0.9,0.3,1.25), border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  #themeToggle:hover {
+    border-color: var(--accent-vivo);
+    box-shadow: 0 0 20px -7px rgba(0, 230, 118, 0.6);
+  }
+  #themeToggle:active { transform: scale(0.955); }
+  #themeToggle .sb-modo-icone {
+    display: inline-block; font-size: 0.82rem; line-height: 1;
+    transition: transform 0.55s cubic-bezier(0.2,0.9,0.3,1.25);
+  }
+  #themeToggle:hover .sb-modo-icone { transform: rotate(-25deg) scale(1.12); }
+
+  /* ── A troca ────────────────────────────────────────────────────────────
+     A transição só existe durante os 420ms da virada. Deixá-la ligada o
+     tempo todo faria cada hover de cartão arrastar meio segundo. */
+  html.sb-trocando body,
+  html.sb-trocando body * {
+    transition: background-color 0.34s ease, background-image 0.34s ease,
+                color 0.34s ease, border-color 0.34s ease, box-shadow 0.34s ease !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html[data-sb="escuro"] body { animation: none !important; }
+    #themeToggle, #themeToggle .sb-modo-icone { transition: none !important; }
+    html.sb-trocando body, html.sb-trocando body * { transition: none !important; }
+  }
+
+</style>
+<script id="sb-modo-escuro-js">
+(function () {
+  'use strict';
+
+  var CHAVE = 'sbModo';
+  var raiz  = document.documentElement;
+
+  function escuro() { return raiz.getAttribute('data-sb') === 'escuro'; }
+
+  function pintar(btn) {
+    var e = escuro();
+    btn.innerHTML = '<span class="sb-modo-icone">' + (e ? '☀' : '☾') + '</span>' +
+                    '<span>' + (e ? 'Claro' : 'Escuro') + '</span>';
+    btn.setAttribute('aria-pressed', e ? 'true' : 'false');
+    btn.title = e ? 'Voltar ao tema claro' : 'Mudar para o modo escuro';
+  }
+
+  function aplicar(ligado) {
+    raiz.classList.add('sb-trocando');
+    setTimeout(function () { raiz.classList.remove('sb-trocando'); }, 420);
+    if (ligado) raiz.setAttribute('data-sb', 'escuro');
+    else        raiz.removeAttribute('data-sb');
+    try { localStorage.setItem(CHAVE, ligado ? 'escuro' : 'claro'); } catch (e) {}
+  }
+
+  function ligar() {
+    var antigo = document.getElementById('themeToggle');
+    if (!antigo) return;
+
+    /* Clonar descarta o listener do tema antigo, que alternava body.light e
+       era desfeito pelo MutationObserver do tema único — dois cliques sem
+       efeito nenhum. O clone mantém id, classe e estilo inline. */
+    var btn = antigo.cloneNode(false);
+    antigo.parentNode.replaceChild(btn, antigo);
+
+    pintar(btn);
+    btn.addEventListener('click', function () {
+      aplicar(!escuro());
+      pintar(btn);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar);
+  else ligar();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ABA: QUEDA DE TENSÃO (31/08/2026)
+     Bloco aditivo antes do ÚLTIMO </body>, mesmo padrão da "Montar Lista":
+     o painel nasce por DOM e é pendurado no .main-content, e o botão da
+     barra lateral traz o próprio handler (o do site é ligado botão a botão
+     no carregamento e não alcança quem nasce depois).
+     Apagar este bloco remove a aba inteira.
+
+     Os cabos da planilha só têm peso por metro (colunas O e P), sem R nem X.
+     Por isso a impedância vem de uma tabela embutida — valores TÍPICOS, que
+     a própria aba deixa corrigir; a correção fica no localStorage.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script id="aba-queda-tensao">
+(function () {
+  'use strict';
+
+  var CHAVE_IMP = 'sbQT_imped_v1';
+  var CHAVE_ENT = 'sbQT_entradas_v1';
+
+  /* Ω/km a 60 Hz, condutor a 75 °C, espaçamento típico de distribuição.
+     Ponto de partida, não evangelho: conferir com a tabela da CEEE e
+     ajustar na própria aba. */
+  var PADRAO = [
+    { g: 'Nu — CAA (ACSR)',  n: 'CAA 2 AWG',        r: 0.890, x: 0.404, a: 180 },
+    { g: 'Nu — CAA (ACSR)',  n: 'CAA 1/0',          r: 0.560, x: 0.383, a: 230 },
+    { g: 'Nu — CAA (ACSR)',  n: 'CAA 2/0',          r: 0.446, x: 0.374, a: 270 },
+    { g: 'Nu — CAA (ACSR)',  n: 'CAA 4/0',          r: 0.280, x: 0.357, a: 340 },
+    { g: 'Nu — CAA (ACSR)',  n: 'CAA 336,4 MCM',    r: 0.172, x: 0.339, a: 500 },
+    { g: 'Nu — CA (AAC)',    n: 'CA 1/0',           r: 0.532, x: 0.379, a: 230 },
+    { g: 'Nu — CA (AAC)',    n: 'CA 2/0',           r: 0.421, x: 0.370, a: 270 },
+    { g: 'Nu — CA (AAC)',    n: 'CA 4/0',           r: 0.265, x: 0.353, a: 350 },
+    { g: 'Nu — CA (AAC)',    n: 'CA 336,4 MCM',     r: 0.167, x: 0.335, a: 500 },
+    { g: 'Protegido 15 kV',  n: 'Protegido 50 mm²', r: 0.641, x: 0.144, a: 180 },
+    { g: 'Protegido 15 kV',  n: 'Protegido 95 mm²', r: 0.320, x: 0.132, a: 260 },
+    { g: 'Protegido 15 kV',  n: 'Protegido 150 mm²',r: 0.206, x: 0.124, a: 340 },
+    { g: 'Multiplexado BT',  n: 'Mult. 1x16+16',    r: 1.910, x: 0.098, a:  85 },
+    { g: 'Multiplexado BT',  n: 'Mult. 3x35+35',    r: 0.868, x: 0.082, a: 130 },
+    { g: 'Multiplexado BT',  n: 'Mult. 3x70+70',    r: 0.443, x: 0.077, a: 190 },
+    { g: 'Multiplexado BT',  n: 'Mult. 3x120+70',   r: 0.253, x: 0.075, a: 265 }
+  ];
+
+  var CSS = [
+    '#tab-queda-tensao .qt-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1rem}',
+    '#tab-queda-tensao label.qt-rot{display:block;font-family:"DM Mono",monospace;font-size:.66rem;',
+      'text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.3rem}',
+    '#tab-queda-tensao .qt-campo input,#tab-queda-tensao .qt-campo select{width:100%;padding:.5rem .6rem;',
+      'border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);',
+      'font-family:"DM Mono",monospace;font-size:.85rem}',
+    '#tab-queda-tensao .qt-resumo{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:baseline;',
+      'padding:.9rem 1.1rem;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin-bottom:1rem}',
+    '#tab-queda-tensao .qt-resumo b{display:block;font-size:1.35rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}',
+    '#tab-queda-tensao .qt-resumo span{font-family:"DM Mono",monospace;font-size:.64rem;text-transform:uppercase;',
+      'letter-spacing:.07em;color:var(--muted)}',
+    '#tab-queda-tensao .qt-veredito{font-family:"Syne",sans-serif;font-weight:700;font-size:.9rem}',
+    '#tab-queda-tensao table{width:100%;border-collapse:collapse;font-size:.82rem}',
+    '#tab-queda-tensao th{text-align:left;padding:.45rem .6rem;font-family:"DM Mono",monospace;font-size:.64rem;',
+      'text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)}',
+    '#tab-queda-tensao td{padding:.45rem .6rem;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}',
+    '#tab-queda-tensao tr.qt-grupo td{font-family:"DM Mono",monospace;font-size:.64rem;text-transform:uppercase;',
+      'letter-spacing:.06em;color:var(--muted);border-bottom:none;padding-top:.9rem}',
+    '#tab-queda-tensao .qt-ok{color:var(--accent);font-weight:700}',
+    '#tab-queda-tensao .qt-nao{color:var(--danger);font-weight:700}',
+    '#tab-queda-tensao tr.qt-menor td{background:rgba(0,230,118,.10)}',
+    '#tab-queda-tensao .qt-barra{height:6px;border-radius:99px;background:var(--border);overflow:hidden;min-width:70px}',
+    '#tab-queda-tensao .qt-barra i{display:block;height:100%;border-radius:99px}',
+    '#tab-queda-tensao details{margin-top:1.4rem;border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;background:var(--surface)}',
+    '#tab-queda-tensao summary{cursor:pointer;font-family:"DM Mono",monospace;font-size:.7rem;',
+      'text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}',
+    '#tab-queda-tensao details input{width:88px;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;',
+      'background:var(--bg);color:var(--text);font-family:"DM Mono",monospace;font-size:.78rem}',
+    '#tab-queda-tensao .qt-nota{font-size:.76rem;color:var(--muted);line-height:1.6;margin-top:.7rem}',
+    '#tab-queda-tensao .qt-formula{font-family:"DM Mono",monospace;font-size:.72rem;color:var(--prose,var(--muted));',
+      'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;margin-top:.6rem;overflow-x:auto}',
+    /* o navegador pinta campo preenchido de amarelo-autofill, que no escuro vira lodo */
+    '#tab-queda-tensao input:-webkit-autofill,#tab-queda-tensao input:-webkit-autofill:focus{',
+      '-webkit-text-fill-color:var(--text);box-shadow:0 0 0 1000px var(--surface) inset;caret-color:var(--text)}'
+  ].join('');
+
+  var painel, montado = false, imped = null;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function num(v) { return parseFloat(String(v == null ? '' : v).replace(',', '.')); }
+
+  function carregarImped() {
+    var salvo = null;
+    try { salvo = JSON.parse(localStorage.getItem(CHAVE_IMP) || 'null'); } catch (e) {}
+    imped = PADRAO.map(function (c) {
+      var s = salvo && salvo[c.n];
+      return {
+        g: c.g, n: c.n,
+        r: s && !isNaN(s.r) ? s.r : c.r,
+        x: s && !isNaN(s.x) ? s.x : c.x,
+        a: s && !isNaN(s.a) ? s.a : c.a
+      };
+    });
+  }
+  function salvarImped() {
+    var o = {};
+    imped.forEach(function (c) { o[c.n] = { r: c.r, x: c.x, a: c.a }; });
+    try { localStorage.setItem(CHAVE_IMP, JSON.stringify(o)); } catch (e) {}
+  }
+
+  /* ── A conta ──────────────────────────────────────────────────────────────
+     Trifásico:  ΔV = √3 · I · L · (R·cosφ + X·senφ),  I = S/(√3·V)
+     Mono/bi:    ΔV = 2  · I · L · (R·cosφ + X·senφ),  I = S/V
+     L em km, R e X em Ω/km, V em volts entre fases (ou da carga, no monofásico).
+     É a fórmula aproximada de sempre — a que se faz na planilha. */
+  function corrente(kva, v, sist) {
+    var s = kva * 1000;
+    return sist === 'tri' ? s / (Math.sqrt(3) * v) : s / v;
+  }
+  function queda(i, km, r, x, fp, sist) {
+    var sen = Math.sqrt(Math.max(0, 1 - fp * fp));
+    var k = sist === 'tri' ? Math.sqrt(3) : 2;
+    return k * i * km * (r * fp + x * sen);
+  }
+
+  function lerEntradas() {
+    var e = {
+      modo:  $('qtModo').value,
+      pot:   num($('qtPot').value),
+      fp:    num($('qtFp').value),
+      v:     num($('qtV').value),
+      dist:  num($('qtDist').value),
+      sist:  $('qtSist').value,
+      limite:num($('qtLim').value)
+    };
+    try { localStorage.setItem(CHAVE_ENT, JSON.stringify(e)); } catch (err) {}
+    return e;
+  }
+
+  function calcular() {
+    var e = lerEntradas();
+    var alvo = $('qtSaida');
+    if (isNaN(e.pot) || isNaN(e.v) || isNaN(e.dist) || !e.pot || !e.v) {
+      alvo.innerHTML = '<p class="qt-nota">Preencha potência, tensão e distância.</p>';
+      return;
+    }
+    if (isNaN(e.fp) || e.fp <= 0 || e.fp > 1) e.fp = 0.92;
+    if (isNaN(e.limite) || e.limite <= 0) e.limite = 5;
+
+    var kva = e.modo === 'kw' ? e.pot / e.fp : e.pot;
+    var km  = e.dist / 1000;
+    var i   = corrente(kva, e.v, e.sist);
+
+    var linhas = [], grupo = '', menor = null;
+    imped.forEach(function (c) {
+      var dv    = queda(i, km, c.r, c.x, e.fp, e.sist);
+      var pct   = dv / e.v * 100;
+      var okQ   = pct <= e.limite;
+      var okA   = i <= c.a;              /* queda não é o único critério */
+      var ok    = okQ && okA;
+      if (ok && !menor) menor = { n: c.n, pct: pct };
+
+      if (c.g !== grupo) {
+        grupo = c.g;
+        linhas.push('<tr class="qt-grupo"><td colspan="6">' + esc(grupo) + '</td></tr>');
+      }
+      var largura = Math.min(100, pct / e.limite * 100);
+      linhas.push(
+        '<tr' + (menor && menor.n === c.n ? ' class="qt-menor"' : '') + '>' +
+          '<td>' + esc(c.n) + '</td>' +
+          '<td>' + c.r.toFixed(3).replace('.', ',') + ' / ' + c.x.toFixed(3).replace('.', ',') + '</td>' +
+          '<td class="' + (okA ? '' : 'qt-nao') + '">' + c.a + ' A' +
+            (okA ? '' : ' <span style="font-size:.7rem">estoura</span>') + '</td>' +
+          '<td>' + dv.toFixed(1).replace('.', ',') + ' V</td>' +
+          '<td class="' + (okQ ? 'qt-ok' : 'qt-nao') + '">' + pct.toFixed(2).replace('.', ',') + ' %</td>' +
+          '<td><div class="qt-barra"><i style="width:' + largura.toFixed(0) + '%;background:' +
+            (ok ? 'var(--accent-vivo)' : 'var(--danger)') + '"></i></div></td>' +
+        '</tr>'
+      );
+    });
+
+    alvo.innerHTML =
+      '<div class="qt-resumo">' +
+        '<div><b>' + i.toFixed(1).replace('.', ',') + ' A</b><span>corrente de projeto</span></div>' +
+        '<div><b>' + kva.toFixed(1).replace('.', ',') + ' kVA</b><span>potência aparente</span></div>' +
+        '<div><b>' + e.dist.toLocaleString('pt-BR') + ' m</b><span>distância</span></div>' +
+        '<div style="flex:1;min-width:210px"><span>menor bitola que atende (queda + corrente)</span>' +
+          '<b class="qt-veredito" style="color:' + (menor ? 'var(--accent)' : 'var(--danger)') + '">' +
+            (menor ? esc(menor.n) + ' · ' + menor.pct.toFixed(2).replace('.', ',') + '%'
+                   : 'nenhuma da tabela') + '</b></div>' +
+      '</div>' +
+      '<table><thead><tr><th>Condutor</th><th>R / X (Ω/km)</th><th>Ampacidade</th>' +
+      '<th>Queda</th><th>%</th><th style="width:110px"></th></tr></thead>' +
+      '<tbody>' + linhas.join('') + '</tbody></table>' +
+      '<div class="qt-formula">' +
+        (e.sist === 'tri' ? '&Delta;V = &radic;3 · I · L · (R·cos&phi; + X·sen&phi;)&nbsp;&nbsp;|&nbsp;&nbsp;I = S / (&radic;3 · V)'
+                          : '&Delta;V = 2 · I · L · (R·cos&phi; + X·sen&phi;)&nbsp;&nbsp;|&nbsp;&nbsp;I = S / V') +
+        '&nbsp;&nbsp;|&nbsp;&nbsp;cos&phi; = ' + e.fp.toString().replace('.', ',') +
+        '&nbsp;&nbsp;|&nbsp;&nbsp;L = ' + km.toString().replace('.', ',') + ' km' +
+      '</div>';
+  }
+
+  function tabelaImped() {
+    return imped.map(function (c, k) {
+      return '<tr><td>' + esc(c.n) + '</td>' +
+        '<td><input type="text" inputmode="decimal" data-k="' + k + '" data-p="r" value="' + c.r + '"></td>' +
+        '<td><input type="text" inputmode="decimal" data-k="' + k + '" data-p="x" value="' + c.x + '"></td>' +
+        '<td><input type="text" inputmode="decimal" data-k="' + k + '" data-p="a" value="' + c.a + '"></td></tr>';
+    }).join('');
+  }
+
+  function criar() {
+    if (montado) return;
+    var main = document.querySelector('.main-content');
+    var irmao = document.querySelector('[data-tab="cabos"]');
+    if (!main || !irmao) return;
+
+    var st = document.createElement('style');
+    st.id = 'qt-css'; st.textContent = CSS;
+    document.head.appendChild(st);
+
+    carregarImped();
+
+    var ant = {};
+    try { ant = JSON.parse(localStorage.getItem(CHAVE_ENT) || '{}') || {}; } catch (e) {}
+    function v(campo, padrao) { return (ant[campo] === 0 || ant[campo]) ? ant[campo] : padrao; }
+
+    painel = document.createElement('div');
+    painel.className = 'tab-panel';
+    painel.id = 'tab-queda-tensao';
+    painel.innerHTML =
+      '<div style="margin-bottom:1.2rem">' +
+        '<h1 style="font-size:1.7rem;font-weight:800;letter-spacing:-.03em;line-height:1">' +
+          'Queda de <span style="color:var(--accent)">Tensão</span></h1>' +
+        '<p style="font-family:\'DM Mono\',monospace;font-size:.72rem;color:var(--muted);' +
+          'text-transform:uppercase;letter-spacing:.06em;margin-top:5px">Qual bitola aguenta o ramal</p>' +
+      '</div>' +
+      '<div class="qt-grade">' +
+        '<div class="qt-campo"><label class="qt-rot">Carga</label>' +
+          '<input id="qtPot" type="text" inputmode="decimal" value="' + esc(v('pot', '75')) + '"></div>' +
+        '<div class="qt-campo"><label class="qt-rot">Unidade</label><select id="qtModo">' +
+          '<option value="kva">kVA</option><option value="kw">kW</option></select></div>' +
+        '<div class="qt-campo"><label class="qt-rot">Fator de potência</label>' +
+          '<input id="qtFp" type="text" inputmode="decimal" value="' + esc(v('fp', '0,92')) + '"></div>' +
+        '<div class="qt-campo"><label class="qt-rot">Tensão (V)</label>' +
+          '<input id="qtV" type="text" inputmode="decimal" list="qtTensoes" value="' + esc(v('v', '380')) + '">' +
+          '<datalist id="qtTensoes"><option value="34500"><option value="23000"><option value="13800">' +
+          '<option value="11400"><option value="380"><option value="220"></datalist></div>' +
+        '<div class="qt-campo"><label class="qt-rot">Distância (m)</label>' +
+          '<input id="qtDist" type="text" inputmode="decimal" value="' + esc(v('dist', '200')) + '"></div>' +
+        '<div class="qt-campo"><label class="qt-rot">Sistema</label><select id="qtSist">' +
+          '<option value="tri">Trifásico</option><option value="mono">Mono / bifásico</option></select></div>' +
+        '<div class="qt-campo"><label class="qt-rot">Limite (%)</label>' +
+          '<input id="qtLim" type="text" inputmode="decimal" value="' + esc(v('limite', '5')) + '"></div>' +
+      '</div>' +
+      '<div id="qtSaida"></div>' +
+      '<details><summary>Tabela de impedância — R e X por condutor</summary>' +
+        '<p class="qt-nota">Valores típicos a 60 Hz, condutor a 75 °C, espaçamento comum de distribuição, ' +
+        'e ampacidade ao tempo. A planilha do site só guarda peso por metro (colunas O e P), então estes ' +
+        'vieram de tabela e <b>não</b> da CEEE: confira e corrija o que estiver fora do padrão de vocês — ' +
+        'fica salvo neste aparelho.</p>' +
+        '<table style="margin-top:.6rem"><thead><tr><th>Condutor</th><th>R (Ω/km)</th><th>X (Ω/km)</th>' +
+        '<th>Ampacidade (A)</th></tr></thead>' +
+        '<tbody id="qtImped">' + tabelaImped() + '</tbody></table>' +
+        '<button id="qtReset" style="margin-top:.7rem;background:none;border:1px solid var(--border);' +
+          'border-radius:6px;padding:.35rem .8rem;color:var(--muted);font-family:\'DM Mono\',monospace;' +
+          'font-size:.7rem;cursor:pointer">Voltar aos valores originais</button>' +
+      '</details>' +
+      '<p class="qt-nota">A conta é a aproximada de projeto, a mesma da planilha: não entra efeito capacitivo ' +
+      'da linha nem variação de resistência com a temperatura real do condutor. Para ramal curto e carga ' +
+      'concentrada na ponta ela fecha; carga distribuída ao longo do vão dá queda menor que esta.</p>';
+    main.appendChild(painel);
+
+    /* sem isto o navegador marca os campos como "preenchíveis" e pinta por
+       baixo com o amarelo do autofill, que no tema escuro vira oliva */
+    painel.querySelectorAll('input').forEach(function (el) {
+      el.setAttribute('autocomplete', 'off');
+    });
+
+    var btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.setAttribute('data-tab', 'queda-tensao');
+    btn.innerHTML = '<svg class="tab-icon" aria-hidden="true"><use href="#i-zap"/></svg> Queda de Tensão';
+    irmao.parentNode.insertBefore(btn, irmao.nextSibling);
+
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      painel.classList.add('active');
+      var lbl = $('mobCurrentTab');
+      if (lbl) lbl.textContent = 'Queda de Tensão';
+      if (typeof closeSidebar === 'function') closeSidebar();
+      calcular();
+    });
+
+    if (ant.modo) $('qtModo').value = ant.modo;
+    if (ant.sist) $('qtSist').value = ant.sist;
+
+    ['qtPot','qtFp','qtV','qtDist','qtLim'].forEach(function (id) {
+      $(id).addEventListener('input', calcular);
+    });
+    ['qtModo','qtSist'].forEach(function (id) { $(id).addEventListener('change', calcular); });
+
+    $('qtImped').addEventListener('input', function (ev) {
+      var el = ev.target;
+      if (!el.dataset || el.dataset.k === undefined) return;
+      var valor = num(el.value);
+      if (isNaN(valor) || valor <= 0) return;
+      imped[+el.dataset.k][el.dataset.p] = valor;
+      salvarImped();
+      calcular();
+    });
+
+    $('qtReset').addEventListener('click', function () {
+      try { localStorage.removeItem(CHAVE_IMP); } catch (e) {}
+      carregarImped();
+      $('qtImped').innerHTML = tabelaImped();
+      calcular();
+    });
+
+    calcular();
+    montado = true;
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', criar);
+  else criar();
 })();
 </script>
 </body>

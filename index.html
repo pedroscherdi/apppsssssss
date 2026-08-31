@@ -24,13 +24,15 @@
   <meta name="description" content="Estrutura de Materiais · Grupo Setup"/>
 
   <!-- Favicon (aparece na aba do navegador e nos resultados de busca do Google) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060f0a'/%3E%3Ctext x='256' y='340' font-family='Arial Black,sans-serif' font-size='280' font-weight='900' text-anchor='middle' fill='%2300e676'%3ESB%3C/text%3E%3C/svg%3E"/>
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>
 
   <!-- Ícone para iOS -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23060f0a'/%3E%3Ctext x='256' y='340' font-family='Arial Black,sans-serif' font-size='280' font-weight='900' text-anchor='middle' fill='%2300e676'%3ESB%3C/text%3E%3C/svg%3E"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/icone-180.png"/>
 
-  <!-- Manifest PWA via blob -->
-  <link id="pwa-manifest" rel="manifest"/>
+  <!-- Manifest PWA -->
+  <link id="pwa-manifest" rel="manifest" href="/manifest.json"/>
 
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -53,8 +55,9 @@
         purpose: "any maskable"
       }]
     };
-    const manifestBlob = new Blob([JSON.stringify(SB_MANIFEST)], {type:'application/json'});
-    document.getElementById('pwa-manifest').href = URL.createObjectURL(manifestBlob);
+    /* O manifest agora e o arquivo /manifest.json, e o <link> ja aponta
+       para ele. Gerado por blob, o navegador nunca oferecia "instalar";
+       o objeto SB_MANIFEST acima fica so como referencia do conteudo. */
 
     const SW_VERSION = 'setupboom-v1';
     const swCode = `

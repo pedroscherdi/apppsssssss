@@ -3994,7 +3994,10 @@ self.addEventListener('fetch', e => {
           }).join('')}<td style="text-align:center;"><button onclick="abrirSubstModal(${i},'${itemCode.replace(/'/g,"\\'")}','${itemDesc.replace(/'/g,"\\'")}',event)" title="Substituir material" style="background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.8rem;font-family:'DM Mono',monospace;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,230,118,0.18)'" onmouseout="this.style.background='rgba(0,230,118,0.08)'">🔄</button></td></tr>`;
         }).join('')
       : `<tr><td colspan="${cols.length + 1}" style="padding:2rem;text-align:center;color:var(--muted)">Nenhum componente encontrado.</td></tr>`;
-    currentItems = items; currentCols = cols; codigoAtual = code;
+    /* Cópia das linhas: a substituição de material escreve em currentItems, e
+       structures[code] guarda as MESMAS referências de allData. Sem o clone,
+       trocar um item sujaria a planilha carregada pro app inteiro. */
+    currentItems = items.map(r => Object.assign({}, r)); currentCols = cols; codigoAtual = code;
     updateFavBtn();
     document.getElementById('results').classList.add('visible', 'fade-in');
 
@@ -4237,6 +4240,14 @@ self.addEventListener('fetch', e => {
 
   window.confirmarSubstituicao = function() {
     if (!_substSelCode || _substRowIdx < 0) return;
+
+    // Grava a troca nos DADOS — é daqui que CSV, Excel, PDF e Orçamento leem.
+    const linhaTrocada = currentItems[_substRowIdx];
+    if (linhaTrocada) {
+      linhaTrocada[columnMap.item] = _substSelCode;
+      if (columnMap.desc && _substSelDesc) linhaTrocada[columnMap.desc] = _substSelDesc;
+    }
+
     // Atualiza visual na tabela — linha já renderizada
     const tr = document.querySelector(`#tableBody tr[data-row-idx="${_substRowIdx}"]`);
     if (tr) {
@@ -4779,12 +4790,6 @@ self.addEventListener('fetch', e => {
     const header = currentCols.map(c => c.label).join(',');
     const rows = currentItems.map(row => currentCols.map(c => { const val = String(row[c.key] ?? '').replace(/"/g, '""'); return `"${val}"`; }).join(','));
     download('Setup-Boom-' + (document.getElementById('selectedCode').textContent||'export') + '.csv', 'text/csv', [header, ...rows].join('\n'));
-  }
-  function exportExcel() {
-    if (!currentItems.length) return;
-    const header = currentCols.map(c => c.label).join('\t');
-    const rows = currentItems.map(row => currentCols.map(c => String(row[c.key] ?? '')).join('\t'));
-    download('Setup-Boom-' + (document.getElementById('selectedCode').textContent||'export') + '.xls', 'application/vnd.ms-excel;charset=utf-8', '\uFEFF' + [header, ...rows].join('\n'));
   }
   function download(filename, mime, content) {
     const blob = new Blob([content], { type: mime + ';charset=utf-8;' });
@@ -14475,6 +14480,514 @@ Como posso ajudar?</div>
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', criar);
   else criar();
 })();
+</script>
+<script id="mapa-uso">
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAPA DE USO — onde tem gente usando o SetupBoom.
+
+   Bloco ADITIVO: não toca no HTML das abas. O botão da sidebar e o painel
+   nascem via DOM em runtime, e o painel entra com main.appendChild() — mesmo
+   padrão do compartilhar-wpp e da camada de seccionais.
+
+   Grava um ping por login na coleção `acessos` do Firestore, via REST com
+   ?key= (o :batchWrite devolve 403 mesmo com a regra aberta; createDocument
+   e :runQuery passam pelas Regras normalmente).
+
+   ⚠ Coleta GPS e grava matrícula + nome. Isso precisa estar claro pra quem
+   usa — tem um aviso no rodapé da aba. As Regras necessárias estão no
+   comentário no fim deste bloco.
+   ═════════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var PROJETO = 'setupapp-f3ff4';
+  var API_KEY = 'AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk';
+  var BASE    = 'https://firestore.googleapis.com/v1/projects/' + PROJETO +
+                '/databases/(default)/documents';
+  var COLECAO = 'acessos';
+  var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
+
+  /* Quem enxerga a aba. Pra liberar pra todo mundo, troque por: var ADMINS = null; */
+  var ADMINS = ['admin', 'pedro', 'david', 'filipe', 'israel', 'thiago'];
+
+  var pingFeito  = false;
+  var identidade = null;
+  var abaMontada = false;
+  var mapa = null, camadaPinos = null;
+  var dados = [];
+  var periodo = 7;   // dias; 0 = tudo
+
+  /* ── util ───────────────────────────────────────────────────────────── */
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function quando(d) {
+    if (!d) return '—';
+    return d.toLocaleString('pt-BR', {
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function faz(d) {
+    if (!d) return '';
+    var min = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (min < 1)    return 'agora';
+    if (min < 60)   return min + ' min';
+    if (min < 1440) return Math.floor(min / 60) + ' h';
+    return Math.floor(min / 1440) + ' d';
+  }
+
+  function baixar(nome, mime, conteudo) {
+    var blob = new Blob([conteudo], { type: mime + ';charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nome;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  /* ── identidade e ping ──────────────────────────────────────────────── */
+
+  function lerIdentidade() {
+    var inp  = document.getElementById('login-user');
+    var mat  = inp ? inp.value.trim() : '';
+    var info = document.getElementById('userInfo');
+    var sp   = info ? info.querySelector('span') : null;
+    var nome = sp ? sp.textContent.trim() : '';
+    return {
+      matricula: mat || nome || '(desconhecido)',
+      nome:      nome || mat || '(desconhecido)',
+      viaAuth:   !mat            // login pelo Firebase Auth, não por matrícula
+    };
+  }
+
+  function ehAdmin(id) {
+    if (ADMINS === null) return true;
+    if (id.viaAuth) return true;
+    return ADMINS.indexOf(String(id.matricula).toLowerCase()) !== -1;
+  }
+
+  function pegarPosicao(cb) {
+    if (!navigator.geolocation) { cb(null, 'sem suporte'); return; }
+    var respondeu = false;
+    navigator.geolocation.getCurrentPosition(
+      function (p) { if (!respondeu) { respondeu = true; cb(p, null); } },
+      function (e) {
+        if (respondeu) return;
+        respondeu = true;
+        cb(null, e && e.code === 1 ? 'permissão negada'
+                : e && e.code === 3 ? 'tempo esgotado' : 'falhou');
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 300000 }
+    );
+  }
+
+  function registrarPing() {
+    var id = identidade;
+    pegarPosicao(function (pos, erroGeo) {
+      var campos = {
+        matricula: { stringValue: String(id.matricula) },
+        nome:      { stringValue: String(id.nome) },
+        quando:    { timestampValue: new Date().toISOString() },
+        aparelho:  { stringValue: String(navigator.userAgent).slice(0, 300) },
+        origem:    { stringValue: location.hostname || 'arquivo local' }
+      };
+      if (pos) {
+        campos.posicao = { geoPointValue: {
+          latitude:  pos.coords.latitude,
+          longitude: pos.coords.longitude
+        } };
+        campos.precisao = { doubleValue: Math.round(pos.coords.accuracy || 0) };
+        campos.geo      = { stringValue: 'ok' };
+      } else {
+        campos.geo = { stringValue: erroGeo || 'sem posição' };
+      }
+      /* Silencioso de propósito: um ping que falha nunca pode atrapalhar
+         quem só quer consultar uma estrutura. */
+      fetch(BASE + '/' + COLECAO + '?key=' + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: campos })
+      }).catch(function () {});
+    });
+  }
+
+  /* ── leitura ────────────────────────────────────────────────────────── */
+
+  function carregarDados() {
+    var st = document.getElementById('mu-status');
+    if (st) st.textContent = 'Lendo acessos...';
+
+    return fetch(BASE + ':runQuery?key=' + API_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: COLECAO }],
+          orderBy: [{ field: { fieldPath: 'quando' }, direction: 'DESCENDING' }],
+          limit: LIMITE
+        }
+      })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (json) {
+      if (json && json.error) throw new Error(json.error.message || 'erro');
+      dados = (json || []).filter(function (l) { return l && l.document; })
+        .map(function (l) {
+          var f = l.document.fields || {};
+          var p = f.posicao && f.posicao.geoPointValue;
+          return {
+            matricula: f.matricula ? f.matricula.stringValue : '',
+            nome:      f.nome      ? f.nome.stringValue      : '',
+            geo:       f.geo       ? f.geo.stringValue       : '',
+            origem:    f.origem    ? f.origem.stringValue    : '',
+            precisao:  f.precisao  ? Number(f.precisao.doubleValue) : null,
+            lat: p ? Number(p.latitude)  : null,
+            lng: p ? Number(p.longitude) : null,
+            data: f.quando ? new Date(f.quando.timestampValue) : null
+          };
+        });
+      render();
+    })
+    .catch(function (e) {
+      if (st) st.textContent = 'Erro ao ler: ' + e.message;
+      var corpo = document.getElementById('mu-lista-corpo');
+      if (corpo) {
+        corpo.innerHTML = '<tr><td colspan="5" style="padding:2rem;text-align:center;color:var(--muted);">'
+          + 'Não consegui ler a coleção <strong>acessos</strong>.<br>'
+          + 'Confira se as Regras do Firestore liberam leitura dela.</td></tr>';
+      }
+    });
+  }
+
+  function filtrados() {
+    if (!periodo) return dados;
+    var corte = Date.now() - periodo * 86400000;
+    return dados.filter(function (d) { return d.data && d.data.getTime() >= corte; });
+  }
+
+  /* ── mapa ───────────────────────────────────────────────────────────── */
+
+  function carregarLeaflet(cb) {
+    if (window.L) { cb(); return; }
+    if (!document.getElementById('mu-leaflet-css')) {
+      var link = document.createElement('link');
+      link.id = 'mu-leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(link);
+    }
+    var ex = document.querySelector('script[src*="leaflet.min.js"]');
+    if (ex) {
+      ex.addEventListener('load', cb);
+      if (window.L) cb();
+      return;
+    }
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  function desenharMapa() {
+    carregarLeaflet(function () {
+      var div = document.getElementById('mu-map');
+      if (!div) return;
+
+      if (!mapa) {
+        mapa = L.map('mu-map').setView([-30.6, -53.0], 6);  // RS inteiro
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19, attribution: '&copy; OpenStreetMap'
+        }).addTo(mapa);
+        camadaPinos = L.layerGroup().addTo(mapa);
+      }
+      camadaPinos.clearLayers();
+
+      var comPos = filtrados().filter(function (d) {
+        return d.lat != null && d.lng != null && !isNaN(d.lat) && !isNaN(d.lng);
+      });
+
+      var pontos = [];
+      comPos.forEach(function (d) {
+        var horas  = d.data ? (Date.now() - d.data.getTime()) / 3600000 : 999;
+        var recente = horas < 24;
+        var m = L.circleMarker([d.lat, d.lng], {
+          radius: recente ? 8 : 6,
+          color: recente ? '#00e676' : '#4a8f6a',
+          weight: 2,
+          fillColor: recente ? '#00e676' : '#4a8f6a',
+          fillOpacity: recente ? 0.55 : 0.25
+        });
+        m.bindPopup(
+          '<div style="font-family:system-ui,sans-serif;min-width:170px;">'
+          + '<div style="font-weight:700;margin-bottom:2px;">' + esc(d.nome) + '</div>'
+          + '<div style="font-size:0.78rem;color:#666;">Matrícula ' + esc(d.matricula) + '</div>'
+          + '<div style="font-size:0.78rem;margin-top:5px;">' + esc(quando(d.data))
+          + ' <span style="color:#888;">(' + esc(faz(d.data)) + ')</span></div>'
+          + (d.precisao != null
+              ? '<div style="font-size:0.72rem;color:#888;">precisão ~' + d.precisao + ' m</div>'
+              : '')
+          + '<a href="https://www.google.com/maps?q=' + d.lat + ',' + d.lng + '"'
+          + ' target="_blank" rel="noopener"'
+          + ' style="font-size:0.75rem;display:inline-block;margin-top:6px;">Abrir no Maps ↗</a>'
+          + '</div>'
+        );
+        camadaPinos.addLayer(m);
+        pontos.push([d.lat, d.lng]);
+      });
+
+      /* A armadilha de sempre: se o painel estava escondido o Leaflet mediu o
+         container em 0x0 e o mapa fica cinza. Remede depois de pintar. */
+      setTimeout(function () {
+        mapa.invalidateSize();
+        if (pontos.length === 1)      mapa.setView(pontos[0], 15);
+        else if (pontos.length > 1)   mapa.fitBounds(L.latLngBounds(pontos).pad(0.15));
+      }, 60);
+    });
+  }
+
+  /* ── render ─────────────────────────────────────────────────────────── */
+
+  function render() {
+    var lista = filtrados();
+
+    var pessoas = {};
+    var comPos = 0, semPos = 0;
+    lista.forEach(function (d) {
+      pessoas[d.matricula || d.nome] = true;
+      if (d.lat != null) comPos++; else semPos++;
+    });
+
+    var set = function (id, txt) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = txt;
+    };
+    set('mu-n-pessoas', Object.keys(pessoas).length);
+    set('mu-n-acessos', lista.length);
+    set('mu-n-pos', comPos);
+    set('mu-n-sempos', semPos);
+
+    var st = document.getElementById('mu-status');
+    if (st) {
+      st.textContent = lista.length
+        ? lista.length + ' acesso' + (lista.length !== 1 ? 's' : '') + ' no período'
+        : 'Nenhum acesso no período.';
+    }
+
+    var corpo = document.getElementById('mu-lista-corpo');
+    if (corpo) {
+      corpo.innerHTML = lista.length
+        ? lista.slice(0, 300).map(function (d) {
+            var loc = (d.lat != null)
+              ? '<a href="https://www.google.com/maps?q=' + d.lat + ',' + d.lng + '"'
+                + ' target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">'
+                + d.lat.toFixed(4) + ', ' + d.lng.toFixed(4) + ' ↗</a>'
+              : '<span style="color:var(--muted);">' + esc(d.geo || '—') + '</span>';
+            return '<tr>'
+              + '<td>' + esc(d.nome) + '</td>'
+              + '<td><span class="unit-text">' + esc(d.matricula) + '</span></td>'
+              + '<td>' + esc(quando(d.data)) + '</td>'
+              + '<td style="color:var(--muted);">' + esc(faz(d.data)) + '</td>'
+              + '<td>' + loc + '</td>'
+              + '</tr>';
+          }).join('')
+        : '<tr><td colspan="5" style="padding:2rem;text-align:center;color:var(--muted);">'
+          + 'Nenhum acesso registrado neste período.</td></tr>';
+    }
+
+    desenharMapa();
+  }
+
+  function exportarCSV() {
+    var lista = filtrados();
+    if (!lista.length) return;
+    var linhas = [['Nome', 'Matrícula', 'Quando', 'Latitude', 'Longitude', 'Precisão (m)', 'GPS', 'Origem']];
+    lista.forEach(function (d) {
+      linhas.push([
+        d.nome, d.matricula,
+        d.data ? d.data.toISOString() : '',
+        d.lat != null ? d.lat : '', d.lng != null ? d.lng : '',
+        d.precisao != null ? d.precisao : '',
+        d.geo, d.origem
+      ]);
+    });
+    var csv = linhas.map(function (l) {
+      return l.map(function (c) {
+        return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"';
+      }).join(',');
+    }).join('\n');
+    baixar('SetupBoom-Acessos-' + new Date().toISOString().split('T')[0] + '.csv',
+           'text/csv', '﻿' + csv);
+  }
+
+  /* ── montagem da aba ────────────────────────────────────────────────── */
+
+  function montarAba() {
+    if (abaMontada) return;
+    var nav  = document.querySelector('.sidebar-nav');
+    var main = document.querySelector('.main-content');
+    if (!nav || !main) return;
+    abaMontada = true;
+
+    var painel = document.createElement('div');
+    painel.className = 'tab-panel';
+    painel.id = 'tab-mapa-uso';
+    painel.innerHTML = ''
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;">'
+      +   '<div>'
+      +     '<h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.2rem;">📍 Mapa de Uso</h2>'
+      +     '<p style="font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">'
+      +       'Onde e quando o app foi aberto</p>'
+      +   '</div>'
+      +   '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">'
+      +     '<button class="btn-ghost" id="mu-recarregar">↻ Atualizar</button>'
+      +     '<button class="btn-export" id="mu-csv">⬇ CSV</button>'
+      +   '</div>'
+      + '</div>'
+
+      + '<div class="sheets-status" style="margin-bottom:1rem;">'
+      +   '<div class="left">'
+      +     '<div class="status-dot ok" id="mu-dot"></div>'
+      +     '<div class="status-text" id="mu-status">Carregando...</div>'
+      +   '</div>'
+      +   '<div style="display:flex;gap:0.35rem;flex-wrap:wrap;" id="mu-periodos">'
+      +     '<button class="btn-ghost mu-per" data-dias="1">24 h</button>'
+      +     '<button class="btn-ghost mu-per" data-dias="7">7 dias</button>'
+      +     '<button class="btn-ghost mu-per" data-dias="30">30 dias</button>'
+      +     '<button class="btn-ghost mu-per" data-dias="0">Tudo</button>'
+      +   '</div>'
+      + '</div>'
+
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1.25rem;">'
+      +   card('mu-n-pessoas', 'pessoas',       'var(--accent)')
+      +   card('mu-n-acessos', 'acessos',       'var(--accent2)')
+      +   card('mu-n-pos',     'com posição',   'var(--text)')
+      +   card('mu-n-sempos',  'sem posição',   'var(--muted)')
+      + '</div>'
+
+      + '<div id="mu-map" style="width:100%;height:clamp(320px,55vh,520px);border-radius:var(--radius);'
+      +   'border:1px solid var(--border);position:relative;z-index:1;"></div>'
+
+      + '<div style="font-family:\'DM Mono\',monospace;font-size:0.68rem;color:var(--muted);margin:0.6rem 0 1.5rem;">'
+      +   '<span style="color:var(--accent);">●</span> últimas 24 h &nbsp;·&nbsp; '
+      +   '<span style="color:#4a8f6a;">●</span> mais antigo'
+      + '</div>'
+
+      + '<div class="table-wrap">'
+      +   '<table><thead><tr>'
+      +     '<th style="width:32%;">Quem</th><th style="width:14%;">Matrícula</th>'
+      +     '<th style="width:16%;">Quando</th><th style="width:10%;">Faz</th>'
+      +     '<th style="width:28%;">Onde</th>'
+      +   '</tr></thead><tbody id="mu-lista-corpo"></tbody></table>'
+      + '</div>'
+
+      + '<div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;'
+      +   'font-family:\'DM Mono\',monospace;font-size:0.7rem;color:var(--muted);line-height:1.6;">'
+      +   '⚠️ Cada login grava matrícula, nome, horário e — se a pessoa autorizar no navegador — '
+      +   'a posição do aparelho. Quem usa o app precisa saber disso.'
+      + '</div>';
+
+    main.appendChild(painel);
+
+    var btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.setAttribute('data-tab', 'mapa-uso');
+    btn.innerHTML = '<svg class="tab-icon" aria-hidden="true"><use href="#i-pin"/></svg> Mapa de Uso';
+    /* Logo abaixo do "Mapa". No fim da lista ele nascia no scroll escondido
+       da sidebar (topo em 1132px numa área visível de 613px) — existia,
+       renderizava, e ninguém achava. */
+    var ancora = nav.querySelector('[data-tab="inicio"]');
+    if (ancora && ancora.nextSibling) nav.insertBefore(btn, ancora.nextSibling);
+    else nav.appendChild(btn);
+
+    /* O listener de abas do site já rodou no load, então este botão precisa
+       do seu próprio — mesmo comportamento do original. */
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      painel.classList.add('active');
+      var lbl = document.getElementById('mobCurrentTab');
+      if (lbl) lbl.textContent = 'Mapa de Uso';
+      if (typeof closeSidebar === 'function') closeSidebar();
+      carregarDados();
+    });
+
+    painel.querySelector('#mu-recarregar').addEventListener('click', carregarDados);
+    painel.querySelector('#mu-csv').addEventListener('click', exportarCSV);
+
+    var pers = painel.querySelectorAll('.mu-per');
+    function marcarPeriodo() {
+      pers.forEach(function (b) {
+        var ativo = Number(b.dataset.dias) === periodo;
+        b.style.borderColor = ativo ? 'var(--accent)' : '';
+        b.style.color       = ativo ? 'var(--accent)' : '';
+      });
+    }
+    pers.forEach(function (b) {
+      b.addEventListener('click', function () {
+        periodo = Number(b.dataset.dias);
+        marcarPeriodo();
+        render();
+      });
+    });
+    marcarPeriodo();
+  }
+
+  function card(id, rotulo, cor) {
+    return '<div style="background:var(--surface);border:1px solid var(--border);'
+      + 'border-radius:var(--radius);padding:0.85rem 1rem;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.5rem;color:' + cor + ';"'
+      + ' id="' + id + '">0</div>'
+      + '<div style="font-family:\'DM Mono\',monospace;font-size:0.66rem;text-transform:uppercase;'
+      + 'letter-spacing:0.08em;color:var(--muted);margin-top:2px;">' + rotulo + '</div>'
+      + '</div>';
+  }
+
+  /* ── gatilho: entra quando o app aparece, sai quando volta pro login ── */
+
+  function observar() {
+    var appC = document.getElementById('appContent');
+    if (!appC) return;
+    new MutationObserver(function () {
+      var visivel = appC.style.display && appC.style.display !== 'none';
+      if (visivel && !pingFeito) {
+        pingFeito  = true;
+        identidade = lerIdentidade();
+        registrarPing();
+        if (ehAdmin(identidade)) montarAba();
+      } else if (!visivel) {
+        pingFeito = false;
+      }
+    }).observe(appC, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observar);
+  } else {
+    observar();
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGRAS DO FIRESTORE — sem isto a aba fica vazia e nenhum ping é gravado.
+   Console → Firestore → Regras, dentro do match /databases/{database}/documents:
+
+     match /acessos/{id} {
+       allow create: if true;          // qualquer login grava seu ping
+       allow read:   if true;          // a aba lê com a chave pública
+       allow update, delete: if false; // log não se reescreve
+     }
+
+   O `read: if true` é o preço de ler direto do navegador: a API key está no
+   código-fonte da página, então quem a copiar consegue baixar o histórico de
+   posição de todo mundo. Pra fechar isso seria preciso passar o login de
+   matrícula para o Firebase Auth de verdade e trocar por `if request.auth != null`.
+   ═════════════════════════════════════════════════════════════════════════ */
 </script>
 </body>
 </html>

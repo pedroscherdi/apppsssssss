@@ -14989,5 +14989,560 @@ Como posso ajudar?</div>
    matrícula para o Firebase Auth de verdade e trocar por `if request.auth != null`.
    ═════════════════════════════════════════════════════════════════════════ */
 </script>
+
+<script id="sb-edicao-componentes">
+/* ═══════════════════════════════════════════════════════════════════════════
+   ABA CONSULTAR — "Sua versão" da estrutura, salva no navegador
+   ---------------------------------------------------------------------------
+   Cada pessoa pode ajustar a lista de componentes de uma estrutura (trocar
+   material, mudar quantidade/unidade, remover linha, incluir item que não está
+   na planilha). O resultado fica no localStorage DAQUELE navegador e é
+   reaplicado toda vez que a estrutura é aberta — inclusive pelos Favoritos.
+   A planilha do Google não é tocada: isto é cópia pessoal, não edição da base.
+
+   Por que aqui no fim do arquivo e não no HTML da aba: mover qualquer coisa
+   perto dos .tab-panel remonta a árvore e desloca o site inteiro. Padrão
+   aditivo — script antes do último </body>, tudo via DOM em runtime.
+
+   Ganchos (funções globais do script principal, envolvidas sem reescrevê-las):
+     showResults          → depois de renderizar, aplica a versão salva
+     confirmarSubstituicao→ persiste a troca; em modo "adicionar", cria a linha
+     abrirSubstModal      → garante que o modal volta ao modo substituir
+     fecharSubstModal     → devolve os rótulos do modal
+     renderFavoritos      → marca no card as estruturas com versão própria
+   ═════════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var LS = 'sbEdicoesComponentes_v1';
+  var modoAdd = false;      // o modal de substituição está servindo de "adicionar"?
+  var _undo = null;         // um nível de desfazer, por estrutura
+  var _unidades = null;     // cache: código do item → unidade vista na planilha
+
+  // ── utilidades ────────────────────────────────────────────────────────────
+  function lerStore() {
+    try { return JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) { return {}; }
+  }
+  function gravarStore(s) {
+    try { localStorage.setItem(LS, JSON.stringify(s)); return true; }
+    catch (e) { toast('⚠️ Não deu pra salvar: armazenamento do navegador cheio.', 'error'); return false; }
+  }
+  function toast(m, t) { if (typeof showToast === 'function') showToast(m, t || 'success'); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function txt(v) { return String(v == null ? '' : v); }
+  function plural(n, um, muitos) { return n + ' ' + (n === 1 ? um : muitos); }
+
+  function colKeys() {
+    var c = (typeof columnMap === 'object' && columnMap) ? columnMap : {};
+    return { item: c.item, desc: c.desc, qty: c.qty, unit: c.unit };
+  }
+  function origRows(code) {
+    try { return (structures && structures[code]) ? structures[code] : []; } catch (e) { return []; }
+  }
+  function temColunas() { var k = colKeys(); return !!k.item; }
+
+  function flash(tr) {
+    if (!tr) return;
+    tr.style.background = 'rgba(0,230,118,0.10)';
+    setTimeout(function () { if (tr) tr.style.background = ''; }, 1800);
+  }
+
+  // Unidade padrão de um item, pescada de qualquer linha da planilha que o use.
+  function unidadeDe(codigo) {
+    var k = colKeys();
+    if (!k.item || !k.unit) return '';
+    if (!_unidades) {
+      _unidades = {};
+      try {
+        allData.forEach(function (r) {
+          var c = txt(r[k.item]).trim();
+          if (c && !_unidades[c]) _unidades[c] = txt(r[k.unit]).trim();
+        });
+      } catch (e) { /* planilha ainda não carregou */ }
+    }
+    return _unidades[String(codigo).trim()] || '';
+  }
+
+  // ── modelo salvo ──────────────────────────────────────────────────────────
+  // store[CODIGO] = { ts, base: <nº de linhas da planilha na hora da edição>,
+  //                   rows: [ { i: <índice da linha original | null>, item, desc, qty, unit } ] }
+  function entradaDe(row) {
+    var k = colKeys();
+    return {
+      i:    (row.__sbSrc == null ? null : row.__sbSrc),
+      item: txt(row[k.item]),
+      desc: k.desc ? txt(row[k.desc]) : '',
+      qty:  k.qty  ? txt(row[k.qty])  : '',
+      unit: k.unit ? txt(row[k.unit]) : ''
+    };
+  }
+
+  function resumo(code, edOpcional) {
+    var ed = edOpcional || lerStore()[code];
+    if (!ed || !ed.rows) return null;
+    var base = origRows(code), k = colKeys();
+    var add = 0, del = 0, mod = 0, vistos = {};
+    ed.rows.forEach(function (e) {
+      if (e.i == null || !base[e.i]) { add++; return; }
+      vistos[e.i] = true;
+      var o = base[e.i];
+      var difere = txt(o[k.item]) !== e.item
+        || (k.desc && txt(o[k.desc]) !== e.desc)
+        || (k.qty  && txt(o[k.qty])  !== e.qty)
+        || (k.unit && txt(o[k.unit]) !== e.unit);
+      if (difere) mod++;
+    });
+    base.forEach(function (_, i) { if (!vistos[i]) del++; });
+    return { add: add, del: del, mod: mod, total: add + del + mod, itens: ed.rows.length, base: ed.base };
+  }
+
+  function salvar() {
+    var code = (typeof codigoAtual !== 'undefined') ? codigoAtual : '';
+    if (!code) return;
+    var store = lerStore();
+    var novo = !store[code];
+    var reg = { ts: Date.now(), base: origRows(code).length, rows: currentItems.map(entradaDe) };
+    var r = resumo(code, reg);
+
+    if (!r || r.total === 0) {
+      // voltou a bater com a planilha — não faz sentido guardar cópia
+      if (store[code]) { delete store[code]; gravarStore(store); }
+    } else {
+      store[code] = reg;
+      if (!gravarStore(store)) return;
+      if (novo && garantirFavorito(code)) {
+        toast('⭐ <strong>' + esc(code) + '</strong> entrou nos Favoritos com a sua versão.');
+      }
+    }
+    if (typeof renderFavoritos === 'function') renderFavoritos();
+    barra();
+  }
+
+  function garantirFavorito(code) {
+    try {
+      if (favoritos.indexOf(code) !== -1) return false;
+      favoritos.push(code);
+      if (typeof saveFavoritos === 'function') saveFavoritos();
+      if (typeof updateFavBtn === 'function') updateFavBtn();
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function snapshot() {
+    _undo = {
+      code: (typeof codigoAtual !== 'undefined') ? codigoAtual : '',
+      rows: currentItems.map(function (r) { return Object.assign({}, r); })
+    };
+  }
+
+  // ── render da tabela com os controles de edição ───────────────────────────
+  function renderTabela() {
+    var tbody = document.getElementById('tableBody');
+    var thead = document.getElementById('tableHead');
+    if (!tbody || !currentCols || !currentCols.length) return;
+    var k = colKeys(), cols = currentCols;
+
+    thead.innerHTML = '<tr>' + cols.map(function (c) { return '<th>' + esc(c.label) + '</th>'; }).join('')
+      + '<th style="width:104px;text-align:center;">Editar</th></tr>';
+
+    if (!currentItems.length) {
+      tbody.innerHTML = '<tr><td colspan="' + (cols.length + 1) + '" style="padding:2rem;text-align:center;color:var(--muted)">'
+        + 'Você removeu todos os componentes desta estrutura. Use “↺ Restaurar original” para trazer a lista da planilha de volta.'
+        + '</td></tr>';
+    } else {
+      tbody.innerHTML = currentItems.map(function (row, i) {
+        var novo = (row.__sbSrc == null);
+        var tds = cols.map(function (c, ci) {
+          var val = row[c.key];
+          if (ci === 0) {
+            return '<td>' + (novo ? '<span class="sb-tag-novo">novo</span>' : '')
+              + '<span class="subst-item-btn" onclick="sbEdSubst(' + i + ',event)">' + esc(val)
+              + '<span class="subst-icon">↕</span></span></td>';
+          }
+          if (c.key && c.key === k.qty) {
+            return '<td><input class="sb-ed-inp sb-ed-qty" inputmode="decimal" data-i="' + i
+              + '" data-campo="qty" value="' + esc(val) + '" /></td>';
+          }
+          if (c.key && c.key === k.unit) {
+            return '<td><input class="sb-ed-inp sb-ed-un" data-i="' + i
+              + '" data-campo="unit" value="' + esc(val) + '" /></td>';
+          }
+          return '<td>' + esc(val) + '</td>';
+        }).join('');
+        return '<tr data-row-idx="' + i + '">' + tds
+          + '<td style="text-align:center;white-space:nowrap;">'
+          + '<button class="sb-ed-btn" title="Substituir material" onclick="sbEdSubst(' + i + ',event)">🔄</button>'
+          + '<button class="sb-ed-btn sb-ed-del" title="Remover item desta estrutura" onclick="sbEdRemover(' + i + ',event)">✕</button>'
+          + '</td></tr>';
+      }).join('');
+    }
+
+    var badge = document.getElementById('countBadge');
+    if (badge) badge.textContent = plural(currentItems.length, 'componente', 'componentes');
+    ligarInputs();
+  }
+
+  function ligarInputs() {
+    document.querySelectorAll('#tableBody .sb-ed-inp').forEach(function (inp) {
+      inp.addEventListener('change', comitarCampo);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+    });
+  }
+
+  function comitarCampo() {
+    var i = parseInt(this.dataset.i, 10);
+    var row = currentItems[i];
+    if (!row) return;
+    var k = colKeys();
+    var chave = (this.dataset.campo === 'qty') ? k.qty : k.unit;
+    if (!chave) return;
+    var v = this.value.trim();
+    // 1,5 → 1.5 só quando é número puro: o Orçamento soma com parseFloat.
+    if (this.dataset.campo === 'qty' && /^\d+,\d+$/.test(v)) v = v.replace(',', '.');
+    this.value = v;
+    if (txt(row[chave]) === v) return;
+    snapshot();
+    row[chave] = v;
+    salvar();
+    flash(this.closest('tr'));
+  }
+
+  // ── ações expostas nos onclick ────────────────────────────────────────────
+  window.sbEdSubst = function (i, evt) {
+    if (evt) evt.stopPropagation();
+    var row = currentItems[i];
+    if (!row) return;
+    var k = colKeys();
+    modoAdd = false;
+    restaurarModal();
+    window.abrirSubstModal(i, txt(row[k.item]), k.desc ? txt(row[k.desc]) : '', evt);
+  };
+
+  window.sbEdRemover = function (i, evt) {
+    if (evt) evt.stopPropagation();
+    var row = currentItems[i];
+    if (!row) return;
+    var k = colKeys();
+    var nome = txt(row[k.item]) || 'item';
+    snapshot();
+    currentItems.splice(i, 1);
+    salvar();
+    renderTabela();
+    toast('🗑️ <strong>' + esc(nome) + '</strong> removido da sua versão. '
+        + '<a href="#" onclick="sbEdDesfazer();return false;" style="color:var(--accent);text-decoration:underline;">desfazer</a>');
+  };
+
+  window.sbEdDesfazer = function () {
+    var code = (typeof codigoAtual !== 'undefined') ? codigoAtual : '';
+    if (!_undo || _undo.code !== code) { toast('Nada pra desfazer aqui.', 'error'); return; }
+    currentItems = _undo.rows.map(function (r) { return Object.assign({}, r); });
+    _undo = null;
+    salvar();
+    renderTabela();
+    toast('↩️ Desfeito.');
+  };
+
+  window.sbEdRestaurar = function () {
+    var code = (typeof codigoAtual !== 'undefined') ? codigoAtual : '';
+    if (!code) return;
+    var store = lerStore();
+    if (!store[code]) return;
+    if (!confirm('Restaurar ' + code + ' como está na planilha?\n\nSuas alterações salvas nesta estrutura serão apagadas.')) return;
+    delete store[code];
+    gravarStore(store);
+    _undo = null;
+    window.showResults(code);
+    if (typeof renderFavoritos === 'function') renderFavoritos();
+    toast('↺ <strong>' + esc(code) + '</strong> voltou ao original da planilha.');
+  };
+
+  window.sbEdAdicionar = function (evt) {
+    if (evt) evt.stopPropagation();
+    var code = (typeof codigoAtual !== 'undefined') ? codigoAtual : '';
+    if (!code) { toast('Selecione uma estrutura primeiro.', 'error'); return; }
+    if (!temColunas()) { toast('Dados ainda não carregados.', 'error'); return; }
+
+    modoAdd = true;
+    _substRowIdx = -1; _substSelCode = ''; _substSelDesc = '';
+
+    var box = document.getElementById('substModalBox');
+    box.querySelector('h3').textContent = '➕ Adicionar item em ' + code;
+    var lbl = document.querySelector('#substModalOrig .orig-label');
+    if (lbl) lbl.textContent = 'Entra na estrutura';
+    document.getElementById('substOrigCode').textContent = code;
+    document.getElementById('substOrigDesc').textContent = 'O item vai para o fim da lista, só na sua versão.';
+    document.getElementById('substSearchInput').value = '';
+    document.getElementById('substDropdown').classList.remove('open');
+    document.getElementById('substDropdown').innerHTML = '';
+    document.getElementById('substPreview').classList.remove('show');
+    document.getElementById('substConfirmBtn').disabled = true;
+    var lblBusca = document.querySelector('#substSearchWrap span');
+    if (lblBusca) lblBusca.textContent = 'Buscar item (código ou descrição)';
+    var lblPrev = document.querySelector('#substPreview .prev-label');
+    if (lblPrev) lblPrev.textContent = 'Item escolhido';
+    document.getElementById('sbAddQtdInput').value = '1';
+    document.getElementById('sbAddUnInput').value = '';
+    document.getElementById('sbAddQtd').style.display = 'flex';
+    document.getElementById('substModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { document.getElementById('substSearchInput').focus(); }, 80);
+  };
+
+  function restaurarModal() {
+    var box = document.getElementById('substModalBox');
+    if (!box) return;
+    box.querySelector('h3').textContent = '🔄 Substituir Material';
+    var lbl = document.querySelector('#substModalOrig .orig-label');
+    if (lbl) lbl.textContent = 'Material atual';
+    var lb = document.querySelector('#substSearchWrap span');
+    if (lb) lb.textContent = 'Buscar substituto (código ou descrição)';
+    var lp = document.querySelector('#substPreview .prev-label');
+    if (lp) lp.textContent = 'Substituir por';
+    var qt = document.getElementById('sbAddQtd');
+    if (qt) qt.style.display = 'none';
+  }
+
+  // ── barra de status da versão editada ─────────────────────────────────────
+  function barra() {
+    var bar = document.getElementById('sbEdBar');
+    if (!bar) return;
+    var code = (typeof codigoAtual !== 'undefined') ? codigoAtual : '';
+    var r = code ? resumo(code) : null;
+    if (!r || !r.total) { bar.style.display = 'none'; return; }
+
+    var partes = [];
+    if (r.mod) partes.push(plural(r.mod, 'linha alterada', 'linhas alteradas'));
+    if (r.del) partes.push(plural(r.del, 'item removido', 'itens removidos'));
+    if (r.add) partes.push(plural(r.add, 'item novo', 'itens novos'));
+
+    var atual = origRows(code).length;
+    var aviso = (r.base != null && atual && r.base !== atual)
+      ? '<span class="sb-ed-warn">⚠️ A planilha mudou depois da sua edição (hoje são ' + atual
+        + ' linhas). Restaure o original se quiser a versão nova.</span>'
+      : '';
+
+    bar.innerHTML =
+      '<div><strong>✏️ Sua versão de ' + esc(code) + '</strong> — ' + partes.join(' · ')
+      + '<span class="sb-ed-sub">Salva só neste navegador. CSV, Excel, PDF e Orçamento saem com ela. '
+      + (aviso ? '</span><span class="sb-ed-sub">' + aviso : '')
+      + '</span></div>'
+      + '<button class="btn-export sb-ed-restaurar" onclick="sbEdRestaurar()">↺ Restaurar original</button>';
+    bar.style.display = 'flex';
+  }
+
+  // ── aplica a versão salva depois que a aba renderiza ──────────────────────
+  function aplicar(code) {
+    if (!temColunas() || !currentCols || !currentCols.length) return;
+    var k = colKeys(), base = origRows(code), ed = lerStore()[code];
+
+    if (ed && Array.isArray(ed.rows)) {
+      currentItems = ed.rows.map(function (e) {
+        // Linha vinda da planilha: parte do original pra não perder as outras
+        // colunas (comprimento, topo/base, etc). Linha nova: objeto limpo.
+        var temOrig = (e.i != null && base[e.i]);
+        var r = temOrig ? Object.assign({}, base[e.i]) : {};
+        r.__sbSrc = temOrig ? e.i : null;
+        if (k.item) r[k.item] = e.item;
+        if (k.desc) r[k.desc] = e.desc;
+        if (k.qty)  r[k.qty]  = e.qty;
+        if (k.unit) r[k.unit] = e.unit;
+        return r;
+      });
+    } else {
+      currentItems = currentItems.map(function (r, i) {
+        var c = Object.assign({}, r); c.__sbSrc = i; return c;
+      });
+    }
+    renderTabela();
+    barra();
+  }
+
+  // ── monta os elementos novos (uma vez) ────────────────────────────────────
+  function montarUI() {
+    var st = document.createElement('style');
+    st.id = 'sb-ed-css';
+    st.textContent = [
+      '#sbEdBar{display:none;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;',
+      'background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);',
+      'border-radius:var(--radius);padding:.6rem .85rem;margin-bottom:.9rem;',
+      "font-family:'DM Mono',monospace;font-size:.74rem;color:var(--muted);line-height:1.5}",
+      '#sbEdBar strong{color:var(--accent);font-weight:600}',
+      '#sbEdBar .sb-ed-sub{display:block;margin-top:2px;font-size:.66rem;opacity:.8}',
+      '#sbEdBar .sb-ed-warn{color:#ff9f43}',
+      '.sb-ed-inp{width:72px;background:rgba(0,230,118,.08);border:1px solid var(--border);border-radius:4px;',
+      "color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;padding:2px 6px;text-align:center}",
+      '.sb-ed-inp:focus{outline:none;border-color:var(--accent);background:rgba(0,230,118,.16)}',
+      '.sb-ed-un{width:66px;color:var(--muted);font-size:.72rem}',
+      '.sb-ed-btn{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);color:var(--accent);',
+      "border-radius:6px;padding:3px 9px;margin:0 2px;cursor:pointer;font-size:.8rem;font-family:'DM Mono',monospace;",
+      'transition:background .15s}',
+      '.sb-ed-btn:hover{background:rgba(0,230,118,.18)}',
+      '.sb-ed-del{color:var(--danger);border-color:rgba(255,82,82,.28);background:rgba(255,82,82,.07)}',
+      '.sb-ed-del:hover{background:rgba(255,82,82,.16)}',
+      '.sb-tag-novo{display:inline-block;background:rgba(255,159,67,.14);color:#ff9f43;border-radius:4px;',
+      "padding:0 5px;font-family:'DM Mono',monospace;font-size:.6rem;text-transform:uppercase;",
+      'letter-spacing:.06em;margin-right:6px;vertical-align:middle}',
+      '.sb-fav-edit{font-family:\'DM Mono\',monospace;font-size:.63rem;color:var(--accent);',
+      'background:rgba(0,230,118,.1);border-radius:4px;padding:1px 6px;align-self:flex-start}',
+      '#sbAddQtd{display:none;gap:.7rem;margin-top:.85rem;align-items:flex-end}',
+      "#sbAddQtd label{font-family:'DM Mono',monospace;font-size:.66rem;text-transform:uppercase;",
+      'letter-spacing:.08em;color:var(--muted);display:block}',
+      '#sbAddQtd input{width:100%;margin-top:4px;background:var(--bg);border:1px solid var(--border);',
+      "border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:.85rem;padding:.45rem .6rem}",
+      '#sbAddQtd input:focus{outline:none;border-color:var(--accent)}',
+      '@media(max-width:640px){.sb-ed-inp{width:58px}.sb-ed-un{width:52px}',
+      '.sb-ed-btn{padding:3px 7px;margin:0 1px}}'
+    ].join('');
+    document.head.appendChild(st);
+
+    // Botão "➕ Item" ao lado dos exports
+    var header = document.querySelector('#results .results-header');
+    if (header && !document.getElementById('sbEdAddBtn')) {
+      var btns = header.lastElementChild;
+      var b = document.createElement('button');
+      b.id = 'sbEdAddBtn';
+      b.className = 'btn-export';
+      b.textContent = '➕ Item';
+      b.title = 'Incluir um material que não está na estrutura padrão';
+      b.addEventListener('click', window.sbEdAdicionar);
+      var ref = document.getElementById('btnAddOrcamento');
+      if (btns) btns.insertBefore(b, ref || btns.firstChild);
+    }
+
+    // Barra de status logo abaixo do cabeçalho dos resultados
+    if (header && !document.getElementById('sbEdBar')) {
+      var bar = document.createElement('div');
+      bar.id = 'sbEdBar';
+      header.parentNode.insertBefore(bar, header.nextSibling);
+    }
+
+    // Campos de quantidade/unidade dentro do modal, só usados no modo adicionar
+    var box = document.getElementById('substModalBox');
+    if (box && !document.getElementById('sbAddQtd')) {
+      var wrap = document.createElement('div');
+      wrap.id = 'sbAddQtd';
+      wrap.innerHTML = '<label style="flex:1">Quantidade<input id="sbAddQtdInput" inputmode="decimal" value="1" /></label>'
+                     + '<label style="flex:1">Unidade<input id="sbAddUnInput" placeholder="UN" /></label>';
+      var btnsModal = document.getElementById('substModalBtns');
+      box.insertBefore(wrap, btnsModal);
+    }
+
+    // Explicação na aba Favoritos
+    var infoFav = document.querySelector('#tab-favoritos .info-card');
+    if (infoFav && !infoFav.querySelector('.sb-fav-nota')) {
+      var nota = document.createElement('div');
+      nota.className = 'sb-fav-nota';
+      nota.style.cssText = 'margin-top:.5rem;font-size:.8rem;opacity:.85;';
+      nota.innerHTML = 'As estruturas marcadas com <strong style="color:var(--accent)">✏️ sua versão</strong> '
+        + 'guardam as alterações que você fez nos componentes — trocas, quantidades, itens removidos e incluídos. '
+        + 'Ficam salvas neste navegador; em outro aparelho a estrutura volta a ser a da planilha.';
+      infoFav.appendChild(nota);
+    }
+  }
+
+  // ── ganchos nas funções originais ─────────────────────────────────────────
+  var origShow = window.showResults;
+  window.showResults = function (code) {
+    var ret = origShow.apply(this, arguments);
+    try { aplicar(code); } catch (e) { console.error('[sb-edicao] aplicar', e); }
+    return ret;
+  };
+
+  var origAbrir = window.abrirSubstModal;
+  window.abrirSubstModal = function () {
+    if (!modoAdd) restaurarModal();
+    return origAbrir.apply(this, arguments);
+  };
+
+  var origFechar = window.fecharSubstModal;
+  window.fecharSubstModal = function () {
+    var ret = origFechar.apply(this, arguments);
+    modoAdd = false;
+    restaurarModal();
+    return ret;
+  };
+
+  var origConfirmar = window.confirmarSubstituicao;
+  window.confirmarSubstituicao = function () {
+    if (modoAdd) {
+      if (!_substSelCode) return;
+      var k = colKeys();
+      var novo = {};
+      if (k.item) novo[k.item] = _substSelCode;
+      if (k.desc) novo[k.desc] = _substSelDesc || '';
+      if (k.qty) {
+        var q = (document.getElementById('sbAddQtdInput').value || '1').trim() || '1';
+        if (/^\d+,\d+$/.test(q)) q = q.replace(',', '.');
+        novo[k.qty] = q;
+      }
+      if (k.unit) novo[k.unit] = (document.getElementById('sbAddUnInput').value || '').trim();
+      novo.__sbSrc = null;
+      snapshot();
+      currentItems.push(novo);
+      var cod = _substSelCode;
+      window.fecharSubstModal();
+      salvar();
+      renderTabela();
+      var tr = document.querySelector('#tableBody tr[data-row-idx="' + (currentItems.length - 1) + '"]');
+      if (tr) { flash(tr); tr.scrollIntoView({ block: 'nearest' }); }
+      toast('➕ <strong>' + esc(cod) + '</strong> adicionado à sua versão.');
+      return;
+    }
+    if (!_substSelCode || _substRowIdx < 0) return;
+    var idx = _substRowIdx;
+    snapshot();
+    var ret = origConfirmar.apply(this, arguments);   // grava em currentItems[idx]
+    try {
+      salvar();
+      renderTabela();
+      flash(document.querySelector('#tableBody tr[data-row-idx="' + idx + '"]'));
+    } catch (e) { console.error('[sb-edicao] substituir', e); }
+    return ret;
+  };
+
+  var origRenderFav = window.renderFavoritos;
+  window.renderFavoritos = function () {
+    var ret = origRenderFav.apply(this, arguments);
+    try {
+      var store = lerStore();
+      document.querySelectorAll('#favGrid .fav-card').forEach(function (card) {
+        var codeEl = card.querySelector('.fav-card-code');
+        if (!codeEl) return;
+        var ed = store[codeEl.textContent.trim()];
+        if (!ed || !ed.rows) return;
+        var cnt = card.querySelector('.fav-card-count');
+        if (cnt) cnt.textContent = plural(ed.rows.length, 'componente', 'componentes');
+        if (!card.querySelector('.sb-fav-edit')) {
+          var tag = document.createElement('div');
+          tag.className = 'sb-fav-edit';
+          tag.textContent = '✏️ sua versão';
+          card.appendChild(tag);
+        }
+      });
+    } catch (e) { console.error('[sb-edicao] favoritos', e); }
+    return ret;
+  };
+
+  // No modo adicionar, escolher um item no dropdown puxa a unidade da planilha.
+  // O listener fica no container: sobe por bubbling depois do handler original,
+  // então _substSelCode já está preenchido quando este roda.
+  var dd = document.getElementById('substDropdown');
+  if (dd) {
+    dd.addEventListener('click', function (e) {
+      if (!modoAdd || !e.target.closest('.subst-dd-item')) return;
+      setTimeout(function () {
+        var un = document.getElementById('sbAddUnInput');
+        if (un && !un.value) un.value = unidadeDe(_substSelCode) || 'UN';
+      }, 0);
+    });
+  }
+
+  montarUI();
+  if (typeof renderFavoritos === 'function') window.renderFavoritos();
+})();
+</script>
 </body>
 </html>

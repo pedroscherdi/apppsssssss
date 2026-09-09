@@ -15734,5 +15734,462 @@ Como posso ajudar?</div>
    increment e perde-se só a contagem de gente distinta.
    ═════════════════════════════════════════════════════════════════════════ */
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ABA: FLECHA E TRAVESSIA (09/09/2026)
+
+     Bloco aditivo antes do ÚLTIMO </body>, mesmo padrão da "Montar Lista" e
+     da "Queda de Tensão": o painel nasce por DOM e é pendurado no
+     .main-content, e o botão da barra traz o próprio handler (o do site é
+     ligado botão a botão no carregamento e não alcança quem nasce depois).
+     Apagar este bloco remove a aba inteira.
+
+     A PERGUNTA QUE ELA RESPONDE: dois postes, um vão, um cabo — o condutor
+     passa alto o bastante sobre o que está embaixo? Sai a flecha, a altura
+     livre no ponto mais baixo e o veredito contra o afastamento mínimo.
+
+     DE ONDE VÊM OS NÚMEROS (nada inventado quando dá para evitar):
+       · tração  -> TRC_DATA, a mesma tabela que a aba Tração Postes usa
+       · peso/m  -> cabosIndex, das colunas O e P da planilha do site,
+                    o mesmo dado da aba Cabos m→kg
+       · afastamentos -> NBR 15688, tabela de afastamentos mínimos
+     Se a planilha ainda não carregou, o peso cai numa tabela típica embutida
+     e a tela DIZ que caiu — nunca finge que o número veio da planilha.
+
+     LIMITES QUE A TELA DECLARA:
+       · a tração do TRC_DATA existe em 3 classes de vão (45, 70, 140 m).
+         Não há correção por temperatura: é a tração da classe escolhida.
+       · a flecha é a parábola de carga uniforme, aproximação de projeto.
+       · engastamento pela NBR 8451 (h/10 + 0,60 m), editável.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script id="aba-flecha">
+(function () {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ── afastamentos mínimos, NBR 15688 (mm) ───────────────────────────────
+     colunas: [comunicação e cabos aterrados, U <= 1 kV, 1 < U <= 36,2 kV] */
+  var AFAST = [
+    ['Vias exclusivas de pedestre em áreas rurais',                    3000, 4500,  5500],
+    ['Vias exclusivas de pedestre em áreas urbanas',                   3000, 3500,  5500],
+    ['Locais acessíveis ao trânsito de veículos em áreas rurais',      4500, 4500,  6000],
+    ['Estradas rurais e plantio com tráfego de máquinas agrícolas',    6500, 6500,  6500],
+    ['Ruas e avenidas',                                                5000, 5500,  6000],
+    ['Entrada de prédios e locais de uso restrito a veículos',         4500, 4500,  6000],
+    ['Rodovias federais',                                              7000, 7000,  7000],
+    ['Ferrovias não eletrificadas e não eletrificáveis',               6000, 6000,  9000],
+    ['Ferrovias eletrificadas ou eletrificáveis',                      null, null, 12000]
+  ];
+  var TENSOES = ['Comunicação / cabos aterrados', 'U ≤ 1 kV', '1 < U ≤ 36,2 kV'];
+
+  /* Peso por metro (kg/m) — SÓ é usado quando a planilha do site não tiver o
+     cabo. São valores típicos de tabela de fabricante, não da CEEE. */
+  var PESO_TIPICO = {
+    '6CC': 0.118, '4CC': 0.188, '2CC': 0.299, '1/0CC': 0.475, '2/0CC': 0.599,
+    '3/0CC': 0.755, '4/0CC': 0.952,
+    '4CA': 0.058, '2CA': 0.092, '1/0CA': 0.147, '2/0CA': 0.185, '3/0CA': 0.233,
+    '4/0CA': 0.294, '336.4CA': 0.466,
+    '6CAA': 0.036, '4CAA': 0.058, '2CAA': 0.092, '1/0CAA': 0.146, '2/0CAA': 0.184,
+    '3/0CAA': 0.232, '4/0CAA': 0.292, '336.4CAA': 0.689, '397.5CAA': 0.813,
+    'XLPE-336.4': 0.980, 'XLPE-1/0': 0.350
+  };
+
+  var CLASSES = [
+    { v: '45',   l: 'Vão até 45 m' },
+    { v: '70',   l: 'Vão até 70 m' },
+    { v: '140c', l: 'Vão até 140 m — curva' },
+    { v: '140p', l: 'Vão até 140 m — passagem' }
+  ];
+
+  var CHAVE = 'sbFlecha_v1';
+
+  /* ── dados dos cabos ────────────────────────────────────────────────── */
+
+  function tabelaTracao() {
+    try { if (typeof TRC_DATA === 'object' && TRC_DATA) return TRC_DATA; } catch (e) {}
+    return null;
+  }
+
+  /* Preferir SEMPRE a planilha do site; a tabela embutida é rede de proteção. */
+  function pesoDe(cabo) {
+    var simples = function (s) { return String(s).toLowerCase().replace(/[\s.\-]/g, ''); };
+    try {
+      if (typeof cabosIndex === 'object' && cabosIndex) {
+        var alvo = simples(cabo);
+        for (var k in cabosIndex) {
+          if (simples(k) === alvo && cabosIndex[k] && cabosIndex[k].ppm) {
+            return { v: cabosIndex[k].ppm, fonte: 'planilha do site' };
+          }
+        }
+      }
+    } catch (e) {}
+    if (PESO_TIPICO[cabo] != null) return { v: PESO_TIPICO[cabo], fonte: 'tabela típica embutida' };
+    return null;
+  }
+
+  /* ── a conta ────────────────────────────────────────────────────────────
+     Parábola de carga uniforme. Com apoios em alturas diferentes o ponto
+     mais baixo NÃO fica no meio do vão — é isso que os dois postes mudam.
+
+       y(x) = (w/2T)x² + Cx + hA      C = (hB-hA)/L - wL/2T
+       x_min = L/2 - T(hB-hA)/(wL)
+     Se x_min cai fora do vão, o ponto mais baixo é o apoio mais baixo. */
+  function calcular(e) {
+    var altA  = parseFloat($('flAltA').value);
+    var altB  = parseFloat($('flAltB').value);
+    var engA  = parseFloat($('flEngA').value);
+    var engB  = parseFloat($('flEngB').value);
+    var topo  = parseFloat($('flTopo').value);
+    var vao   = parseFloat($('flVao').value);
+    var trac  = parseFloat($('flTrac').value);
+    var peso  = parseFloat($('flPeso').value);
+    var desn  = parseFloat($('flDesnivel').value) || 0;
+    var iLog  = parseInt($('flLog').value, 10);
+    var iTen  = parseInt($('flTen').value, 10);
+
+    var res = $('flRes');
+    $('flDesenho').style.display = 'none';   // some enquanto houver erro; desenho() traz de volta
+    if ([altA, altB, engA, engB, topo, vao, trac, peso].some(function (n) { return isNaN(n) || n < 0; })
+        || vao <= 0 || trac <= 0 || peso <= 0) {
+      res.innerHTML = aviso('Preencha vão, tração e peso com valores maiores que zero.');
+      res.style.display = 'block';
+      return;
+    }
+
+    var hA = altA - engA - topo;          // altura do ponto de fixação, poste A
+    var hB = altB - engB - topo;
+    if (hA <= 0 || hB <= 0) {
+      res.innerHTML = aviso('Com esse engastamento e essa distância do topo, o condutor ficaria no chão.');
+      res.style.display = 'block';
+      return;
+    }
+
+    var w = peso * 0.981;                 // kg/m -> daN/m
+    var T = trac;                         // daN
+    var L = vao;
+
+    var flecha = (w * L * L) / (8 * T);   // flecha vertical em relação à corda
+    var xMin   = L / 2 - (T * (hB - hA)) / (w * L);
+    var dentro = xMin > 0 && xMin < L;
+    var xUso   = dentro ? xMin : (hA <= hB ? 0 : L);
+    var C      = (hB - hA) / L - (w * L) / (2 * T);
+    var yMin   = (w / (2 * T)) * xUso * xUso + C * xUso + hA;
+
+    var livre  = yMin - desn;             // altura livre sobre a pista
+    var exig   = AFAST[iLog][iTen + 1];
+
+    if (exig == null) {
+      res.innerHTML = aviso('A norma não define afastamento para essa combinação — ' +
+        'ferrovia eletrificada só aparece na coluna de 1 a 36,2 kV.');
+      res.style.display = 'block';
+      return;
+    }
+    var exigM = exig / 1000;
+    var folga = livre - exigM;
+    var passa = folga >= 0;
+
+    desenho({
+      altA: altA, altB: altB, engA: engA, engB: engB,
+      topoA: hA, topoB: hB, L: L, desn: desn, exig: exigM,
+      flecha: flecha, xMin: xUso, yMin: yMin, livre: livre, passa: passa,
+      y: function (x) { return (w / (2 * T)) * x * x + C * x + hA; }
+    });
+
+    var cor = passa ? 'var(--accent)' : '#ff5252';
+    res.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.7rem;margin-bottom:0.9rem;">' +
+        cartao('Flecha', flecha.toFixed(2) + ' m', 'no meio do vão, medida da corda') +
+        cartao('Altura livre', livre.toFixed(2) + ' m', 'no ponto mais baixo do cabo') +
+        cartao('Exigido', exigM.toFixed(2) + ' m', TENSOES[iTen]) +
+        cartao(passa ? 'Folga' : 'Falta', Math.abs(folga).toFixed(2) + ' m', passa ? 'acima do mínimo' : 'abaixo do mínimo', cor) +
+      '</div>' +
+      '<div style="background:' + (passa ? 'rgba(0,230,118,0.10)' : 'rgba(255,82,82,0.12)') +
+        ';border:1px solid ' + cor + ';border-radius:var(--radius);padding:0.8rem 1rem;">' +
+        '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.05rem;color:' + cor + ';">' +
+          (passa ? 'PASSA' : 'NÃO PASSA') + '</div>' +
+        '<div style="font-size:0.82rem;color:var(--text);margin-top:0.25rem;">' +
+          esc(AFAST[iLog][0]) + ' — mínimo de ' + exigM.toFixed(2).replace('.', ',') + ' m.' +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top:0.85rem;font-size:0.76rem;color:var(--muted);line-height:1.65;">' +
+        'Fixação: <b>' + hA.toFixed(2) + ' m</b> no poste A e <b>' + hB.toFixed(2) + ' m</b> no poste B ' +
+          '(altura − engastamento − distância do topo).<br>' +
+        'Ponto mais baixo a <b>' + xUso.toFixed(1) + ' m</b> do poste A' +
+          (dentro ? '' : ' — fora do vão pelo cálculo, então vale o apoio mais baixo') + '.<br>' +
+        'Peso ' + peso.toFixed(4) + ' kg/m · tração ' + T.toFixed(0) + ' daN · vão ' + L.toFixed(0) + ' m.' +
+      '</div>';
+    res.style.display = 'block';
+    salvar();
+  }
+
+  /* ── desenho ────────────────────────────────────────────────────────────
+     As escalas horizontal e vertical são INDEPENDENTES de propósito: num vão
+     de 40 m uma flecha de 12 cm é 0,3% da largura e sumiria na linha. O
+     desenho serve para conferir a geometria de relance — postes trocados,
+     desnível invertido, vão absurdo. Quem dá a resposta são os números. */
+  function desenho(d) {
+    var W = 900, H = 440, ML = 84, MR = 84, MT = 30, MB = 86;
+    var pw = W - ML - MR, ph = H - MT - MB;
+
+    var vTopo = Math.max(d.topoA, d.topoB) * 1.16;
+    var vBase = -Math.max(d.engA, d.engB) - 0.5;
+    function ey(v) { return MT + ph * (vTopo - v) / (vTopo - vBase); }
+    function ex(m) { return ML + pw * (m / d.L); }
+
+    var yS = ey(0), yPista = ey(d.desn), yLim = ey(d.desn + d.exig);
+    var cor = d.passa ? 'var(--accent)' : '#ff5252';
+    var s = [];
+
+    s.push('<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block;' +
+           'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);" role="img" ' +
+           'aria-label="Corte do vão: dois postes, o cabo e a altura livre sobre a travessia.">');
+
+    /* zona proibida: entre a pista e o afastamento mínimo */
+    s.push('<rect x="' + ML + '" y="' + yLim + '" width="' + pw + '" height="' + Math.max(0, yPista - yLim) +
+           '" fill="' + (d.passa ? 'rgba(0,230,118,0.07)' : 'rgba(255,82,82,0.10)') + '"/>');
+    s.push('<line x1="' + ML + '" y1="' + yLim + '" x2="' + (W - MR) + '" y2="' + yLim +
+           '" stroke="' + cor + '" stroke-width="1.5" stroke-dasharray="7 5"/>');
+    // no terço esquerdo: encostado à direita o rótulo bate no poste B
+    s.push('<text x="' + (ML + pw * 0.30) + '" y="' + (yLim - 7) + '" font-size="12" fill="' + cor +
+           '">mínimo ' + d.exig.toFixed(2).replace('.', ',') + ' m</text>');
+
+    /* solo e pista */
+    s.push('<line x1="30" y1="' + yS + '" x2="' + (W - 30) + '" y2="' + yS + '" stroke="var(--muted)" stroke-width="2"/>');
+    for (var h = 30; h < W - 30; h += 16) {
+      s.push('<line x1="' + h + '" y1="' + yS + '" x2="' + (h - 8) + '" y2="' + (yS + 9) + '" stroke="var(--muted)" stroke-width="1" opacity="0.5"/>');
+    }
+    if (Math.abs(d.desn) > 0.01) {
+      s.push('<line x1="' + (ML + pw * 0.28) + '" y1="' + yPista + '" x2="' + (ML + pw * 0.72) + '" y2="' + yPista +
+             '" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="4 3"/>');
+      s.push('<text x="' + (ML + pw * 0.5) + '" y="' + (yPista + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">pista</text>');
+    }
+
+    /* postes: parte enterrada mais fraca */
+    function poste(xm, alt, eng, rot) {
+      var x = ex(xm), lar = 9;
+      var yTopoP = ey(alt - eng);
+      s.push('<rect x="' + (x - lar / 2) + '" y="' + yS + '" width="' + lar + '" height="' + Math.max(0, ey(-eng) - yS) +
+             '" fill="var(--muted)" opacity="0.28"/>');
+      s.push('<rect x="' + (x - lar / 2) + '" y="' + yTopoP + '" width="' + lar + '" height="' + Math.max(0, yS - yTopoP) +
+             '" fill="var(--muted)" opacity="0.75" rx="2"/>');
+      s.push('<text x="' + x + '" y="' + (yTopoP - 10) + '" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text)">' +
+             rot + ' · ' + alt.toFixed(1).replace('.', ',') + ' m</text>');
+    }
+    poste(0, d.altA, d.engA, 'A');
+    poste(d.L, d.altB, d.engB, 'B');
+
+    /* o cabo */
+    var pts = [];
+    for (var i = 0; i <= 80; i++) {
+      var x = d.L * i / 80;
+      pts.push(ex(x).toFixed(1) + ',' + ey(d.y(x)).toFixed(1));
+    }
+    s.push('<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + cor +
+           '" stroke-width="2.5" stroke-linecap="round"/>');
+    s.push('<circle cx="' + ex(0) + '" cy="' + ey(d.topoA) + '" r="4" fill="' + cor + '"/>');
+    s.push('<circle cx="' + ex(d.L) + '" cy="' + ey(d.topoB) + '" r="4" fill="' + cor + '"/>');
+
+    /* cota da altura livre, no ponto mais baixo */
+    var xb = ex(d.xMin), yb = ey(d.yMin);
+    s.push('<line x1="' + xb + '" y1="' + yb + '" x2="' + xb + '" y2="' + yPista +
+           '" stroke="' + cor + '" stroke-width="1.5"/>');
+    s.push('<circle cx="' + xb + '" cy="' + yb + '" r="4.5" fill="var(--surface)" stroke="' + cor + '" stroke-width="2"/>');
+    var lado = d.xMin > d.L * 0.6 ? -8 : 8, anc = d.xMin > d.L * 0.6 ? 'end' : 'start';
+    s.push('<text x="' + (xb + lado) + '" y="' + ((yb + yPista) / 2) + '" text-anchor="' + anc +
+           '" font-size="13" font-weight="700" fill="' + cor + '">' + d.livre.toFixed(2).replace('.', ',') + ' m livre</text>');
+
+    /* cota da flecha: da corda até a curva, no meio do vão */
+    var xm2 = d.L / 2, yCorda = d.topoA + (d.topoB - d.topoA) / 2;
+    s.push('<line x1="' + ex(0) + '" y1="' + ey(d.topoA) + '" x2="' + ex(d.L) + '" y2="' + ey(d.topoB) +
+           '" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 4" opacity="0.8"/>');
+    s.push('<line x1="' + ex(xm2) + '" y1="' + ey(yCorda) + '" x2="' + ex(xm2) + '" y2="' + ey(d.y(xm2)) +
+           '" stroke="var(--muted)" stroke-width="1.5"/>');
+    /* acima da corda, não entre corda e curva: com flecha pequena a folga ali
+       é de poucos pixels e o texto sai por cima do cabo */
+    s.push('<text x="' + (ex(xm2) + 9) + '" y="' + (ey(yCorda) - 9) +
+           '" font-size="12" fill="var(--muted)">flecha ' + d.flecha.toFixed(2).replace('.', ',') + ' m</text>');
+
+    /* cota do vão */
+    var yV = H - 44;
+    s.push('<line x1="' + ex(0) + '" y1="' + yV + '" x2="' + ex(d.L) + '" y2="' + yV + '" stroke="var(--muted)" stroke-width="1"/>');
+    s.push('<line x1="' + ex(0) + '" y1="' + (yV - 5) + '" x2="' + ex(0) + '" y2="' + (yV + 5) + '" stroke="var(--muted)" stroke-width="1.5"/>');
+    s.push('<line x1="' + ex(d.L) + '" y1="' + (yV - 5) + '" x2="' + ex(d.L) + '" y2="' + (yV + 5) + '" stroke="var(--muted)" stroke-width="1.5"/>');
+    s.push('<text x="' + ex(d.L / 2) + '" y="' + (yV + 18) + '" text-anchor="middle" font-size="12" fill="var(--muted)">vão ' +
+           d.L.toFixed(0) + ' m</text>');
+    s.push('<text x="' + (W - 30) + '" y="' + (H - 8) + '" text-anchor="end" font-size="10" fill="var(--muted)" opacity="0.8">' +
+           'escalas horizontal e vertical independentes — desenho de conferência</text>');
+
+    s.push('</svg>');
+    var alvo = $('flDesenho');
+    alvo.innerHTML = s.join('');
+    alvo.style.display = 'block';
+  }
+
+  function cartao(rot, val, sub, cor) {
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.7rem 0.85rem;">' +
+      '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.4rem;color:' + (cor || 'var(--accent)') + ';">' + val + '</div>' +
+      '<div style="font-family:\'DM Mono\',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-top:2px;">' + rot + '</div>' +
+      '<div style="font-size:0.7rem;color:var(--muted);margin-top:3px;">' + sub + '</div></div>';
+  }
+  function aviso(t) {
+    return '<div style="background:rgba(255,183,77,0.12);border:1px solid #ffb74d;border-radius:var(--radius);padding:0.75rem 1rem;font-size:0.85rem;">' + esc(t) + '</div>';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* ── reagir à escolha do cabo e da classe ───────────────────────────── */
+  function atualizarCabo() {
+    var cabo = $('flCabo').value;
+    var cls  = $('flClasse').value;
+    var tab  = tabelaTracao();
+    var t    = (tab && tab[cabo]) ? tab[cabo][cls] : null;
+    var nota = $('flFonte');
+
+    if (t == null) {
+      $('flTrac').value = '';
+      nota.innerHTML = '<b style="color:#ffb74d;">Sem tração tabelada</b> para ' + esc(cabo) +
+                       ' nessa classe de vão. Digite o valor à mão.';
+    } else {
+      $('flTrac').value = t;
+    }
+    var p = pesoDe(cabo);
+    if (p) {
+      $('flPeso').value = p.v;
+      if (t != null) nota.innerHTML = 'Tração da tabela do app (' + t + ' daN) · peso da ' + p.fonte + ' (' + p.v.toFixed(4) + ' kg/m).';
+    } else {
+      $('flPeso').value = '';
+      nota.innerHTML = '<b style="color:#ffb74d;">Peso não encontrado</b> para ' + esc(cabo) + '. Digite kg/m à mão.';
+    }
+  }
+
+  function autoEngaste(qual) {
+    var h = parseFloat($(qual === 'A' ? 'flAltA' : 'flAltB').value);
+    if (!isNaN(h) && h > 0) $(qual === 'A' ? 'flEngA' : 'flEngB').value = (h / 10 + 0.6).toFixed(2);
+  }
+
+  function salvar() {
+    try {
+      var o = {};
+      ['flAltA','flAltB','flEngA','flEngB','flTopo','flVao','flCabo','flClasse','flLog','flTen','flDesnivel']
+        .forEach(function (id) { o[id] = $(id).value; });
+      localStorage.setItem(CHAVE, JSON.stringify(o));
+    } catch (e) {}
+  }
+  function restaurar() {
+    try {
+      var o = JSON.parse(localStorage.getItem(CHAVE) || '{}');
+      Object.keys(o).forEach(function (id) { if ($(id) && o[id] !== '') $(id).value = o[id]; });
+    } catch (e) {}
+  }
+
+  /* ── montagem ───────────────────────────────────────────────────────── */
+  function campo(rot, html) {
+    return '<div><div style="font-family:\'DM Mono\',monospace;font-size:0.62rem;text-transform:uppercase;' +
+      'letter-spacing:0.07em;color:var(--muted);margin-bottom:0.3rem;">' + rot + '</div>' + html + '</div>';
+  }
+  var EST = 'width:100%;padding:0.5rem 0.6rem;background:var(--bg);color:var(--text);' +
+            'border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.86rem;';
+
+  function montar() {
+    var main = document.querySelector('.main-content');
+    var irmao = document.querySelector('[data-tab="tracao"]');
+    if (!main || !irmao || $('tab-flecha')) return;
+
+    var tab = tabelaTracao();
+    var cabos = tab ? Object.keys(tab) : Object.keys(PESO_TIPICO);
+
+    var painel = document.createElement('div');
+    painel.className = 'tab-panel';
+    painel.id = 'tab-flecha';
+    painel.innerHTML =
+      '<div class="info-card"><strong>Flecha e Travessia:</strong> informe os dois postes, o cabo e o vão. ' +
+      'Sai a flecha, a altura livre no ponto mais baixo do cabo e o veredito contra o afastamento mínimo ' +
+      'da NBR 15688. Com postes de alturas diferentes o ponto mais baixo não fica no meio do vão — ' +
+      'a conta leva isso em conta.</div>' +
+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0.8rem;margin-bottom:1rem;">' +
+        campo('Altura poste A (m)', '<input id="flAltA" type="number" step="0.5" value="11" style="' + EST + '">') +
+        campo('Engastamento A (m)', '<input id="flEngA" type="number" step="0.05" value="1.70" style="' + EST + '">') +
+        campo('Altura poste B (m)', '<input id="flAltB" type="number" step="0.5" value="11" style="' + EST + '">') +
+        campo('Engastamento B (m)', '<input id="flEngB" type="number" step="0.05" value="1.70" style="' + EST + '">') +
+        campo('Condutor abaixo do topo (m)', '<input id="flTopo" type="number" step="0.05" value="0.20" style="' + EST + '">') +
+        campo('Vão (m)', '<input id="flVao" type="number" step="1" value="40" style="' + EST + '">') +
+        campo('Cabo', '<select id="flCabo" style="' + EST + '">' +
+          cabos.map(function (c) { return '<option value="' + esc(c) + '"' + (c === '1/0CA' ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') +
+          '</select>') +
+        campo('Classe de tração', '<select id="flClasse" style="' + EST + '">' +
+          CLASSES.map(function (c) { return '<option value="' + c.v + '">' + c.l + '</option>'; }).join('') +
+          '</select>') +
+        campo('Tração (daN)', '<input id="flTrac" type="number" step="1" style="' + EST + '">') +
+        campo('Peso do cabo (kg/m)', '<input id="flPeso" type="number" step="0.0001" style="' + EST + '">') +
+        campo('O que passa embaixo', '<select id="flLog" style="' + EST + '">' +
+          AFAST.map(function (a, i) { return '<option value="' + i + '">' + esc(a[0]) + '</option>'; }).join('') +
+          '</select>') +
+        campo('Tensão', '<select id="flTen" style="' + EST + '">' +
+          TENSOES.map(function (t, i) { return '<option value="' + i + '"' + (i === 2 ? ' selected' : '') + '>' + t + '</option>'; }).join('') +
+          '</select>') +
+        campo('Desnível da pista (m)', '<input id="flDesnivel" type="number" step="0.1" value="0" style="' + EST + '">') +
+      '</div>' +
+
+      '<div id="flFonte" style="font-size:0.76rem;color:var(--muted);margin-bottom:0.9rem;"></div>' +
+      '<button id="flCalc" class="btn" style="margin-bottom:1rem;">Calcular</button>' +
+      '<div id="flDesenho" style="display:none;margin-bottom:1rem;"></div>' +
+      '<div id="flRes" style="display:none;"></div>' +
+
+      '<details style="margin-top:1.4rem;">' +
+        '<summary style="cursor:pointer;font-size:0.8rem;color:var(--muted);">De onde vêm os números, e o que a conta não faz</summary>' +
+        '<div style="font-size:0.79rem;color:var(--muted);line-height:1.7;margin-top:0.6rem;">' +
+          '<b>Tração:</b> tabela TRC_DATA, a mesma que a aba Tração Postes usa, em daN por condutor. ' +
+          'Existe em três classes de vão (45, 70 e 140 m) e <b>não é corrigida por temperatura</b> — ' +
+          'é a tração da classe que você escolher. Se tiver a tabela de tracionamento oficial, digite o valor à mão.<br>' +
+          '<b>Peso por metro:</b> vem da planilha do site (colunas O e P), a mesma da aba Cabos m→kg. ' +
+          'Se a planilha ainda não carregou ou o nome do cabo não bater, cai numa tabela típica embutida — ' +
+          'e a linha acima do botão diz qual das duas foi usada.<br>' +
+          '<b>Flecha:</b> parábola de carga uniforme, f = w·L²/(8·T). É a aproximação de projeto: ' +
+          'não considera efeito de temperatura, vento, gelo nem fluência do condutor.<br>' +
+          '<b>Engastamento:</b> preenchido pela NBR 8451 (h/10 + 0,60 m) ao trocar a altura, e editável.<br>' +
+          '<b>Altura livre:</b> é o mínimo do cabo em todo o vão, o caso mais desfavorável. ' +
+          'Se a travessia não estiver nesse ponto, a folga real é maior.<br>' +
+          '<b>Afastamentos:</b> NBR 15688. Ferrovia eletrificada só tem valor na coluna de 1 a 36,2 kV.' +
+        '</div>' +
+      '</details>';
+    main.appendChild(painel);
+
+    var btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.setAttribute('data-tab', 'flecha');
+    btn.innerHTML = '<svg class="tab-icon" aria-hidden="true"><use href="#i-tracao"/></svg> Flecha e Travessia';
+    irmao.parentNode.insertBefore(btn, irmao.nextSibling);
+
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      painel.classList.add('active');
+      var lbl = $('mobCurrentTab');
+      if (lbl) lbl.textContent = 'Flecha e Travessia';
+      if (typeof closeSidebar === 'function') closeSidebar();
+      atualizarCabo();
+    });
+
+    $('flCalc').addEventListener('click', calcular);
+    $('flCabo').addEventListener('change', atualizarCabo);
+    $('flClasse').addEventListener('change', atualizarCabo);
+    $('flAltA').addEventListener('change', function () { autoEngaste('A'); });
+    $('flAltB').addEventListener('change', function () { autoEngaste('B'); });
+    painel.querySelectorAll('input,select').forEach(function (el) {
+      el.addEventListener('change', salvar);
+    });
+
+    restaurar();
+    atualizarCabo();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);
+  else montar();
+})();
+</script>
 </body>
 </html>

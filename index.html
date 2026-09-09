@@ -15544,5 +15544,115 @@ Como posso ajudar?</div>
   if (typeof renderFavoritos === 'function') window.renderFavoritos();
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ABAS COMO PÁGINAS NO GOOGLE ANALYTICS (08/09/2026)
+
+     Bloco aditivo antes do ÚLTIMO </body>. O SetupBoom é uma página só, então
+     o GA4 sempre viu UMA página e nunca soube qual aba é usada. Aqui cada
+     troca de aba passa a mandar um page_view próprio, e o relatório
+     "Páginas e telas" (propriedade G-VSWS7G3YST) passa a ranquear as abas.
+
+     Nada do HTML nem dos handlers existentes é tocado. Apagar este bloco
+     desliga o recurso e não deixa rastro.
+
+     TRÊS DECISÕES QUE VALE SABER:
+
+     1. Ouve no document, não botão a botão. O site liga o listener em
+        querySelectorAll('.tab') no carregamento; Montar Lista, Queda de
+        Tensão e Mapa de Uso nascem depois e não estão nessa lista. Um
+        ouvinte delegado pega as 24 antigas, as 3 novas, e qualquer aba
+        que venha a existir — sem editar nenhum bloco.
+
+     2. Só conta depois do login. O gtag do <head> dispara em toda abertura,
+        logado ou não, e metade dos "usuários" do GA é robô de datacenter.
+        Robô não tem matrícula e não passa da tela de acesso, então medir
+        aba só depois que o #appContent aparece deixa este número limpo —
+        ao contrário do page_view automático, que continua contando tudo.
+
+     3. Aba repetida não conta de novo. Reclicar a aba aberta não é
+        navegação; só conta quando a aba muda de fato.
+
+     LIMITE CONHECIDO: troca feita por código sem clique (o site força
+     "Consultar" depois de carregar os dados, por exemplo) não entra. Isso é
+     de propósito — o que se quer medir é a aba que a pessoa escolheu.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script id="ga-abas">
+(function () {
+  'use strict';
+
+  var MEDIDA = 'G-VSWS7G3YST';
+
+  /* O número tem que cair no mesmo lugar quer você abra o site publicado ou
+     uma cópia local — e file:// não tem origin utilizável (vira "null"). */
+  var RAIZ = (location.protocol === 'http:' || location.protocol === 'https:')
+    ? location.origin + location.pathname.replace(/\/[^\/]*$/, '')
+    : 'https://setupboom.com.br';
+
+  /* `entrou` só liga, nunca desliga. O #appContent volta a display:none
+     sozinho quando o onAuthStateChanged do Firebase dispara com usuário nulo
+     (o login por matrícula não cria usuário no Auth), e uma bandeira que
+     desligasse aí faria o rastreio morrer calado logo depois do login —
+     foi exatamente o que aconteceu no primeiro teste. Não abre brecha para
+     robô: ninguém clica num botão que está atrás da tela de acesso. */
+  var entrou = false;      // grudenta: libera os cliques
+  var mostrando = false;   // estado corrente: detecta entrar/sair
+  var abaAtual = '';
+
+  /* O rótulo sai do próprio botão: é o que a pessoa lê na barra, vale para as
+     abas que nascem em runtime e não depende do TAB_LABELS, que está
+     incompleto (não tem lista-materiais, queda-tensao nem mapa-uso). */
+  function rotulo(botao, slug) {
+    var t = (botao.textContent || '').replace(/\s+/g, ' ').trim();
+    return t || slug;
+  }
+
+  function enviar(slug, nome) {
+    if (!slug || slug === abaAtual) return;
+    abaAtual = slug;
+    if (typeof gtag !== 'function') return;
+    gtag('event', 'page_view', {
+      page_title:    'SetupBoom · ' + nome,
+      page_location: RAIZ + '/aba/' + slug,
+      send_to:       MEDIDA
+    });
+  }
+
+  /* captura: chega antes dos handlers do site, então vale mesmo se algum
+     deles parar a propagação do clique */
+  document.addEventListener('click', function (ev) {
+    if (!entrou || !ev.target || !ev.target.closest) return;
+    var botao = ev.target.closest('.tab[data-tab]');
+    if (botao) enviar(botao.getAttribute('data-tab'), rotulo(botao, botao.getAttribute('data-tab')));
+  }, true);
+
+  /* ── gatilho: mesmo padrão do bloco mapa-uso ───────────────────────────
+     o login (matrícula e Firebase Auth) só mexe no style do #appContent */
+  function observar() {
+    var appC = document.getElementById('appContent');
+    if (!appC) return;
+    new MutationObserver(function () {
+      var visivel = appC.style.display && appC.style.display !== 'none';
+      if (visivel && !mostrando) {
+        mostrando = true;
+        entrou = true;
+        // a aba já aberta quando o app aparece também é uma visita
+        var atual = document.querySelector('.sidebar-nav .tab.active[data-tab]');
+        if (atual) enviar(atual.getAttribute('data-tab'), rotulo(atual, atual.getAttribute('data-tab')));
+      } else if (!visivel && mostrando) {
+        mostrando = false;
+        abaAtual = '';   // ao voltar do logout, a primeira aba conta de novo
+      }
+    }).observe(appC, { attributes: true, attributeFilter: ['style'] });
+    console.log('[ga-abas] ligado — abas viram páginas no GA4 depois do login');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observar);
+  } else {
+    observar();
+  }
+})();
+</script>
 </body>
 </html>

@@ -2865,13 +2865,21 @@ self.addEventListener('fetch', e => {
          O service worker responde cache-first, então a chamada precisa ficar
          fora do cache dele (há uma exceção para open-meteo.com lá em cima),
          senão a previsão congela na primeira leitura do dia. */
+      /* Ordem geográfica, do sul para o norte — a lista é lida de relance e
+         acompanhar a subida do litoral ajuda mais que ordem alfabética.
+         Coordenadas conferidas no OpenStreetMap; Osório bate com os pings de
+         GPS reais registrados na coleção `acessos`. */
       var BASES = [
-        { nome: 'Pelotas',         lat: -31.7649, lon: -52.3371 },
-        { nome: 'Rio Grande',      lat: -32.0350, lon: -52.0986 },
-        { nome: 'Bagé',            lat: -31.3314, lon: -54.1069 },
-        { nome: 'Camaquã',         lat: -30.8511, lon: -51.8122 },
-        { nome: 'Eldorado do Sul', lat: -30.0847, lon: -51.6186 },
-        { nome: 'Porto Alegre',    lat: -30.0346, lon: -51.2177 }
+        { nome: 'Pelotas',          lat: -31.7649, lon: -52.3371 },
+        { nome: 'Rio Grande',       lat: -32.0350, lon: -52.0986 },
+        { nome: 'Bagé',             lat: -31.3314, lon: -54.1069 },
+        { nome: 'Camaquã',          lat: -30.8511, lon: -51.8122 },
+        { nome: 'Barra do Ribeiro', lat: -30.2926, lon: -51.3034 },
+        { nome: 'Guaíba',           lat: -30.1131, lon: -51.3294 },
+        { nome: 'Eldorado do Sul',  lat: -30.0847, lon: -51.6186 },
+        { nome: 'Porto Alegre',     lat: -30.0346, lon: -51.2177 },
+        { nome: 'Osório',           lat: -29.8891, lon: -50.2740 },
+        { nome: 'Torres',           lat: -29.3374, lon: -49.7300 }
       ];
 
       var VALIDADE = 10 * 60 * 1000;   // relê depois de 10 min
@@ -16185,6 +16193,213 @@ Como posso ajudar?</div>
 
     restaurar();
     atualizarCabo();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);
+  else montar();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ORÇAMENTO DE OBRA — EXPORTAR EXCEL (09/09/2026)
+
+     Bloco aditivo antes do ÚLTIMO </body>. O botão nasce por DOM, ao lado
+     do "Exportar PDF" que já existe — nada do HTML das abas é tocado.
+
+     Reaproveita o que o app já tem: o SheetJS 0.18.5 já carregado no <head>
+     e o helper download(). Mesmo padrão de exportOrcamentoExcel(), que
+     atende o outro Orçamento.
+
+     Diferença proposital em relação àquele: valor e subtotal saem como
+     NÚMERO com formato de moeda, não como texto. Assim a planilha soma,
+     filtra e faz tabela dinâmica do outro lado — que é o que se faz com um
+     orçamento depois de recebê-lo.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script id="orc-obra-excel">
+(function () {
+  'use strict';
+
+  var MOEDA = 'R$ #,##0.00';
+
+  function itens() {
+    try { return (typeof orcObraItens !== 'undefined' && orcObraItens) ? orcObraItens : []; }
+    catch (e) { return []; }
+  }
+
+  function avisar(msg, tipo) {
+    if (typeof showToast === 'function') showToast(msg, tipo || 'error');
+    else alert(msg);
+  }
+
+  function hoje() {
+    var d = new Date(Date.now() - 180 * 60000);   // Brasília
+    return d.getUTCFullYear() + '-' +
+           ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' +
+           ('0' + d.getUTCDate()).slice(-2);
+  }
+
+  window.orcObraExportarExcel = function () {
+    var lista = itens();
+    if (!lista.length) { avisar('Orçamento de obra vazio — adicione ao menos um serviço.'); return; }
+    if (typeof XLSX === 'undefined') { avisar('A biblioteca de planilha não carregou. Recarregue a página.'); return; }
+
+    var total = lista.reduce(function (s, i) { return s + (Number(i.subtotal) || 0); }, 0);
+
+    var dados = [['Código', 'Descrição', 'Valor unitário', 'Quantidade', 'Subtotal', 'Detalhamento']];
+    lista.forEach(function (i) {
+      dados.push([
+        i.cod || '',
+        i.desc || '',
+        Number(i.valor) || 0,
+        Number(i.qty) || 0,
+        Number(i.subtotal) || 0,
+        (i.info || '').toString().trim()
+      ]);
+    });
+    dados.push([]);
+    dados.push(['', 'TOTAL', '', '', total, '']);
+
+    var ws = XLSX.utils.aoa_to_sheet(dados);
+
+    /* moeda nas colunas C e E, para a planilha somar do outro lado */
+    for (var l = 2; l <= dados.length; l++) {
+      ['C', 'E'].forEach(function (col) {
+        var cel = ws[col + l];
+        if (cel && cel.t === 'n') cel.z = MOEDA;
+      });
+    }
+    ws['!cols'] = [{ wch: 12 }, { wch: 62 }, { wch: 15 }, { wch: 11 }, { wch: 15 }, { wch: 70 }];
+    ws['!autofilter'] = { ref: 'A1:F' + (lista.length + 1) };
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Orçamento de Obra');
+    var saida = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    download('SetupBoom-Orcamento-Obra-' + hoje() + '.xlsx',
+             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', saida);
+
+    avisar(lista.length + (lista.length === 1 ? ' serviço exportado.' : ' serviços exportados.'), 'success');
+  };
+
+  /* ── o botão, ao lado do "Exportar PDF" que já existe ────────────────── */
+  function montar() {
+    if (document.getElementById('orc-obra-excel-btn')) return true;
+    var pdf = null;
+    var todos = document.querySelectorAll('#tab-orcamento-obra button');
+    for (var i = 0; i < todos.length; i++) {
+      if (/Exportar PDF/i.test(todos[i].textContent)) { pdf = todos[i]; break; }
+    }
+    if (!pdf) return false;
+
+    var btn = document.createElement('button');
+    btn.className = 'btn-ghost';
+    btn.id = 'orc-obra-excel-btn';
+    btn.type = 'button';
+    btn.textContent = 'Exportar Excel';
+    btn.addEventListener('click', window.orcObraExportarExcel);
+    pdf.parentNode.insertBefore(btn, pdf);   // fica entre "Limpar Tudo" e "Exportar PDF"
+    return true;
+  }
+
+  function iniciar() {
+    if (montar()) return;
+    /* o painel pode ainda não existir no primeiro tick; tenta por ~30 s */
+    var n = 0, t = setInterval(function () {
+      if (montar() || ++n > 60) clearInterval(t);
+    }, 500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     RECOLHER A BARRA LATERAL (09/09/2026)
+
+     Bloco aditivo antes do ÚLTIMO </body>. Estilo e botão nascem por DOM;
+     nada do HTML existente é tocado.
+
+     SÓ VALE NO COMPUTADOR (min-width: 701px). No celular a barra já some
+     sozinha: existe toggleSidebar() com overlay e o botão do topo. Mexer
+     nas duas faixas faria as regras brigarem — a de telefone usa o mesmo
+     translateX(-100%) para o estado FECHADO, que lá é o padrão.
+
+     O que ganha: as telas largas do app — Mapa, Montar Lista, Hierarquia,
+     o Ladder da Flecha — passam a usar os 230px que a barra ocupava.
+
+     O puxador fica preso na borda e anda junto: em 230px quando aberta,
+     em 0 quando recolhida. Se ele sumisse com a barra, não haveria como
+     trazê-la de volta sem recarregar.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script id="sb-recolher-barra">
+(function () {
+  'use strict';
+
+  var CHAVE = 'sbBarraRecolhida_v1';
+  var raiz  = document.documentElement;
+
+  var css = document.createElement('style');
+  css.id = 'sb-recolher-barra-css';
+  css.textContent = [
+    '@media (min-width: 701px){',
+    '  .sidebar{ transition: transform .28s cubic-bezier(.4,0,.2,1); }',
+    '  .main-content{ transition: margin-left .28s cubic-bezier(.4,0,.2,1); }',
+    '  html.sb-barra-oculta .sidebar{ transform: translateX(-100%); }',
+    '  html.sb-barra-oculta .main-content{ margin-left: 0; }',
+    '  #sb-puxador{',
+    '    position: fixed; top: 50%; left: 230px; transform: translateY(-50%);',
+    '    z-index: 2600; width: 22px; height: 62px; padding: 0;',
+    '    display: flex; align-items: center; justify-content: center;',
+    '    background: var(--surface); color: var(--muted);',
+    '    border: 1px solid var(--border); border-left: none;',
+    '    border-radius: 0 9px 9px 0; cursor: pointer;',
+    '    transition: left .28s cubic-bezier(.4,0,.2,1), color .15s, background .15s;',
+    '    box-shadow: 2px 0 10px rgba(0,0,0,.16);',
+    '  }',
+    '  #sb-puxador:hover{ color: var(--accent); background: var(--bg); }',
+    '  #sb-puxador:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }',
+    '  #sb-puxador svg{ width: 13px; height: 13px; transition: transform .28s; }',
+    '  html.sb-barra-oculta #sb-puxador{ left: 0; }',
+    '  html.sb-barra-oculta #sb-puxador svg{ transform: rotate(180deg); }',
+    '}',
+    '@media (max-width: 700px){ #sb-puxador{ display: none; } }',
+    '@media (prefers-reduced-motion: reduce){',
+    '  .sidebar, .main-content, #sb-puxador, #sb-puxador svg{ transition: none !important; }',
+    '}'
+  ].join('\n');
+  document.head.appendChild(css);
+
+  function oculta(){ return raiz.classList.contains('sb-barra-oculta'); }
+
+  function aplicar(esconder, btn){
+    raiz.classList.toggle('sb-barra-oculta', esconder);
+    if (btn){
+      btn.setAttribute('aria-expanded', String(!esconder));
+      btn.title = esconder ? 'Mostrar a barra lateral' : 'Recolher a barra lateral';
+    }
+    try { localStorage.setItem(CHAVE, esconder ? '1' : '0'); } catch (e) {}
+    /* Leaflet mede o container no resize: sem isto os mapas ficam com a
+       largura antiga e sobra faixa cinza depois da animação. */
+    setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 300);
+  }
+
+  function montar(){
+    if (document.getElementById('sb-puxador')) return;
+    var btn = document.createElement('button');
+    btn.id = 'sb-puxador';
+    btn.type = 'button';
+    btn.setAttribute('aria-controls', 'sidebar');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+                    'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" ' +
+                    'aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>';
+    document.body.appendChild(btn);
+
+    var guardado = '0';
+    try { guardado = localStorage.getItem(CHAVE) || '0'; } catch (e) {}
+    aplicar(guardado === '1', btn);
+
+    btn.addEventListener('click', function(){ aplicar(!oculta(), btn); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);

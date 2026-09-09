@@ -15610,12 +15610,74 @@ Como posso ajudar?</div>
   function enviar(slug, nome) {
     if (!slug || slug === abaAtual) return;
     abaAtual = slug;
+    mandarGA(slug, nome);
+    gravarContador(slug, nome);
+  }
+
+  function mandarGA(slug, nome) {
     if (typeof gtag !== 'function') return;
     gtag('event', 'page_view', {
       page_title:    'SetupBoom · ' + nome,
       page_location: RAIZ + '/aba/' + slug,
       send_to:       MEDIDA
     });
+  }
+
+  /* ── espelho no Firestore ───────────────────────────────────────────────
+     O GA4 responde "qual aba é mais vista", mas a API dele exige servidor e
+     chave de serviço: a dashboard, que é HTML estático, não alcança. Então o
+     mesmo clique também vira contador no Firestore, de onde ela lê.
+
+     UM documento por dia e por aba (uso_abas/2026-09-09_consultar), com
+     incremento atômico — não um documento por clique. Assim a dashboard lê
+     ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
+     controle. `pessoas` usa appendMissingElements, que não repete quem já
+     está lá, então dá para contar gente distinta sem ler clique a clique. */
+  var PROJ   = 'projects/setupapp-f3ff4/databases/(default)/documents';
+  var COMMIT = 'https://firestore.googleapis.com/v1/' + PROJ +
+               ':commit?key=AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk';
+
+  function diaBR() {
+    var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
+    return d.getUTCFullYear() + '-' +
+           ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' +
+           ('0' + d.getUTCDate()).slice(-2);
+  }
+
+  /* mesma leitura de identidade do bloco mapa-uso */
+  function quemSou() {
+    var inp = document.getElementById('login-user');
+    var mat = inp ? inp.value.trim() : '';
+    if (mat) return mat;
+    var info = document.getElementById('userInfo');
+    var sp   = info ? info.querySelector('span') : null;
+    return (sp ? sp.textContent.trim() : '') || '(desconhecido)';
+  }
+
+  function gravarContador(slug, nome) {
+    var dia = diaBR();
+    var corpo = { writes: [{
+      update: {
+        name: PROJ + '/uso_abas/' + dia + '_' + slug,
+        fields: {
+          dia:    { stringValue: dia },
+          aba:    { stringValue: slug },
+          rotulo: { stringValue: nome }
+        }
+      },
+      updateMask: { fieldPaths: ['dia', 'aba', 'rotulo'] },
+      updateTransforms: [
+        { fieldPath: 'n', increment: { integerValue: '1' } },
+        { fieldPath: 'pessoas',
+          appendMissingElements: { values: [{ stringValue: quemSou() }] } }
+      ]
+    }]};
+    // medir o uso nunca pode atrapalhar o uso: falha em silêncio
+    fetch(COMMIT, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(corpo)
+    }).catch(function () {});
   }
 
   /* captura: chega antes dos handlers do site, então vale mesmo se algum
@@ -15653,6 +15715,24 @@ Como posso ajudar?</div>
     observar();
   }
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGRA DO FIRESTORE — sem isto o GA4 continua funcionando, mas o contador
+   que alimenta a dashboard não grava nada (403, em silêncio).
+   Console → Firestore → Regras, dentro do match /databases/{database}/documents:
+
+     match /uso_abas/{id} {
+       allow read:          if true;   // a dashboard lê com a chave pública
+       allow create, update: if true;  // todo login soma no contador do dia
+       allow delete:        if false;  // contador não se apaga
+     }
+
+   Aqui o `read: if true` expõe muito menos que em /acessos: são contagens por
+   aba e por dia, sem posição e sem horário — não dá para reconstruir o passo
+   a passo de ninguém. A lista `pessoas` guarda matrícula, então ainda é dado
+   de pessoa; se isso incomodar, troque o appendMissingElements por um segundo
+   increment e perde-se só a contagem de gente distinta.
+   ═════════════════════════════════════════════════════════════════════════ */
 </script>
 </body>
 </html>

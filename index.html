@@ -5663,6 +5663,10 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         style="display:flex;align-items:center;gap:0.45rem;background:rgba(33,150,243,0.15);border:2px solid #2196f3;color:#2196f3;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
         <span style="width:10px;height:10px;border-radius:50%;background:#2196f3;flex-shrink:0;"></span> 🔌 Cabos
       </button>
+      <button id="mu-toggle-num" onclick="muToggleNumeros()"
+        style="display:flex;align-items:center;gap:0.45rem;background:rgba(158,158,158,0.15);border:2px solid #9e9e9e;color:#9e9e9e;border-radius:20px;padding:0.35rem 1rem;font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.18s;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#9e9e9e;flex-shrink:0;"></span> 🔢 Números
+      </button>
       <button class="btn-ghost" id="mu-gps-btn" onclick="muMeLocalizar()" style="display:flex;align-items:center;gap:0.4rem;white-space:nowrap;padding:0.35rem 0.9rem;font-size:0.78rem;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></svg>
         <span id="mu-gps-label">Me localizar</span>
@@ -5878,6 +5882,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   let muLayerPostes = true;
   let muLayerEquip = true;
   let muLayerCabos = true;
+  let muNumerosVisiveis = true;   // rótulo com o número em cima de cada ponto
 
   // Dados
   let muPostes = [];
@@ -5984,6 +5989,21 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     window.muMapa = muMap;
     if (typeof window.muAnotLigar === 'function') window.muAnotLigar();
   }
+
+  /* ── Liga/desliga o número em cima dos pontos ── */
+  window.muToggleNumeros = function() {
+    muNumerosVisiveis = !muNumerosVisiveis;
+    const btn = document.getElementById('mu-toggle-num');
+    if (btn) {
+      btn.style.background = muNumerosVisiveis ? 'rgba(158,158,158,0.15)' : 'rgba(158,158,158,0.04)';
+      btn.style.opacity = muNumerosVisiveis ? '1' : '0.45';
+    }
+    // os rótulos moram dentro do ícone de cada marcador, então redesenhar os
+    // "próximos" é o que aplica a mudança
+    if (muCentro && document.getElementById('mu-proximos-wrap').style.display !== 'none') {
+      muMostrarProximos(muProxMode || 'poste');
+    }
+  };
 
   /* ── Alterna camada ── */
   window.muToggleLayer = function(tipo) {
@@ -6156,6 +6176,24 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     });
     if (pts.some(p => !p)) return null;
     return pts;
+  }
+
+  /* Rótulo com o número, em cima do ponto. Sem caixa e sem borda: é só texto com
+     um halo branco, que é o que o deixa legível tanto sobre o mapa de ruas
+     quanto sobre o satélite. Vai dentro do próprio divIcon (um nó a mais por
+     marcador, não uma camada nova) e por isso aparece no "Gerar evidência", que
+     usa html2canvas e portanto fotografa o DOM. `pointer-events:none` para não
+     roubar o clique do ponto. */
+  function muRotulo(texto, cor) {
+    if (!muNumerosVisiveis || !texto) return '';
+    const t = String(texto).trim();
+    if (!t) return '';
+    const esc = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<span style="position:absolute;left:50%;bottom:11px;transform:translateX(-50%);' +
+           'white-space:nowrap;font:700 10px/1 \'DM Mono\',ui-monospace,monospace;' +
+           'color:' + cor + ';pointer-events:none;' +
+           'text-shadow:0 0 3px #fff,0 0 3px #fff,-1px -1px 0 #fff,1px -1px 0 #fff,' +
+           '-1px 1px 0 #fff,1px 1px 0 #fff;">' + esc + '</span>';
   }
 
   // Os trechos guardam os pontos como quatro números (aLat/aLng/bLat/bLng) para
@@ -6775,7 +6813,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         .forEach(p => {
           rows.push({ kind:'poste', label: p.num, info: p.tipo||p.estr||'—', dist: p.dist, lat:p.lat, lng:p.lng });
           const icon = L.divIcon({
-            html:`<div style="width:9px;height:9px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 5px rgba(0,230,118,0.6);"></div>`,
+            html:`<div style="position:relative;width:9px;height:9px;"><div style="width:9px;height:9px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 5px rgba(0,230,118,0.6);"></div>${muRotulo(p.num, '#0b7a3f')}</div>`,
             className:'', iconAnchor:[4,4]
           });
           muProxMarkers.push(L.marker([p.lat,p.lng],{icon}).addTo(muMap)
@@ -6796,7 +6834,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           const t = tipoLabelMU(e.icone);
           rows.push({ kind:'equip', label: e.nome, info: `${t.emoji} ${t.label} · ${e.alimentador||''}`, dist: e.dist, lat:e.latN, lng:e.lngN });
           const icon = L.divIcon({
-            html:`<div style="width:9px;height:9px;border-radius:50%;background:#ffe082;border:2px solid #ffb74d;box-shadow:0 0 5px rgba(255,183,77,0.6);"></div>`,
+            html:`<div style="position:relative;width:9px;height:9px;"><div style="width:9px;height:9px;border-radius:50%;background:#ffe082;border:2px solid #ffb74d;box-shadow:0 0 5px rgba(255,183,77,0.6);"></div>${muRotulo(e.nome, '#b35c00')}</div>`,
             className:'', iconAnchor:[4,4]
           });
           muProxMarkers.push(L.marker([e.latN,e.lngN],{icon}).addTo(muMap)

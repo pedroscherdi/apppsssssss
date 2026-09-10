@@ -5766,9 +5766,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       <div style="font-family:'DM Mono',monospace;font-size:0.63rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.5rem;">⚡ Poste selecionado</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.6rem;">
         <div><div class="mi-label">Número</div><div class="mi-val accent" id="mu-p-num">—</div></div>
-        <div><div class="mi-label">Estrutura</div><div class="mi-val" id="mu-p-estr">—</div></div>
-        <div><div class="mi-label">Tipo</div><div class="mi-val" id="mu-p-tipo">—</div></div>
-        <div><div class="mi-label">Altura</div><div class="mi-val" id="mu-p-alt">—</div></div>
         <div><div class="mi-label">Lat / Lng</div><div class="mi-val" id="mu-p-coord" style="font-size:0.72rem;">—</div></div>
         <div style="display:flex;align-items:flex-end;gap:0.5rem;flex-wrap:wrap;">
           <a id="mu-p-gmaps" href="#" target="_blank" class="btn-ghost" style="text-decoration:none;padding:0.35rem 0.85rem;font-size:0.73rem;">Maps ↗</a>
@@ -6065,18 +6062,11 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       const rows = json.values || [];
       json.values = null;
 
-      // tipo, altura e estrutura são categóricos: poucas dezenas de valores
-      // distintos repetidos em 1,33 milhão de postes. Guardar a mesma instância
-      // de string em vez de uma cópia por poste economiza dezenas de MB — é o
-      // que evita o Safari do iPhone matar a aba.
-      const _cat = new Map();
-      const _c = (s) => {
-        const v = _cat.get(s);
-        if (v !== undefined) return v;
-        _cat.set(s, s);
-        return s;
-      };
-
+      // A planilha de postes tem só número, latitude e longitude — o
+      // BLOCOS_POSTES acima mapeia apenas {nome, lat, lng}. Os campos tipo,
+      // altura e estrutura que existiam aqui liam `row[undefined]` e por isso
+      // eram string vazia nos 1,33 milhão de postes (era isso que aparecia como
+      // "não consta" no card). Foram removidos: três campos a menos por poste.
       for (let ri = 0; ri < rows.length; ri++) {
         const row = rows[ri];
         rows[ri] = null;               // solta a linha assim que ela é usada
@@ -6088,7 +6078,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           const lat = parseFloat(String(row[b.lat] || '').replace(',', '.'));
           const lng = parseFloat(String(row[b.lng] || '').replace(',', '.'));
           if (num && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-            muPostes.push({ num, lat, lng, tipo: _c(row[b.tipo]||''), alt: _c(row[b.alt]||''), estr: _c(row[b.estr]||'') });
+            muPostes.push({ num, lat, lng });
           }
         }
       }
@@ -6208,14 +6198,26 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     return m ? m[1].trim() : String(nome).trim();
   }
 
-  /* Celular (ou iPad, que se apresenta como Macintosh com toque) tem orçamento
-     de memória muito menor que o desktop: o Safari do iPhone mata a aba na
-     faixa dos 200-400 MB, e só os cabos passam disso sozinhos. */
+  /* Quem precisa adiar o carregamento dos cabos?
+
+     iOS: sempre. O Safari mata a aba na faixa dos 200-400 MB, sem aviso, e não
+     expõe nenhuma API para medir o orçamento de memória — não há como decidir
+     caso a caso, então trata-se todo iPhone/iPad como aparelho apertado.
+     (iPad novo se apresenta como "Macintosh"; o que o entrega é o toque.)
+
+     Android: só os fracos. O Chrome aguenta bem mais que o Safari, e ainda por
+     cima informa a RAM do aparelho em `navigator.deviceMemory` (em GB, arredondado:
+     0.25, 0.5, 1, 2, 4, 8). Abaixo de 4 GB os cabos ficam para depois; de 4 GB
+     para cima, carrega direto como no computador. Quando o navegador não informa
+     nada, o desempate é carregar — Android costuma dar conta. */
   function muDispositivoLeve() {
     const ua = navigator.userAgent || '';
     const iOS = /iPad|iPhone|iPod/.test(ua) ||
                 (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-    return iOS || /Android/i.test(ua);
+    if (iOS) return true;
+    if (!/Android/i.test(ua)) return false;          // computador
+    const gb = navigator.deviceMemory;               // undefined = não informou
+    return typeof gb === 'number' && gb < 4;
   }
 
   async function carregarMuCabos() {
@@ -6342,9 +6344,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
     // Preenche card
     document.getElementById('mu-p-num').textContent  = p.num;
-    document.getElementById('mu-p-estr').textContent = p.estr || '—';
-    document.getElementById('mu-p-tipo').textContent = p.tipo || '—';
-    document.getElementById('mu-p-alt').textContent  = p.alt  || '—';
     document.getElementById('mu-p-coord').textContent = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
     document.getElementById('mu-p-gmaps').href = `https://maps.google.com/?q=${p.lat},${p.lng}`;
     document.getElementById('mu-poste-card').classList.add('visible');
@@ -6416,9 +6415,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
     // Preenche card
     document.getElementById('mu-p-num').textContent  = closest.num;
-    document.getElementById('mu-p-estr').textContent = closest.estr || '—';
-    document.getElementById('mu-p-tipo').textContent = closest.tipo || '—';
-    document.getElementById('mu-p-alt').textContent  = closest.alt  || '—';
     document.getElementById('mu-p-coord').textContent = `${closest.lat.toFixed(6)}, ${closest.lng.toFixed(6)}`;
     document.getElementById('mu-p-gmaps').href = `https://maps.google.com/?q=${closest.lat},${closest.lng}`;
     document.getElementById('mu-poste-card').classList.add('visible');
@@ -6811,7 +6807,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
         .map(p => ({ ...p, dist: haversine(muCentro.lat, muCentro.lng, p.lat, p.lng), _kind:'poste' }))
         .sort((a,b)=>a.dist-b.dist)
         .forEach(p => {
-          rows.push({ kind:'poste', label: p.num, info: p.tipo||p.estr||'—', dist: p.dist, lat:p.lat, lng:p.lng });
+          rows.push({ kind:'poste', label: p.num, info: '—', dist: p.dist, lat:p.lat, lng:p.lng });
           const icon = L.divIcon({
             html:`<div style="position:relative;width:9px;height:9px;"><div style="width:9px;height:9px;border-radius:50%;background:#69f0ae;border:2px solid #00e676;box-shadow:0 0 5px rgba(0,230,118,0.6);"></div>${muRotulo(p.num, '#0b7a3f')}</div>`,
             className:'', iconAnchor:[4,4]
@@ -12944,204 +12940,6 @@ Como posso ajudar?</div>
 
 
 
-
-<script id="info-postes-planilha">
-/* ===========================================================================
-   INFO DOS POSTES — planilha "info postes"
-   Ao selecionar um poste, busca o número na planilha e completa o card com
-   altura, esforço, material, tensão e as estruturas.
-
-   Atende os dois cards de poste do site (o do Mapa Unificado e o do painel
-   #tab-mapa, que hoje está sem botão de aba). Não toca no HTML: os campos
-   novos são criados via DOM e o gancho é um MutationObserver no número do
-   poste — assim funciona em qualquer caminho de seleção (busca, clique no
-   pin, GPS) sem alterar nenhuma das funções existentes.
-   =========================================================================== */
-(function () {
-  'use strict';
-
-  var SHEET_ID = '1xSPrp45dAX051K2H9A_G9rft8beQE-UZ7TAvpMr77qQ';
-  var ABA      = 'Página1';
-  var CHAVE    = (typeof API_KEY !== 'undefined' && API_KEY)
-                 ? API_KEY : 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
-
-  // colunas: A=número, B=Altura, C=Esforço, D=Material, E=Tensão, F=Estruturas
-  var COL = { num: 0, altura: 1, esforco: 2, material: 3, tensao: 4, estrut: 5 };
-
-  // os dois cards de poste do site
-  var CARDS = [
-    { num: 'mu-p-num',      estr: 'mu-p-estr', alt: 'mu-p-alt',
-      tipo: 'mu-p-tipo',    pre: 'mu-p' },        // Mapa Unificado
-    { num: 'mi-barramento', estr: 'mi-estr',   alt: 'mi-alt',
-      tipo: 'mi-tipo',      pre: 'mi' }           // painel #tab-mapa (legado)
-  ];
-
-  var indice = null;      // { chave -> linha }
-  var carregando = null;  // promise em voo, para não buscar duas vezes
-
-  /* ---- chave de comparação: "0819052", "819052" e 819052 batem ---- */
-  function chave(v) {
-    var t = String(v == null ? '' : v).trim().toUpperCase();
-    if (!t) return '';
-    return /^\d+$/.test(t) ? String(parseInt(t, 10)) : t;
-  }
-
-  function carregar() {
-    if (indice) return Promise.resolve(indice);
-    if (carregando) return carregando;
-
-    var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID +
-              '/values/' + encodeURIComponent(ABA) + '!A:F?key=' + CHAVE;
-
-    carregando = fetch(url)
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.error) throw new Error(d.error.message);
-        var linhas = d.values || [];
-        var mapa = {};
-        // pula o cabeçalho: a 1ª linha só tem rótulo se a coluna A estiver vazia
-        var comeco = (linhas.length && !chave(linhas[0][COL.num])) ? 1 : 0;
-        for (var i = comeco; i < linhas.length; i++) {
-          var k = chave(linhas[i][COL.num]);
-          if (k) mapa[k] = linhas[i];
-        }
-        indice = mapa;
-        console.log('[info-postes] ' + Object.keys(mapa).length +
-                    ' postes carregados da planilha');
-        return indice;
-      })
-      .catch(function (e) {
-        console.warn('[info-postes] falhou:', e.message);
-        carregando = null;   // deixa tentar de novo na próxima seleção
-        throw e;
-      });
-
-    return carregando;
-  }
-
-  /* ---- campos extras, no mesmo padrão dos que já existem no card ---- */
-  function montarCampos(cfg) {
-    var refVal = document.getElementById(cfg.estr);
-    if (!refVal) return false;
-    if (document.getElementById(cfg.pre + '-esforco')) return true;  // já montado
-
-    var grade = refVal.parentElement.parentElement;
-
-    // a linha dos botões é a única célula da grade sem .mi-label
-    var ancora = null;
-    for (var i = 0; i < grade.children.length; i++) {
-      if (!grade.children[i].querySelector('.mi-label')) {
-        ancora = grade.children[i];
-        break;
-      }
-    }
-
-    [[cfg.pre + '-esforco',  'Esforço Físico'],
-     [cfg.pre + '-material', 'Material'],
-     [cfg.pre + '-tensao',   'Tensão']].forEach(function (par) {
-      var wrap = document.createElement('div');
-      var lab  = document.createElement('div');
-      lab.className = 'mi-label';
-      lab.textContent = par[1];
-      var val  = document.createElement('div');
-      val.className = 'mi-val';
-      val.id = par[0];
-      val.textContent = '—';
-      wrap.appendChild(lab);
-      wrap.appendChild(val);
-      if (ancora) grade.insertBefore(wrap, ancora);
-      else grade.appendChild(wrap);
-    });
-
-    // "Tipo": a planilha não tem esse dado, então ficava com travessão fixo.
-    // Escondido por aqui em vez de apagar do HTML — mexer na marcação desse
-    // arquivo desloca o site inteiro.
-    var tipo = document.getElementById(cfg.tipo);
-    if (tipo && tipo.parentElement) tipo.parentElement.style.display = 'none';
-
-    return true;
-  }
-
-  function escrever(id, valor) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = (valor == null || valor === '') ? '—' : String(valor);
-  }
-
-  function limpar(cfg, texto) {
-    escrever(cfg.alt, texto);
-    escrever(cfg.estr, texto);
-    escrever(cfg.pre + '-esforco', texto);
-    escrever(cfg.pre + '-material', texto);
-    escrever(cfg.pre + '-tensao', texto);
-  }
-
-  function preencher(cfg) {
-    var el = document.getElementById(cfg.num);
-    if (!el) return;
-    var num = (el.textContent || '').trim();
-    if (!num || num === '—') { cfg._ultimo = null; return; }
-    if (num === cfg._ultimo) return;    // o observer dispara mais de uma vez
-    cfg._ultimo = num;
-
-    montarCampos(cfg);
-    limpar(cfg, '...');
-
-    carregar().then(function (mapa) {
-      var atual = document.getElementById(cfg.num);
-      if (!atual || (atual.textContent || '').trim() !== num) return;  // já trocou
-
-      var linha = mapa[chave(num)];
-      if (!linha) { limpar(cfg, 'não consta'); return; }
-
-      escrever(cfg.alt,  linha[COL.altura]);
-      escrever(cfg.estr, linha[COL.estrut]);
-      escrever(cfg.pre + '-esforco',  linha[COL.esforco]);
-      escrever(cfg.pre + '-material', linha[COL.material]);
-      var t = linha[COL.tensao];
-      escrever(cfg.pre + '-tensao', (t && /^\d+$/.test(String(t).trim()))
-                                    ? Number(t).toLocaleString('pt-BR') + ' V' : t);
-    }).catch(function () {
-      limpar(cfg, 'erro ao ler planilha');
-    });
-  }
-
-  /* ---- gancho: observa o número do poste em cada card ---- */
-  function ligar(cfg) {
-    if (cfg._ligado) return true;
-    var alvo = document.getElementById(cfg.num);
-    if (!alvo) return false;
-    cfg._ligado = true;
-    montarCampos(cfg);
-    new MutationObserver(function () { preencher(cfg); })
-      .observe(alvo, { childList: true, characterData: true, subtree: true });
-    preencher(cfg);                  // caso já tenha um poste selecionado
-    console.log('[info-postes] ligado ao card #' + cfg.num);
-    return true;
-  }
-
-  function tentarTodos() {
-    var faltando = 0;
-    CARDS.forEach(function (cfg) { if (!ligar(cfg)) faltando++; });
-    return faltando === 0;
-  }
-
-  function iniciar() {
-    carregar().catch(function () {});   // adianta o download
-    if (tentarTodos()) return;
-    // um card pode só existir depois que a aba abre; tenta por até ~60s
-    var n = 0;
-    var t = setInterval(function () {
-      if (tentarTodos() || ++n > 600) clearInterval(t);
-    }, 100);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', iniciar);
-  } else {
-    iniciar();
-  }
-})();
-</script>
 
 <!-- SETEMBRO AMARELO: laco amarelo sobre o "m" de SetupBoom, na tela de login.
      Bloco 100% aditivo: nenhum HTML existente e movido. O JS quebra o texto

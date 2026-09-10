@@ -6017,6 +6017,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       if (muLayerCabos) {
         btn.style.background = 'rgba(33,150,243,0.15)';
         btn.style.opacity = '1';
+        // no celular os cabos não vêm sozinhos ao abrir a aba; é aqui que eles
+        // são pedidos. No computador já vieram e esta chamada não faz nada.
+        carregarMuCabos();
       } else {
         btn.style.background = 'rgba(33,150,243,0.04)';
         btn.style.opacity = '0.45';
@@ -6040,17 +6043,36 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       const json = await (await fetch(url)).json();
       if (json.error) throw new Error(json.error.message);
       const rows = json.values || [];
-      rows.forEach((row, ri) => {
-        if (ri === 0) { const v = String(row[BLOCOS_POSTES[0].nome] || '').trim(); if (v && isNaN(parseFloat(v))) return; }
-        BLOCOS_POSTES.forEach(b => {
+      json.values = null;
+
+      // tipo, altura e estrutura são categóricos: poucas dezenas de valores
+      // distintos repetidos em 1,33 milhão de postes. Guardar a mesma instância
+      // de string em vez de uma cópia por poste economiza dezenas de MB — é o
+      // que evita o Safari do iPhone matar a aba.
+      const _cat = new Map();
+      const _c = (s) => {
+        const v = _cat.get(s);
+        if (v !== undefined) return v;
+        _cat.set(s, s);
+        return s;
+      };
+
+      for (let ri = 0; ri < rows.length; ri++) {
+        const row = rows[ri];
+        rows[ri] = null;               // solta a linha assim que ela é usada
+        if (!row) continue;
+        if (ri === 0) { const v = String(row[BLOCOS_POSTES[0].nome] || '').trim(); if (v && isNaN(parseFloat(v))) continue; }
+        for (let bi = 0; bi < BLOCOS_POSTES.length; bi++) {
+          const b = BLOCOS_POSTES[bi];
           const num = String(row[b.nome] || '').trim();
           const lat = parseFloat(String(row[b.lat] || '').replace(',', '.'));
           const lng = parseFloat(String(row[b.lng] || '').replace(',', '.'));
           if (num && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-            muPostes.push({ num, lat, lng, tipo: row[b.tipo]||'', alt: row[b.alt]||'', estr: row[b.estr]||'' });
+            muPostes.push({ num, lat, lng, tipo: _c(row[b.tipo]||''), alt: _c(row[b.alt]||''), estr: _c(row[b.estr]||'') });
           }
-        });
-      });
+        }
+      }
+      rows.length = 0;
       muPostesOk = true;
       document.getElementById('mu-badge-postes').textContent = `⚡ ${muPostes.length.toLocaleString('pt-BR')} postes`;
       atualizarStatusMU();
@@ -6136,10 +6158,26 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     return pts;
   }
 
+  // Os trechos guardam os pontos como quatro números (aLat/aLng/bLat/bLng) para
+  // não pagar o cabeçalho de dois arrays por trecho. Estes helpers devolvem o
+  // par [lat,lng] que o Leaflet espera.
+  function muP1(c) { return [c.aLat, c.aLng]; }
+  function muP2(c) { return [c.bLat, c.bLng]; }
+
   // "Alimentador PL213 - Condutor A-02" -> "PL213" (agrupa todas as variações de cabo do mesmo alimentador)
   function _muCodAlim(nome) {
     const m = String(nome).match(/Alimentador\s+([^-]+?)\s*-\s*Condutor/i);
     return m ? m[1].trim() : String(nome).trim();
+  }
+
+  /* Celular (ou iPad, que se apresenta como Macintosh com toque) tem orçamento
+     de memória muito menor que o desktop: o Safari do iPhone mata a aba na
+     faixa dos 200-400 MB, e só os cabos passam disso sozinhos. */
+  function muDispositivoLeve() {
+    const ua = navigator.userAgent || '';
+    const iOS = /iPad|iPhone|iPod/.test(ua) ||
+                (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    return iOS || /Android/i.test(ua);
   }
 
   async function carregarMuCabos() {
@@ -6178,27 +6216,52 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 
       setMuCabosStatus('loading', '🔌 Processando trechos de cabo...');
       const json = JSON.parse(text);
+      // Sem isto o texto cru (~248 MB) fica vivo ao lado do objeto já parseado e
+      // dos 1,46 milhão de trechos. Era o que estourava a memória e fazia o
+      // Safari do iPhone matar a aba — o recarregamento é que caía no login.
+      text = null;
       if (json.error) throw new Error(json.error.message);
       const rows = json.values || [];
+      json.values = null;              // o array continua vivo em `rows`
       const todos = [];
-      rows.forEach((row, idx) => {
-        if (idx === 0) return;
-        const g1nome = row[0], g1trecho = row[1];
-        if (g1nome && g1trecho) {
-          const pts = muParseTrecho(g1trecho);
-          if (pts) todos.push({ nome: g1nome, cod: _muCodAlim(g1nome), grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
-        }
-        const g2nome = row[3], g2trecho = row[4];
-        if (g2nome && g2trecho) {
-          const pts = muParseTrecho(g2trecho);
-          if (pts) todos.push({ nome: g2nome, cod: _muCodAlim(g2nome), grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
-        }
-        const g3nome = row[7], g3trecho = row[8];
-        if (g3nome && g3trecho) {
-          const pts = muParseTrecho(g3trecho);
-          if (pts) todos.push({ nome: g3nome, cod: _muCodAlim(g3nome), grupo: 'rosa', p1: pts[0], p2: pts[pts.length - 1] });
-        }
-      });
+
+      // São 1,46 milhão de trechos para apenas ~679 alimentadores. Guardar a
+      // MESMA instância de string em todos, em vez de uma cópia por trecho,
+      // economiza mais de 100 MB sem mudar nada de fora: `c.nome` segue string.
+      const _nomes = new Map();
+      const _cods  = new Map();
+      const _unico = (mapa, s) => {
+        const v = mapa.get(s);
+        if (v !== undefined) return v;
+        mapa.set(s, s);
+        return s;
+      };
+
+      // Os pontos vão como quatro números soltos, não como p1:[lat,lng] e
+      // p2:[lat,lng]. Cada array em JS custa ~80 bytes de cabeçalho, e eram dois
+      // por trecho: ~230 MB só de overhead em 1,46 milhão de trechos. Quem lê
+      // usa os helpers muP1()/muP2() logo abaixo.
+      const _add = (nome, grupo, trecho) => {
+        const pts = muParseTrecho(trecho);
+        if (!pts) return;
+        const a = pts[0], b = pts[pts.length - 1];
+        todos.push({
+          nome: _unico(_nomes, nome),
+          cod: _unico(_cods, _muCodAlim(nome)),
+          grupo: grupo,
+          aLat: a[0], aLng: a[1], bLat: b[0], bLng: b[1]
+        });
+      };
+
+      for (let idx = 0; idx < rows.length; idx++) {
+        const row = rows[idx];
+        rows[idx] = null;              // solta a linha assim que ela é usada
+        if (idx === 0 || !row) continue;
+        if (row[0] && row[1]) _add(row[0], 'azul', row[1]);
+        if (row[3] && row[4]) _add(row[3], 'azul', row[4]);
+        if (row[7] && row[8]) _add(row[7], 'rosa', row[8]);
+      }
+      rows.length = 0;
       muCabos = todos;
       muCabosOk = true;
       muCabosNomes = [...new Set(todos.map(c => c.cod))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -6482,13 +6545,13 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       const CORES_CABO = { azul: '#2196f3', rosa: '#ff2d95' };
       const allPts = [];
       segs.forEach(c => {
-        const linha = L.polyline([c.p1, c.p2], {
+        const linha = L.polyline([muP1(c), muP2(c)], {
           color: CORES_CABO[c.grupo] || '#2196f3', weight: 5, opacity: 0.95
         }).addTo(muMap).bindPopup(
           `<b style="color:${CORES_CABO[c.grupo] || '#2196f3'};">${c.grupo === 'rosa' ? '🔻' : '⚡'} ${c.nome}</b>`
         );
         muCaboBuscaLines.push(linha);
-        allPts.push(c.p1, c.p2);
+        allPts.push(muP1(c), muP2(c));
       });
       muMap.fitBounds(L.latLngBounds(allPts).pad(0.15));
       setMuCabosStatus('ok', `⚡ ${segs.length.toLocaleString('pt-BR')} trecho(s) do alimentador "${cod}" em ${variacoes} variação(ões) de cabo`);
@@ -6745,9 +6808,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muLayerCabos && muCabosOk) {
       const CORES_CABO = { azul: '#2196f3', rosa: '#ff2d95' };
       muCabos.forEach(c => {
-        const midLat = (c.p1[0] + c.p2[0]) / 2, midLng = (c.p1[1] + c.p2[1]) / 2;
+        const midLat = (c.aLat + c.bLat) / 2, midLng = (c.aLng + c.bLng) / 2;
         if (haversine(muCentro.lat, muCentro.lng, midLat, midLng) <= raio) {
-          const linha = L.polyline([c.p1, c.p2], {
+          const linha = L.polyline([muP1(c), muP2(c)], {
             color: CORES_CABO[c.grupo] || '#2196f3', weight: 4, opacity: 0.9
           }).addTo(muMap).bindPopup(
             `<b style="color:${CORES_CABO[c.grupo] || '#2196f3'};">${c.grupo === 'rosa' ? '🔻' : '⚡'} ${c.nome}</b>`
@@ -6800,7 +6863,22 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
           });
           carregarMuPostes();
           carregarMuEquips();
-          carregarMuCabos();
+          // Os cabos são a carga pesada: ~248 MB de planilha que viram 1,46
+          // milhão de trechos. No iPhone isso estourava a memória, o Safari
+          // matava a aba e o recarregamento caía na tela de login. No celular
+          // eles passam a vir só quando o usuário liga a camada "Cabos"; no
+          // computador segue automático como sempre foi.
+          if (!muDispositivoLeve()) {
+            carregarMuCabos();
+          } else {
+            // A camada de cabos nasce LIGADA (muLayerCabos = true). Se ela ficar
+            // assim aqui, o primeiro toque no botão desliga em vez de carregar —
+            // então no celular ela começa desligada, de verdade e na aparência.
+            muLayerCabos = false;
+            const _bc = document.getElementById('mu-toggle-cabos');
+            if (_bc) { _bc.style.background = 'rgba(33,150,243,0.04)'; _bc.style.opacity = '0.45'; }
+            setMuCabosStatus('', '🔌 Toque em "Cabos" para carregar os trechos (pesado no celular)');
+          }
         }
       });
     });
@@ -9213,27 +9291,41 @@ document.querySelectorAll('.tab').forEach(btn => {
 
       _setCabosStatus('loading', '🔌 Processando trechos de cabo...');
       const json = JSON.parse(text);
+      text = null;                     // mesma economia do mapa unificado: ~248 MB
       if (json.error) throw new Error(json.error.message);
       const rows = json.values || [];
+      json.values = null;
       const todos = [];
-      rows.forEach((row, idx) => {
-        if (idx === 0) return; // pula cabeçalho
-        const g1nome = row[0], g1trecho = row[1];
-        if (g1nome && g1trecho) {
-          const pts = _parseTrecho(g1trecho);
-          if (pts) todos.push({ nome: g1nome, grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
-        }
-        const g2nome = row[3], g2trecho = row[4];
-        if (g2nome && g2trecho) {
-          const pts = _parseTrecho(g2trecho);
-          if (pts) todos.push({ nome: g2nome, grupo: 'azul', p1: pts[0], p2: pts[pts.length - 1] });
-        }
-        const g3nome = row[7], g3trecho = row[8];
-        if (g3nome && g3trecho) {
-          const pts = _parseTrecho(g3trecho);
-          if (pts) todos.push({ nome: g3nome, grupo: 'rosa', p1: pts[0], p2: pts[pts.length - 1] });
-        }
-      });
+
+      // nomes repetidos: ~679 alimentadores para 1,46 milhão de trechos
+      const _nomes2 = new Map();
+      const _unico2 = (mapa, s) => {
+        const v = mapa.get(s);
+        if (v !== undefined) return v;
+        mapa.set(s, s);
+        return s;
+      };
+
+      // quatro números soltos no lugar de dois arrays por trecho — ver muP1/muP2
+      const _add2 = (nome, grupo, trecho) => {
+        const pts = _parseTrecho(trecho);
+        if (!pts) return;
+        const a = pts[0], b = pts[pts.length - 1];
+        todos.push({
+          nome: _unico2(_nomes2, nome), grupo: grupo,
+          aLat: a[0], aLng: a[1], bLat: b[0], bLng: b[1]
+        });
+      };
+
+      for (let idx = 0; idx < rows.length; idx++) {
+        const row = rows[idx];
+        rows[idx] = null;              // solta a linha assim que ela é usada
+        if (idx === 0 || !row) continue; // pula cabeçalho
+        if (row[0] && row[1]) _add2(row[0], 'azul', row[1]);
+        if (row[3] && row[4]) _add2(row[3], 'azul', row[4]);
+        if (row[7] && row[8]) _add2(row[7], 'rosa', row[8]);
+      }
+      rows.length = 0;
       mapaCabos = todos;
       mapaCabosCarregado = true;
       _setCabosStatus('ok', `✔ ${mapaCabos.length.toLocaleString('pt-BR')} trechos de cabo carregados`);
@@ -9356,7 +9448,7 @@ document.querySelectorAll('.tab').forEach(btn => {
   function _cabosProximos(lat, lng, raio) {
     if (!mapaCabosCarregado) return [];
     return mapaCabos.filter(c => {
-      const midLat = (c.p1[0] + c.p2[0]) / 2, midLng = (c.p1[1] + c.p2[1]) / 2;
+      const midLat = (c.aLat + c.bLat) / 2, midLng = (c.aLng + c.bLng) / 2;
       return _haversine(lat, lng, midLat, midLng) <= raio;
     });
   }
@@ -9367,7 +9459,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     const cabos = _cabosProximos(lat, lng, raio);
     const CORES = { azul: '#2196f3', rosa: '#ff2d95' };
     cabos.forEach(c => {
-      const linha = L.polyline([c.p1, c.p2], {
+      const linha = L.polyline([[c.aLat, c.aLng], [c.bLat, c.bLng]], {
         color: CORES[c.grupo] || '#2196f3',
         weight: 4,
         opacity: 0.9

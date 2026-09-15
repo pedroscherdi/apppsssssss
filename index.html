@@ -5841,9 +5841,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muMap) return;
     muMap = L.map('mu-leaflet').setView([-31.7654, -52.3376], 10);
     // crossOrigin nos tiles: sem isso o canvas fica "tainted" e a exportação
-    // da evidência em PNG falha silenciosamente. CARTO e Esri mandam CORS.
-    const muRuas = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap © CARTO', maxZoom: 19, crossOrigin: true
+    // da evidência em PNG falha silenciosamente. O Esri manda CORS.
+    const muRuas = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri', maxZoom: 19, crossOrigin: true
     }).addTo(muMap);
     const muSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',
@@ -6951,9 +6951,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     carregarLeafletBC(() => {
       if (!bcMap) {
         bcMap = L.map('bc-map').setView([lat, lng], 16);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
-          attribution: '&copy; OpenStreetMap &copy; CARTO'
+          attribution: 'Tiles &copy; Esri'
         }).addTo(bcMap);
       } else {
         bcMap.setView([lat, lng], 16);
@@ -9078,8 +9078,8 @@ document.querySelectorAll('.tab').forEach(btn => {
     const el = document.getElementById('mapa-leaflet');
     if (!el) return;
     mapaMap = L.map('mapa-leaflet').setView([-31.7654, -52.3376], 10);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap © CARTO',
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri',
       maxZoom: 19
     }).addTo(mapaMap);
   }
@@ -10724,8 +10724,8 @@ Como posso ajudar?</div>
     const el = document.getElementById('equip-leaflet');
     if (!el) return;
     equipMap = L.map('equip-leaflet').setView([-31.7654, -52.3376], 10);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap © CARTO', maxZoom: 19
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri', maxZoom: 19
     }).addTo(equipMap);
   }
 
@@ -14514,8 +14514,8 @@ Como posso ajudar?</div>
 
       if (!mapa) {
         mapa = L.map('mu-map').setView([-30.6, -53.0], 6);  // RS inteiro
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-          maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19, attribution: 'Tiles &copy; Esri'
         }).addTo(mapa);
         camadaPinos = L.layerGroup().addTo(mapa);
       }
@@ -16695,7 +16695,17 @@ Como posso ajudar?</div>
     for (var i = 0; i < eqs.length; i++) {
       var nome = String(eqs[i].nome || '').trim();
       var k = nome.toUpperCase();
-      if (!k || !querido[k] || out[k]) continue;
+      if (!k) continue;
+      // o nome do mapa pode vir prefixado ("CF - FU230002901"); só paga o custo
+      // das variantes quando há " - " no meio — senão seriam 800 mil regex por clique
+      if (!querido[k]) {
+        if (k.indexOf(' - ') < 0) continue;
+        var vs = variantes(k), achou = null;
+        for (var j = 1; j < vs.length; j++) { if (querido[vs[j]]) { achou = vs[j]; break; } }
+        if (!achou) continue;
+        k = achou;
+      }
+      if (out[k]) continue;
       var la = parseFloat(String(eqs[i].lat).replace(',', '.'));
       var ln = parseFloat(String(eqs[i].lng).replace(',', '.'));
       if (isNaN(la) || isNaN(ln) || la === 0 || ln === 0) continue;
@@ -16874,6 +16884,40 @@ Como posso ajudar?</div>
     return String(txt || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
   }
 
+  // O MESMO equipamento aparece com nomes diferentes nos dois blocos de colunas
+  // da planilha do mapa — "CF - FU230002901" em B..G e "FU230002901" em I..N —
+  // e a hierarquia usa sempre o segundo. Os transformadores ainda levam o kVA
+  // colado no fim ("IT230011203 - 30,0"). São 33 mil nomes com prefixo e 76 mil
+  // com sufixo: sem desmontar isso, o card dizia "não consta" para metade do mapa.
+  var RE_PREFIXO = /^[A-Z]{2,3}\s*-\s*/;
+  var RE_SUFIXO  = /\s*-\s*\d+([.,]\d+)?$/;
+
+  // Variantes da mais completa para a menos — a primeira que existir vence, e é
+  // por isso que "CF - FU149048892-5" resolve para "FU149048892-5" (o nome
+  // inteiro sem o prefixo) e não para "FU149048892", que também existe.
+  function variantes(nome) {
+    var n = String(nome || '').trim().toUpperCase();
+    var brutas = [n, n.replace(RE_PREFIXO, ''), n.replace(RE_SUFIXO, ''),
+                  n.replace(RE_PREFIXO, '').replace(RE_SUFIXO, '')];
+    var vistos = {}, saida = [];
+    brutas.forEach(function (c) {
+      c = c.trim();
+      if (c && !vistos[c]) { vistos[c] = 1; saida.push(c); }
+    });
+    return saida;
+  }
+
+  // Devolve o código grafado como a hierarquia o escreve, ou null.
+  function resolver(nome) {
+    var vs = variantes(nome);
+    for (var i = 0; i < vs.length; i++) {
+      var k = vs[i];
+      if (window.reEquipMap[k]) return window.reEquipMap[k].codigo;
+      if (window.reMontanteMap[k]) return k;
+    }
+    return null;
+  }
+
   function aoSelecionar() {
     var el = document.getElementById('mu-e-nome');
     if (!el) return;
@@ -16898,17 +16942,19 @@ Como posso ajudar?</div>
         resumo.innerHTML = '<div style="font-size:0.75rem;color:var(--danger,#ff5252);">Não consegui carregar a planilha de hierarquia.</div>';
         return;
       }
-      var e = window.reEquipMap[nome.toUpperCase()];
-      var mon = window.reMontanteMap[nome.toUpperCase()] || [];
-      if (!e && !mon.length) {
+      var cod = resolver(nome);
+      var e = cod ? window.reEquipMap[cod.toUpperCase()] : null;
+      var mon = cod ? (window.reMontanteMap[cod.toUpperCase()] || []) : [];
+      if (!cod || (!e && !mon.length)) {
         resumo.innerHTML =
           '<div style="font-size:0.75rem;color:var(--muted);">Este equipamento não consta na hierarquia — ' +
           'a planilha cobre chaves e religadores, não transformadores.</div>';
         document.getElementById('hm-acoes').style.display = 'none';
         return;
       }
+      hmCodigo = cod;                    // daqui em diante vale a grafia da hierarquia
       document.getElementById('hm-acoes').style.display = 'flex';
-      var jus = coletar(nome, 'jusante');
+      var jus = coletar(cod, 'jusante');
       resumo.innerHTML =
         campo('Alimentado por', mon.length ? mon.join(', ') : 'origem do alimentador') +
         campo('Tipo', (e && e.tipo) || '—') +

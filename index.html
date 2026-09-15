@@ -2669,7 +2669,6 @@ self.addEventListener('fetch', e => {
     <button class="tab" data-tab="tracao"><svg class="tab-icon" aria-hidden="true"><use href="#i-tracao"/></svg> Tração Postes</button>
     <button class="tab" data-tab="cintas"><svg class="tab-icon" aria-hidden="true"><use href="#i-link"/></svg> Cintas</button>
     <button class="tab" data-tab="conectores"><svg class="tab-icon" aria-hidden="true"><use href="#i-plug"/></svg> Conectores</button>
-    <button class="tab" data-tab="atualizar"><svg class="tab-icon" aria-hidden="true"><use href="#i-upload"/></svg> Atualizar Dados</button>
     <button class="tab" data-tab="kanban"><svg class="tab-icon" aria-hidden="true"><use href="#i-kanban"/></svg> Kanban</button>
     <button class="tab" data-tab="mapa-unificado"><svg class="tab-icon" aria-hidden="true"><use href="#i-mapa"/></svg> Mapa</button>
     <button class="tab" data-tab="busca-uc"><svg class="tab-icon" aria-hidden="true"><use href="#i-busca-uc"/></svg> Busca UC</button>
@@ -3426,56 +3425,6 @@ self.addEventListener('fetch', e => {
   </div>
 </div>
 
-<!-- TAB: ATUALIZAR -->
-<div class="tab-panel" id="tab-atualizar">
-  <div class="info-card">
-    <strong>Como funciona:</strong> Faça upload de um CSV ou Excel com sua BOM completa.
-    O app vai <strong>substituir todos os dados</strong> da planilha pelo novo arquivo.
-    Mapeie as colunas abaixo — o app tenta detectar automaticamente.
-  </div>
-  <div class="upload-zone" id="uploadZone">
-    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" />
-    <div class="upload-icon">📂</div>
-    <p><strong>Arraste seu arquivo</strong> ou clique para selecionar</p>
-    <p style="margin-top:6px;font-size:0.78rem;">Suporta CSV, XLS e XLSX</p>
-  </div>
-  <div class="file-info" id="fileInfo">
-    <div class="file-dot"></div>
-    <span class="file-name" id="fileName"></span>
-    <button class="file-clear" id="fileClear">✕</button>
-  </div>
-  <div class="mapper" id="mapper">
-    <h3>Mapeie as colunas do arquivo</h3>
-    <div class="map-grid">
-      <div class="map-field">
-        <label>Código da Estrutura <span>*</span></label>
-        <select id="colStructure"><option value="">— selecione —</option></select>
-      </div>
-      <div class="map-field">
-        <label>Código do Item <span>*</span></label>
-        <select id="colItem"><option value="">— selecione —</option></select>
-      </div>
-      <div class="map-field">
-        <label>Descrição</label>
-        <select id="colDesc"><option value="">(nenhuma)</option></select>
-      </div>
-      <div class="map-field">
-        <label>Quantidade</label>
-        <select id="colQty"><option value="">(nenhuma)</option></select>
-      </div>
-      <div class="map-field">
-        <label>Unidade</label>
-        <select id="colUnit"><option value="">(nenhuma)</option></select>
-      </div>
-    </div>
-  </div>
-  <div class="send-row" id="sendRow">
-    <span class="send-msg" id="sendMsg"></span>
-    <button class="btn-ghost" id="btnCancelUpload">Cancelar</button>
-    <button class="btn" id="btnSend">⬆️ Enviar para Sheets</button>
-  </div>
-</div>
-
 <!-- TAB: ELOS -->
 <div class="tab-panel" id="tab-elos">
   <div class="info-card">
@@ -3814,7 +3763,7 @@ self.addEventListener('fetch', e => {
   const SHEET_NAME = 'Dados';
   const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`;
 
-  let allData = [], structures = {}, allCodes = [], columnMap = {}, uploadedData = [], rawRows = [];
+  let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
     if (!name) return 'var(--text)';
     let hash = 0;
@@ -3840,7 +3789,6 @@ self.addEventListener('fetch', e => {
     'cintas':      'Cintas',
     'conectores':  'Conectores',
     'inicio':      'Início',
-    'atualizar':   'Atualizar Dados',
     'kanban':      'Kanban',
     'campo':       'Campo',
     'mapa':        'Mapa Postes',
@@ -3913,7 +3861,7 @@ self.addEventListener('fetch', e => {
       const json = await res.json();
       if (json.error) throw new Error(json.error.message);
       const rows = json.values || [];
-      if (rows.length < 2) { setStatus('error', 'Planilha vazia. Envie dados pela aba "Atualizar Dados".'); return; }
+      if (rows.length < 2) { setStatus('error', 'Planilha vazia. Nenhum dado retornou da planilha.'); return; }
       const headers = rows[0];
       const maxLen = Math.max(headers.length, 30);
       const paddedHeaders = [...headers, ...Array(maxLen).fill('')].slice(0, maxLen);
@@ -4345,79 +4293,6 @@ self.addEventListener('fetch', e => {
     }
   });
   // ── FIM SUBSTITUIÇÃO ──────────────────────────────────────────────────
-
-  const uploadZone = document.getElementById('uploadZone');
-  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
-  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
-  uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
-  document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
-  document.getElementById('fileClear').addEventListener('click', resetUpload);
-  document.getElementById('btnCancelUpload').addEventListener('click', resetUpload);
-
-  function handleFile(file) {
-    if (!file) return;
-    document.getElementById('fileName').textContent = file.name;
-    document.getElementById('fileInfo').classList.add('visible');
-    const reader = new FileReader();
-    reader.onload = e => {
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      uploadedData = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      if (!uploadedData.length) { showToast('Arquivo vazio.', 'error'); return; }
-      const cols = Object.keys(uploadedData[0]);
-      populateMapSelects(cols); autoFillMapSelects(cols);
-      document.getElementById('mapper').classList.add('visible', 'fade-in');
-      document.getElementById('sendMsg').textContent = `${uploadedData.length} linhas prontas para envio`;
-      document.getElementById('sendRow').classList.add('visible');
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  function populateMapSelects(cols) {
-    ['colStructure','colItem','colDesc','colQty','colUnit'].forEach(id => {
-      const sel = document.getElementById(id);
-      const req = id === 'colStructure' || id === 'colItem';
-      sel.innerHTML = req ? '<option value="">— selecione —</option>' : '<option value="">(nenhuma)</option>';
-      cols.forEach(c => { const o = document.createElement('option'); o.value = o.textContent = c; sel.appendChild(o); });
-    });
-  }
-
-  function autoFillMapSelects(cols) {
-    const match = (id, kws) => { const f = cols.find(c => kws.some(k => c.toLowerCase().includes(k))); if (f) document.getElementById(id).value = f; };
-    match('colStructure', ['estrutura','pai','parent','assembly']);
-    match('colItem',      ['item','filho','child','componente']);
-    match('colDesc',      ['desc','nome','name','descricao','descrição']);
-    match('colQty',       ['qtd','qty','quantidade','quant']);
-    match('colUnit',      ['un','unid','unit','unidade']);
-  }
-
-  document.getElementById('btnSend').addEventListener('click', async () => {
-    const s = document.getElementById('colStructure').value;
-    const i = document.getElementById('colItem').value;
-    if (!s || !i) { showToast('Selecione as colunas obrigatórias.', 'error'); return; }
-    const map = { structure: s, item: i, desc: document.getElementById('colDesc').value, qty: document.getElementById('colQty').value, unit: document.getElementById('colUnit').value };
-    const headers = ['estrutura','item','descricao','quantidade','unidade'];
-    const rows = uploadedData.map(row => [row[map.structure]??'', row[map.item]??'', map.desc?(row[map.desc]??''):'', map.qty?(row[map.qty]??''):'', map.unit?(row[map.unit]??''):'']);
-    const btn = document.getElementById('btnSend');
-    btn.disabled = true; btn.textContent = '⏳ Enviando...';
-    try {
-      await fetch(`${BASE_URL}/values/${encodeURIComponent(SHEET_NAME)}:clear?key=${API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
-      const res = await fetch(`${BASE_URL}/values/${encodeURIComponent(SHEET_NAME)}?valueInputOption=RAW&key=${API_KEY}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ range: SHEET_NAME, majorDimension: 'ROWS', values: [headers, ...rows] }) });
-      const json = await res.json();
-      if (json.error) throw new Error(json.error.message);
-      showToast(`✅ ${rows.length} linhas enviadas com sucesso!`, 'success');
-      resetUpload(); loadFromSheets();
-    } catch(e) { showToast('Erro ao enviar: ' + e.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = '⬆️ Enviar para Sheets'; }
-  });
-
-  function resetUpload() {
-    uploadedData = [];
-    document.getElementById('fileInfo').classList.remove('visible');
-    document.getElementById('mapper').classList.remove('visible');
-    document.getElementById('sendRow').classList.remove('visible');
-    document.getElementById('fileInput').value = '';
-  }
 
   let toastTimer;
   function showToast(msg, type = 'success') {
@@ -5966,9 +5841,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muMap) return;
     muMap = L.map('mu-leaflet').setView([-31.7654, -52.3376], 10);
     // crossOrigin nos tiles: sem isso o canvas fica "tainted" e a exportação
-    // da evidência em PNG falha silenciosamente. OSM e Esri mandam CORS.
-    const muRuas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19, crossOrigin: true
+    // da evidência em PNG falha silenciosamente. CARTO e Esri mandam CORS.
+    const muRuas = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap © CARTO', maxZoom: 19, crossOrigin: true
     }).addTo(muMap);
     const muSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',
@@ -6108,6 +5983,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       const b2 = rows.map(r => parseBlocoE(r,8,9,10,11,12,13)).filter(r=>r.nome);
       const b3 = rows.map(r => parseBlocoE(r,15,16,17,18,19,20)).filter(r=>r.nome);
       muEquips = [...b1, ...b2, ...b3];
+      // exposto para o bloco <script id="hierarquia-no-mapa">, que le as
+      // coordenadas dos equipamentos a jusante sem baixar a planilha de novo
+      window.muEquips = muEquips;
       muEquipsOk = true;
       document.getElementById('mu-badge-equip').textContent = `⚙️ ${muEquips.length} equipamentos`;
       atualizarStatusMU();
@@ -7073,9 +6951,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     carregarLeafletBC(() => {
       if (!bcMap) {
         bcMap = L.map('bc-map').setView([lat, lng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
           maxZoom: 19,
-          attribution: '&copy; OpenStreetMap'
+          attribution: '&copy; OpenStreetMap &copy; CARTO'
         }).addTo(bcMap);
       } else {
         bcMap.setView([lat, lng], 16);
@@ -9200,8 +9078,8 @@ document.querySelectorAll('.tab').forEach(btn => {
     const el = document.getElementById('mapa-leaflet');
     if (!el) return;
     mapaMap = L.map('mapa-leaflet').setView([-31.7654, -52.3376], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap © CARTO',
       maxZoom: 19
     }).addTo(mapaMap);
   }
@@ -10846,8 +10724,8 @@ Como posso ajudar?</div>
     const el = document.getElementById('equip-leaflet');
     if (!el) return;
     equipMap = L.map('equip-leaflet').setView([-31.7654, -52.3376], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap © CARTO', maxZoom: 19
     }).addTo(equipMap);
   }
 
@@ -14636,8 +14514,8 @@ Como posso ajudar?</div>
 
       if (!mapa) {
         mapa = L.map('mu-map').setView([-30.6, -53.0], 6);  // RS inteiro
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19, attribution: '&copy; OpenStreetMap'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+          maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
         }).addTo(mapa);
         camadaPinos = L.layerGroup().addTo(mapa);
       }
@@ -16663,5 +16541,406 @@ Como posso ajudar?</div>
 })();
 </script>
 
+
+<script id="hierarquia-no-mapa">
+/* ══════════════════════════════════════════════════════════════════
+   HIERARQUIA NO MAPA UNIFICADO
+   Liga o equipamento selecionado no mapa à árvore jusante/montante
+   da aba "Hierarquia de Equip.", e desenha essa árvore sobre o mapa.
+   Bloco aditivo: nada de HTML novo no arquivo, tudo criado por DOM.
+   ══════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var RE_XLSX = 'https://docs.google.com/spreadsheets/d/1vDGRiM-AUEZQTT_eYG_0BAMezfNGaYLh/export?format=xlsx&gid=1049734509';
+  var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
+  var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
+  var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
+  var MAX_NOS = 2000;
+
+  var hmLayer = null;        // camada Leaflet do desenho atual
+  var hmCodigo = null;       // equipamento selecionado no mapa
+  var hmDirDesenhada = null;
+
+  // ── CSS ────────────────────────────────────────────────────────
+  var css = document.createElement('style');
+  css.textContent = [
+    '#hm-card .hm-btn{font-family:inherit;font-size:0.72rem;padding:0.35rem 0.8rem;border-radius:var(--radius);',
+      'border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;}',
+    '#hm-card .hm-btn:hover{border-color:var(--accent);}',
+    '#hm-card .hm-btn.jus{background:' + COR_JUS + ';border-color:' + COR_JUS + ';color:#fff;}',
+    '#hm-card .hm-btn.mon{background:' + COR_MON + ';border-color:' + COR_MON + ';color:#05202b;}',
+    '#hm-card .hm-btn:disabled{opacity:0.4;cursor:not-allowed;}',
+    '#hm-tree{font-family:"DM Mono",monospace;font-size:0.76rem;margin-top:0.7rem;max-height:260px;overflow-y:auto;}',
+    '#hm-tree details{margin-left:0.8rem;border-left:1px dashed var(--border);padding-left:0.7rem;margin-top:0.3rem;}',
+    '#hm-tree summary{cursor:pointer;list-style:none;padding:0.25rem 0.4rem;border:1px solid transparent;border-radius:6px;}',
+    '#hm-tree summary::-webkit-details-marker{display:none;}',
+    '#hm-tree summary:hover{border-color:var(--accent);}',
+    '#hm-tree .hm-no{padding:0.25rem 0.4rem;display:inline-block;}',
+    '#hm-tree .hm-cod{color:var(--accent);font-weight:700;cursor:pointer;}',
+    '#hm-tree .hm-cod:hover{text-decoration:underline;}',
+    '#hm-tree .hm-tipo{color:var(--accent2);font-size:0.68rem;}',
+    '#hm-tree .hm-alim{color:var(--muted);font-size:0.66rem;}',
+    '#hm-tree .hm-sem{color:var(--muted);font-style:italic;font-size:0.68rem;}'
+  ].join('');
+  document.head.appendChild(css);
+
+  // ── Card, criado por DOM logo abaixo do card do equipamento ────
+  var card = null;
+  function montarCard() {
+    if (card) return card;
+    var host = document.getElementById('mu-equip-card');
+    if (!host) return null;
+    card = document.createElement('div');
+    card.id = 'hm-card';
+    card.className = 'mapa-info-card';
+    card.style.cssText = 'margin-bottom:0.75rem;border-color:' + COR_JUS + '33;';
+    card.innerHTML =
+      '<div style="font-family:\'DM Mono\',monospace;font-size:0.63rem;text-transform:uppercase;' +
+        'letter-spacing:0.09em;color:' + COR_JUS + ';margin-bottom:0.5rem;">🔀 Hierarquia da rede</div>' +
+      '<div id="hm-resumo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.6rem;"></div>' +
+      '<div id="hm-acoes" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.7rem;"></div>' +
+      '<div id="hm-tree"></div>';
+    host.insertAdjacentElement('afterend', card);
+    return card;
+  }
+
+  // ── Dados da hierarquia — compartilhados com a aba ─────────────
+  function hmSplit(v) {
+    return String(v || '').split(/[,;\n\/]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function temDados() {
+    return window.reEquipMap && Object.keys(window.reEquipMap).length > 0;
+  }
+
+  function garantirDados() {
+    // Usa as MESMAS globais da aba Hierarquia: quem carregar primeiro serve os dois.
+    if (temDados()) return Promise.resolve(true);
+    if (window.reCarregando) {
+      return new Promise(function (res) {
+        var t = setInterval(function () {
+          if (!window.reCarregando) { clearInterval(t); res(temDados()); }
+        }, 120);
+      });
+    }
+    window.reCarregando = true;
+    return fetch(RE_XLSX)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+      .then(function (buf) {
+        var wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+        var sh = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sh, { header: 1, defval: '' });
+        var eq = {}, mon = {};
+        rows.slice(1).forEach(function (row) {
+          var cod = String(row[0] == null ? '' : row[0]).trim();
+          if (!cod) return;
+          eq[cod.toUpperCase()] = {
+            codigo: cod,
+            alimentador: String(row[1] == null ? '' : row[1]).trim(),
+            tipo: String(row[2] == null ? '' : row[2]).trim(),
+            jusante: hmSplit(row[3])
+          };
+        });
+        Object.keys(eq).forEach(function (k) {
+          eq[k].jusante.forEach(function (f) {
+            var fk = f.toUpperCase();
+            if (!mon[fk]) mon[fk] = [];
+            if (mon[fk].indexOf(eq[k].codigo) === -1) mon[fk].push(eq[k].codigo);
+          });
+        });
+        window.reEquipMap = eq;
+        window.reMontanteMap = mon;
+        window.reCarregado = true;
+        return true;
+      })
+      .catch(function (e) { console.warn('[hierarquia-no-mapa] falha ao carregar:', e); return false; })
+      .then(function (ok) { window.reCarregando = false; return ok; });
+  }
+
+  // ── Travessia da árvore ────────────────────────────────────────
+  function filhosDe(cod, dir) {
+    var k = String(cod).toUpperCase();
+    if (dir === 'jusante') {
+      var e = window.reEquipMap[k];
+      return e ? e.jusante : [];
+    }
+    return window.reMontanteMap[k] || [];
+  }
+
+  // Percorre em largura; devolve os nós com o pai, sem repetir (corta ciclo).
+  function coletar(raiz, dir) {
+    var vistos = {}, fila = [String(raiz)], nos = [];
+    vistos[String(raiz).toUpperCase()] = true;
+    var diretos = filhosDe(raiz, dir).length;
+    while (fila.length && nos.length < MAX_NOS) {
+      var atual = fila.shift();
+      filhosDe(atual, dir).forEach(function (f) {
+        var fk = f.toUpperCase();
+        if (vistos[fk]) return;
+        vistos[fk] = true;
+        nos.push({ codigo: f, pai: atual });
+        fila.push(f);
+      });
+    }
+    return { nos: nos, diretos: diretos, truncado: fila.length > 0 };
+  }
+
+  // ── Coordenadas: varre muEquips só para os códigos pedidos ─────
+  // Sem índice persistente — o mapa já tem 1,33 mi de postes na memória.
+  function coordsDe(codigos) {
+    var querido = {}, out = {};
+    codigos.forEach(function (c) { querido[String(c).toUpperCase()] = true; });
+    var eqs = window.muEquips || [];
+    for (var i = 0; i < eqs.length; i++) {
+      var nome = String(eqs[i].nome || '').trim();
+      var k = nome.toUpperCase();
+      if (!k || !querido[k] || out[k]) continue;
+      var la = parseFloat(String(eqs[i].lat).replace(',', '.'));
+      var ln = parseFloat(String(eqs[i].lng).replace(',', '.'));
+      if (isNaN(la) || isNaN(ln) || la === 0 || ln === 0) continue;
+      out[k] = { lat: la, lng: ln, nome: nome, tipo: eqs[i].tipo, alim: eqs[i].alimentador };
+    }
+    return out;
+  }
+
+  // ── Desenho no mapa ────────────────────────────────────────────
+  function limparDesenho() {
+    if (hmLayer && window.muMapa) { window.muMapa.removeLayer(hmLayer); }
+    hmLayer = null;
+    hmDirDesenhada = null;
+    sincronizarBotoes();
+  }
+
+  function desenhar(dir) {
+    if (!hmCodigo) return;
+    var map = window.muMapa;
+    if (!map || typeof L === 'undefined') {
+      status('Abra o mapa primeiro (toque em um equipamento).');
+      return;
+    }
+    var r = coletar(hmCodigo, dir);
+    if (!r.nos.length) {
+      status(dir === 'jusante'
+        ? 'Nenhum equipamento a jusante cadastrado.'
+        : 'Nenhum equipamento a montante — pode ser a origem do alimentador.');
+      return;
+    }
+
+    var precisa = [hmCodigo];
+    r.nos.forEach(function (n) { precisa.push(n.codigo); });
+    var co = coordsDe(precisa);
+
+    limparDesenho();
+    hmLayer = L.layerGroup().addTo(map);
+    hmDirDesenhada = dir;
+
+    var cor = dir === 'jusante' ? COR_JUS : COR_MON;
+    var comCoord = 0;
+    var pontos = [];
+
+    var raizK = String(hmCodigo).toUpperCase();
+    if (co[raizK]) {
+      pontos.push([co[raizK].lat, co[raizK].lng]);
+      L.circleMarker([co[raizK].lat, co[raizK].lng], {
+        radius: 9, color: '#fff', weight: 3, fillColor: COR_RAIZ, fillOpacity: 1
+      }).bindPopup('<b>' + co[raizK].nome + '</b><br>equipamento selecionado').addTo(hmLayer);
+    }
+
+    r.nos.forEach(function (n) {
+      var k = n.codigo.toUpperCase();
+      var pk = n.pai.toUpperCase();
+      var a = co[k];
+      if (!a) return;
+      comCoord++;
+      pontos.push([a.lat, a.lng]);
+      var eqh = window.reEquipMap[k];
+      L.circleMarker([a.lat, a.lng], {
+        radius: 6, color: '#fff', weight: 2, fillColor: cor, fillOpacity: 0.95
+      }).bindPopup(
+        '<b style="font-family:\'DM Mono\',monospace;color:' + cor + ';">' + a.nome + '</b><br>' +
+        (eqh && eqh.tipo ? eqh.tipo + '<br>' : '') +
+        (a.alim ? 'Alim.: ' + a.alim + '<br>' : '') +
+        '<span style="opacity:.7;">' + (dir === 'jusante' ? 'a jusante de ' : 'a montante de ') + n.pai + '</span>'
+      ).addTo(hmLayer);
+
+      var b = co[pk];
+      if (b) {
+        L.polyline([[b.lat, b.lng], [a.lat, a.lng]], {
+          color: cor, weight: 2, opacity: 0.65, dashArray: dir === 'montante' ? '5,5' : null
+        }).addTo(hmLayer);
+      }
+    });
+
+    if (pontos.length > 1) {
+      map.fitBounds(L.latLngBounds(pontos).pad(0.15));
+    }
+
+    var semCoord = r.nos.length - comCoord;
+    status(
+      (dir === 'jusante' ? '🔽 ' : '🔼 ') + r.nos.length + ' equipamento(s) ' + dir +
+      ' · ' + comCoord + ' no mapa' +
+      (semCoord ? ' · ' + semCoord + ' sem coordenada' : '') +
+      (r.truncado ? ' · lista cortada em ' + MAX_NOS : '')
+    );
+    sincronizarBotoes();
+  }
+
+  function status(msg) {
+    var el = document.getElementById('hm-status');
+    if (el) el.textContent = msg;
+  }
+
+  // ── Árvore em texto ────────────────────────────────────────────
+  function rotulo(cod) {
+    var e = window.reEquipMap[String(cod).toUpperCase()];
+    if (!e) return '<span class="hm-cod" data-cod="' + cod + '">' + cod + '</span> <span class="hm-sem">(sem cadastro)</span>';
+    return '<span class="hm-cod" data-cod="' + e.codigo + '">' + e.codigo + '</span> ' +
+           '<span class="hm-tipo">' + (e.tipo || 's/tipo') + '</span> ' +
+           '<span class="hm-alim">· ' + (e.alimentador || 's/alim.') + '</span>';
+  }
+
+  function nodeHtml(cod, dir, vistos, prof) {
+    var k = String(cod).toUpperCase();
+    if (vistos[k]) return '<div class="hm-no" style="opacity:.6;">↺ ' + rotulo(cod) + ' (ciclo)</div>';
+    var novo = Object.create(vistos); novo[k] = true;
+    var fs = filhosDe(cod, dir);
+    if (!fs.length || prof > 12) return '<div class="hm-no">' + rotulo(cod) + '</div>';
+    return '<details' + (prof < 2 ? ' open' : '') + '><summary>' + rotulo(cod) +
+           ' <span class="hm-alim">(' + fs.length + ')</span></summary>' +
+           fs.map(function (f) { return nodeHtml(f, dir, novo, prof + 1); }).join('') +
+           '</details>';
+  }
+
+  function renderArvore(dir) {
+    var wrap = document.getElementById('hm-tree');
+    if (!wrap || !hmCodigo) return;
+    var fs = filhosDe(hmCodigo, dir);
+    if (!fs.length) { wrap.innerHTML = '<div class="hm-sem" style="padding:.4rem 0;">Nada a ' + dir + '.</div>'; return; }
+    var vistos = Object.create(null); vistos[String(hmCodigo).toUpperCase()] = true;
+    wrap.innerHTML = fs.map(function (f) { return nodeHtml(f, dir, vistos, 1); }).join('');
+    wrap.querySelectorAll('.hm-cod').forEach(function (el) {
+      el.addEventListener('click', function () { centralizar(el.dataset.cod); });
+    });
+  }
+
+  function centralizar(cod) {
+    var co = coordsDe([cod]);
+    var a = co[String(cod).toUpperCase()];
+    if (!a) { status('⚠️ ' + cod + ' não tem coordenada na planilha do mapa.'); return; }
+    if (!window.muMapa) return;
+    window.muMapa.setView([a.lat, a.lng], 17);
+    L.popup().setLatLng([a.lat, a.lng])
+      .setContent('<b style="font-family:\'DM Mono\',monospace;">' + a.nome + '</b>')
+      .openOn(window.muMapa);
+  }
+
+  // ── Botões ─────────────────────────────────────────────────────
+  function sincronizarBotoes() {
+    var bj = document.getElementById('hm-b-jus');
+    var bm = document.getElementById('hm-b-mon');
+    var bl = document.getElementById('hm-b-limpar');
+    if (bj) bj.classList.toggle('jus', hmDirDesenhada === 'jusante');
+    if (bm) bm.classList.toggle('mon', hmDirDesenhada === 'montante');
+    if (bl) bl.disabled = !hmLayer;
+  }
+
+  function montarAcoes() {
+    var wrap = document.getElementById('hm-acoes');
+    if (!wrap || wrap.dataset.pronto) return;
+    wrap.dataset.pronto = '1';
+    wrap.innerHTML =
+      '<button class="hm-btn" id="hm-b-jus">🔽 Jusante no mapa</button>' +
+      '<button class="hm-btn" id="hm-b-mon">🔼 Montante no mapa</button>' +
+      '<button class="hm-btn" id="hm-b-limpar" disabled>🧹 Limpar</button>' +
+      '<button class="hm-btn" id="hm-b-aba">↗ Abrir na aba</button>' +
+      '<div id="hm-status" style="flex-basis:100%;font-family:\'DM Mono\',monospace;font-size:0.7rem;color:var(--muted);margin-top:0.2rem;"></div>';
+    document.getElementById('hm-b-jus').addEventListener('click', function () { desenhar('jusante'); renderArvore('jusante'); });
+    document.getElementById('hm-b-mon').addEventListener('click', function () { desenhar('montante'); renderArvore('montante'); });
+    document.getElementById('hm-b-limpar').addEventListener('click', function () { limparDesenho(); status(''); });
+    document.getElementById('hm-b-aba').addEventListener('click', function () {
+      if (!hmCodigo) return;
+      var btn = document.querySelector('.tab[data-tab="rastreio-equip"]');
+      if (btn) btn.click();
+      var inp = document.getElementById('re-input');
+      if (inp) inp.value = hmCodigo;
+      if (typeof window.reBuscar === 'function') window.reBuscar();
+    });
+  }
+
+  // ── Reage à seleção de equipamento no mapa ─────────────────────
+  function nomeLimpo(txt) {
+    // o card escreve "<emoji> <nome>"; tira só os símbolos da frente
+    return String(txt || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
+  }
+
+  function aoSelecionar() {
+    var el = document.getElementById('mu-e-nome');
+    if (!el) return;
+    var nome = nomeLimpo(el.textContent);
+    if (!nome || nome === '—') { if (card) card.classList.remove('visible'); return; }
+
+    montarCard();
+    montarAcoes();
+    if (!card) return;
+    card.classList.add('visible');
+    hmCodigo = nome;
+    limparDesenho();
+    document.getElementById('hm-tree').innerHTML = '';
+    document.getElementById('hm-resumo').innerHTML =
+      '<div style="font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted);">🔄 consultando hierarquia…</div>';
+    status('');
+
+    garantirDados().then(function (ok) {
+      if (hmCodigo !== nome) return;               // o usuário já trocou de equipamento
+      var resumo = document.getElementById('hm-resumo');
+      if (!ok) {
+        resumo.innerHTML = '<div style="font-size:0.75rem;color:var(--danger,#ff5252);">Não consegui carregar a planilha de hierarquia.</div>';
+        return;
+      }
+      var e = window.reEquipMap[nome.toUpperCase()];
+      var mon = window.reMontanteMap[nome.toUpperCase()] || [];
+      if (!e && !mon.length) {
+        resumo.innerHTML =
+          '<div style="font-size:0.75rem;color:var(--muted);">Este equipamento não consta na hierarquia — ' +
+          'a planilha cobre chaves e religadores, não transformadores.</div>';
+        document.getElementById('hm-acoes').style.display = 'none';
+        return;
+      }
+      document.getElementById('hm-acoes').style.display = 'flex';
+      var jus = coletar(nome, 'jusante');
+      resumo.innerHTML =
+        campo('Alimentado por', mon.length ? mon.join(', ') : 'origem do alimentador') +
+        campo('Tipo', (e && e.tipo) || '—') +
+        campo('Alimentador', (e && e.alimentador) || '—') +
+        campo('A jusante', jus.nos.length + ' no total · ' + jus.diretos + ' direto(s)');
+      renderArvore('jusante');
+    });
+  }
+
+  function campo(rot, val) {
+    return '<div><div class="mi-label">' + rot + '</div><div class="mi-val" style="font-size:0.78rem;">' + val + '</div></div>';
+  }
+
+  // ── Liga o observador quando o card do equipamento existir ─────
+  function ligar() {
+    var alvo = document.getElementById('mu-e-nome');
+    if (!alvo) return false;
+    montarCard();
+    montarAcoes();
+    new MutationObserver(aoSelecionar).observe(alvo, { childList: true, characterData: true, subtree: true });
+    if (card) card.classList.remove('visible');
+    return true;
+  }
+
+  if (!ligar()) {
+    var n = 0;
+    var t = setInterval(function () {
+      n++;
+      if (ligar() || n > 240) clearInterval(t);
+    }, 500);
+  }
+})();
+</script>
 </body>
 </html>

@@ -2312,27 +2312,27 @@ self.addEventListener('fetch', e => {
       <svg class="sbl2-wires" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <g id="sbl2-poste">
-            <line x1="0" y1="0" x2="0" y2="170" stroke="rgba(105,240,174,0.34)" stroke-width="2.4"/>
-            <line x1="-24" y1="14" x2="24" y2="14" stroke="rgba(105,240,174,0.34)" stroke-width="2.4"/>
-            <line x1="0" y1="14" x2="0" y2="-2" stroke="rgba(105,240,174,0.34)" stroke-width="2"/>
-            <line x1="-24" y1="14" x2="-24" y2="5" stroke="rgba(105,240,174,0.34)" stroke-width="2"/>
-            <line x1="24" y1="14" x2="24" y2="5" stroke="rgba(105,240,174,0.34)" stroke-width="2"/>
-            <circle cx="0" cy="-3" r="2.6" fill="rgba(0,230,118,0.65)"/>
-            <circle cx="-24" cy="3.5" r="2.3" fill="rgba(0,230,118,0.65)"/>
-            <circle cx="24" cy="3.5" r="2.3" fill="rgba(0,230,118,0.65)"/>
+            <line x1="0" y1="0" x2="0" y2="170" stroke="var(--sbl2-fio, rgba(105,240,174,0.34))" stroke-width="2.4"/>
+            <line x1="-24" y1="14" x2="24" y2="14" stroke="var(--sbl2-fio, rgba(105,240,174,0.34))" stroke-width="2.4"/>
+            <line x1="0" y1="14" x2="0" y2="-2" stroke="var(--sbl2-fio, rgba(105,240,174,0.34))" stroke-width="2"/>
+            <line x1="-24" y1="14" x2="-24" y2="5" stroke="var(--sbl2-fio, rgba(105,240,174,0.34))" stroke-width="2"/>
+            <line x1="24" y1="14" x2="24" y2="5" stroke="var(--sbl2-fio, rgba(105,240,174,0.34))" stroke-width="2"/>
+            <circle cx="0" cy="-3" r="2.6" fill="var(--sbl2-iso, rgba(0,230,118,0.65))"/>
+            <circle cx="-24" cy="3.5" r="2.3" fill="var(--sbl2-iso, rgba(0,230,118,0.65))"/>
+            <circle cx="24" cy="3.5" r="2.3" fill="var(--sbl2-iso, rgba(0,230,118,0.65))"/>
           </g>
         </defs>
-        <path d="M71 203.5 Q173.5 246 276 203.5 Q378.5 246 481 203.5" fill="none" stroke="rgba(105,240,174,0.13)" stroke-width="1.6"/>
-        <path d="M119 203.5 Q221.5 246 324 203.5 Q426.5 246 529 203.5" fill="none" stroke="rgba(105,240,174,0.13)" stroke-width="1.6"/>
-        <path id="sbl2-cabo" d="M95 197 Q197.5 240 300 197 Q402.5 240 505 197" fill="none" stroke="rgba(0,230,118,0.24)" stroke-width="1.8"/>
+        <path d="M71 203.5 Q173.5 246 276 203.5 Q378.5 246 481 203.5" fill="none" stroke="var(--sbl2-vao, rgba(105,240,174,0.13))" stroke-width="1.6"/>
+        <path d="M119 203.5 Q221.5 246 324 203.5 Q426.5 246 529 203.5" fill="none" stroke="var(--sbl2-vao, rgba(105,240,174,0.13))" stroke-width="1.6"/>
+        <path id="sbl2-cabo" d="M95 197 Q197.5 240 300 197 Q402.5 240 505 197" fill="none" stroke="var(--sbl2-cabo-cor, rgba(0,230,118,0.24))" stroke-width="1.8"/>
         <use href="#sbl2-poste" x="95" y="200"/>
         <use href="#sbl2-poste" x="300" y="200"/>
         <use href="#sbl2-poste" x="505" y="200"/>
-        <circle r="4.5" fill="#aaffcc" style="filter:drop-shadow(0 0 6px var(--accent))">
+        <circle r="4.5" fill="var(--sbl2-pulso, #aaffcc)" style="filter:drop-shadow(0 0 6px var(--accent))">
           <animateMotion dur="3.6s" repeatCount="indefinite"><mpath href="#sbl2-cabo"/></animateMotion>
           <animate attributeName="r" values="3;5.5;3" dur="1.2s" repeatCount="indefinite"/>
         </circle>
-        <circle r="3" fill="#00e676" opacity="0.6">
+        <circle r="3" fill="var(--sbl2-pulso2, #00e676)" opacity="0.6">
           <animateMotion dur="3.6s" begin="-1.8s" repeatCount="indefinite"><mpath href="#sbl2-cabo"/></animateMotion>
         </circle>
       </svg>
@@ -2730,8 +2730,8 @@ self.addEventListener('fetch', e => {
 
     <!-- viewBox de 680 com preserveAspectRatio="none": manter o desenho na largura
          natural evita que os postes estiquem agora que a home é mais larga. -->
-    <div class="sb-power-line" aria-hidden="true" style="margin:0 0 1.4rem;line-height:0;max-width:680px;">
-      <svg viewBox="0 0 680 130" preserveAspectRatio="none" style="width:100%;height:auto;display:block;max-height:110px;">
+    <div class="sb-power-line" aria-hidden="true" style="margin:0 auto 1.4rem;line-height:0;max-width:1040px;">
+      <svg viewBox="0 0 1050 130" preserveAspectRatio="none" style="width:100%;height:auto;display:block;max-height:112px;min-height:68px;">
         <defs>
           <filter id="sbPulseGlow" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="2.2" result="blur"/>
@@ -2740,21 +2740,13 @@ self.addEventListener('fetch', e => {
         </defs>
 
         <!-- linha de solo -->
-        <line x1="0" y1="118" x2="680" y2="118" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 6" opacity="0.35"/>
+        <line x1="0" y1="118" x2="1050" y2="118" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 6" opacity="0.35"/>
 
         <!-- fios (vãos entre postes) -->
         <g fill="none" stroke="var(--muted)" stroke-width="1.3" opacity="0.55">
-          <path d="M 24 19 Q 145 44 214 19"/>
-          <path id="sbWireA0" d="M 50 19 Q 145 44 240 19"/>
-          <path d="M 76 19 Q 145 44 266 19"/>
-
-          <path d="M 214 19 Q 335 44 404 19"/>
-          <path id="sbWireA1" d="M 240 19 Q 335 44 430 19"/>
-          <path d="M 266 19 Q 335 44 456 19"/>
-
-          <path d="M 404 19 Q 525 44 594 19"/>
-          <path id="sbWireA2" d="M 430 19 Q 525 44 620 19"/>
-          <path d="M 456 19 Q 525 44 646 19"/>
+          <path id="sbWireA0" d="M 24 19 Q 145 44 214 19 Q 335 44 404 19 Q 525 44 594 19 Q 715 44 784 19 Q 905 44 974 19"/>
+          <path id="sbWireA1" d="M 50 19 Q 145 44 240 19 Q 335 44 430 19 Q 525 44 620 19 Q 715 44 810 19 Q 905 44 1000 19"/>
+          <path id="sbWireA2" d="M 76 19 Q 145 44 266 19 Q 335 44 456 19 Q 525 44 646 19 Q 715 44 836 19 Q 905 44 1026 19"/>
         </g>
 
         <!-- postes -->
@@ -2794,6 +2786,24 @@ self.addEventListener('fetch', e => {
           <line x1="594" y1="26" x2="594" y2="19" stroke-width="2"/>
           <line x1="620" y1="26" x2="620" y2="19" stroke-width="2"/>
           <line x1="646" y1="26" x2="646" y2="19" stroke-width="2"/>
+
+          <!-- poste 5 -->
+          <line x1="810" y1="115" x2="810" y2="15" stroke-width="4"/>
+          <line x1="784" y1="26" x2="836" y2="26" stroke-width="3"/>
+          <line x1="810" y1="38" x2="784" y2="26" stroke-width="2"/>
+          <line x1="810" y1="38" x2="836" y2="26" stroke-width="2"/>
+          <line x1="784" y1="26" x2="784" y2="19" stroke-width="2"/>
+          <line x1="810" y1="26" x2="810" y2="19" stroke-width="2"/>
+          <line x1="836" y1="26" x2="836" y2="19" stroke-width="2"/>
+
+          <!-- poste 6 -->
+          <line x1="1000" y1="115" x2="1000" y2="15" stroke-width="4"/>
+          <line x1="974" y1="26" x2="1026" y2="26" stroke-width="3"/>
+          <line x1="1000" y1="38" x2="974" y2="26" stroke-width="2"/>
+          <line x1="1000" y1="38" x2="1026" y2="26" stroke-width="2"/>
+          <line x1="974" y1="26" x2="974" y2="19" stroke-width="2"/>
+          <line x1="1000" y1="26" x2="1000" y2="19" stroke-width="2"/>
+          <line x1="1026" y1="26" x2="1026" y2="19" stroke-width="2"/>
         </g>
 
         <!-- isoladores -->
@@ -2802,27 +2812,29 @@ self.addEventListener('fetch', e => {
           <circle cx="214" cy="18" r="2"/><circle cx="240" cy="18" r="2"/><circle cx="266" cy="18" r="2"/>
           <circle cx="404" cy="18" r="2"/><circle cx="430" cy="18" r="2"/><circle cx="456" cy="18" r="2"/>
           <circle cx="594" cy="18" r="2"/><circle cx="620" cy="18" r="2"/><circle cx="646" cy="18" r="2"/>
+          <circle cx="784" cy="18" r="2"/><circle cx="810" cy="18" r="2"/><circle cx="836" cy="18" r="2"/>
+          <circle cx="974" cy="18" r="2"/><circle cx="1000" cy="18" r="2"/><circle cx="1026" cy="18" r="2"/>
         </g>
 
         <!-- pulso de corrente percorrendo os fios -->
         <g class="sb-pulse">
           <circle r="3.2" fill="var(--accent)" filter="url(#sbPulseGlow)">
-            <animateMotion dur="3s" repeatCount="indefinite" begin="0s" calcMode="linear">
+            <animateMotion dur="10s" repeatCount="indefinite" begin="0s" calcMode="linear">
               <mpath href="#sbWireA0"/>
             </animateMotion>
-            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="3s" repeatCount="indefinite" begin="0s"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.04;0.96;1" dur="10s" repeatCount="indefinite" begin="0s"/>
           </circle>
           <circle r="3.2" fill="var(--accent)" filter="url(#sbPulseGlow)">
-            <animateMotion dur="3s" repeatCount="indefinite" begin="1s" calcMode="linear">
+            <animateMotion dur="10s" repeatCount="indefinite" begin="3.33s" calcMode="linear">
               <mpath href="#sbWireA1"/>
             </animateMotion>
-            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="3s" repeatCount="indefinite" begin="1s"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.04;0.96;1" dur="10s" repeatCount="indefinite" begin="3.33s"/>
           </circle>
           <circle r="3.2" fill="var(--accent)" filter="url(#sbPulseGlow)">
-            <animateMotion dur="3s" repeatCount="indefinite" begin="2s" calcMode="linear">
+            <animateMotion dur="10s" repeatCount="indefinite" begin="6.66s" calcMode="linear">
               <mpath href="#sbWireA2"/>
             </animateMotion>
-            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.92;1" dur="3s" repeatCount="indefinite" begin="2s"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.04;0.96;1" dur="10s" repeatCount="indefinite" begin="6.66s"/>
           </circle>
         </g>
       </svg>
@@ -17367,6 +17379,253 @@ Como posso ajudar?</div>
       if (abaMontada || n > 240) clearInterval(t);
     }, 500);
   }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TELA DE LOGIN NO CLARO (17/09/2026)
+
+     Até aqui o login era a única tela presa num tema só. Dois blocos
+     anteriores — sb-ajustes-claro e sb-tema-unico — cravam a paleta ESCURA
+     em "#loginScreen" sem condição nenhuma, porque o desenho split fixa
+     color:#fff no título e rgba(255,255,255,…) nos campos: no claro o
+     "Bem-vindo de volta." sumia no fundo.
+
+     Aqui o pino do escuro passa a valer só quando data-sb="escuro". Não dá
+     para desfazer aquelas regras com a mesma especificidade, então todo
+     seletor deste bloco leva o prefixo html:not([data-sb="escuro"]), que
+     ganha por uma classe a mais e vale exclusivamente no claro. O modo
+     escuro continua byte a byte como era.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="sb-login-claro">
+
+  /* ── 1. Os tokens ──────────────────────────────────────────────────────
+     Mesma paleta clara do resto do app (a do sb-tema-unico), para o login
+     não virar uma segunda identidade visual. */
+  html:not([data-sb="escuro"]) #loginScreen {
+    --bg:          #ddf3e5;
+    --surface:     #f6fdf9;
+    --border:      rgba(16, 70, 40, 0.14);
+    --text:        #14201a;
+    --muted:       #6a7a72;
+    --prose:       #47574f;
+    --accent:      #0a8f4f;   /* verde de LETRA */
+    --accent2:     #00c765;
+    --accent-vivo: #00e676;   /* verde de ÁREA */
+    --accent-ink:  #04160c;
+    --danger:      #d33a2c;
+    color-scheme: light;
+
+    /* Cores do desenho da rede. O SVG lê estas por var() no próprio
+       atributo porque os postes moram dentro de <defs>: CSS de fora não
+       entra na árvore clonada pelo <use>, e os atributos de apresentação
+       que estavam lá ganhavam de qualquer valor herdado. */
+    --sbl2-fio:      rgba(11,105,58,0.32);
+    --sbl2-iso:      rgba(8,120,62,0.50);
+    --sbl2-vao:      rgba(11,105,58,0.15);
+    --sbl2-cabo-cor: rgba(10,143,79,0.30);
+    --sbl2-pulso:    #0a8f4f;
+    --sbl2-pulso2:   rgba(10,143,79,0.55);
+  }
+
+  /* ── 2. O que estava cravado em escuro ─────────────────────────────── */
+
+  /* Painel da esquerda: o gradiente era #08170f → #050d09. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-stage {
+    background:
+      radial-gradient(120% 140% at 85% -10%, rgba(0,230,118,0.22), transparent 55%),
+      radial-gradient(90% 120% at 0% 110%, rgba(10,143,79,0.10), transparent 60%),
+      linear-gradient(160deg, #eafaf0 0%, #d2eddc 70%);
+  }
+
+  /* A vinheta escurecia as bordas com rgba(2,6,4,.5). No claro isso vira
+     um borrão cinza; fica um sombreado verde bem de leve. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-vignette {
+    background: radial-gradient(130% 100% at 50% 40%, transparent 58%, rgba(16,70,40,0.10));
+  }
+
+  /* Os dois títulos usavam color:#fff — é o bug que prendeu o login no
+     escuro em 26/08. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-wordmark,
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-h2 { color: var(--text); }
+
+  /* Lado do formulário. Fica em --surface (quase branco) contra o --bg
+     esverdeado do painel da esquerda: é o que mantém o split visível. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-panel {
+    background: radial-gradient(100% 80% at 50% 0%, rgba(0,230,118,0.06), transparent 60%), var(--surface);
+  }
+
+  /* Campo da matrícula: rgba(255,255,255,.04) é invisível sobre branco. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input {
+    background: #eaf6ee;
+    border-color: rgba(16,70,40,0.18);
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input:focus-within {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(10,143,79,0.18);
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input input::placeholder { color: var(--muted); }
+  /* O ícone do campo tem stroke="#00e676" no atributo: 1,7:1 no claro. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input > svg { stroke: var(--accent); }
+
+  /* ── O campo amarelo ────────────────────────────────────────────────────
+     O app pinta TODO input[type="text"] de amarelo-mostarda no claro
+     (linha ~1717: "amarelo um pouco mais escuro pra contrastar", com
+     !important). Essa regra também alcançava o login — e alcança nos DOIS
+     temas, porque a classe .light nunca sai do <body>, nem no escuro.
+     Passava despercebido enquanto o login era escuro e sem ninguém olhando
+     de perto; no claro vira uma tarja mostarda dentro da pílula verde.
+
+     Aqui não é o input que é o campo: é a pílula .sbl2-input em volta dele,
+     e o input por dentro tem que seguir transparente, como o CSS original
+     do login já pedia (background:none). !important porque a regra global
+     usa !important; ganha pelo id, que a outra não tem. */
+  #loginScreen .sbl2-input input {
+    background: transparent !important;
+    border-color: transparent !important;
+    color: var(--text) !important;
+  }
+
+  /* O autofill do Chrome pinta o campo por conta própria (o input é
+     autocomplete="username"), e no estado :-webkit-autofill o background
+     é ignorado — box-shadow inset é o único jeito de cobrir. */
+  #loginScreen .sbl2-input input:-webkit-autofill,
+  #loginScreen .sbl2-input input:-webkit-autofill:hover,
+  #loginScreen .sbl2-input input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    caret-color: var(--text);
+    transition: background-color 9999s ease-out 0s;
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input input:-webkit-autofill,
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input input:-webkit-autofill:hover {
+    -webkit-box-shadow: 0 0 0 40px #eaf6ee inset;
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input:focus-within input:-webkit-autofill,
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-input input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 40px #ffffff inset;
+  }
+  html[data-sb="escuro"] #loginScreen .sbl2-input input:-webkit-autofill,
+  html[data-sb="escuro"] #loginScreen .sbl2-input input:-webkit-autofill:hover,
+  html[data-sb="escuro"] #loginScreen .sbl2-input input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 40px #101f16 inset;
+  }
+
+  /* Botão Entrar. O gradiente saía de var(--accent), que no claro é o verde
+     ESCURO de letra (#0a8f4f) — com a tinta quase preta por cima dava
+     1,6:1, ilegível. No claro ele tem que sair do verde VIVO, que é a cor
+     de área; aí a tinta escura volta a dar 7:1. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-btn {
+    background: linear-gradient(135deg, var(--accent-vivo), #0bb45f);
+    color: var(--accent-ink);
+    box-shadow: 0 10px 26px rgba(0,180,95,0.28);
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-btn:hover {
+    box-shadow: 0 14px 32px rgba(0,180,95,0.38);
+  }
+
+  /* Os dois links embaixo do "ou". */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-link {
+    background: #f1faf4;
+    border-color: rgba(16,70,40,0.16);
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-link:hover {
+    border-color: rgba(10,143,79,0.45);
+    color: var(--text);
+    background: #e9f7ee;
+  }
+  /* O ícone do WhatsApp era #7fdca2: 1,9:1 sobre branco. */
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-help svg { color: #1ea855; }
+
+  /* Setembro Amarelo: o laço leva drop-shadow preto (desenhado para fundo
+     escuro) e o "sua vida importa" é #FFC400, que no branco dá 1,7:1. */
+  html:not([data-sb="escuro"]) #sb-laco-fita {
+    filter: drop-shadow(0 1px 3px rgba(16,70,40,0.30));
+  }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-tag #sb-vida { color: #9a6a00; }
+
+  /* ── 3. O botão de tema da própria tela de login ────────────────────────
+     O #themeToggle mora na barra lateral, que só existe depois de entrar.
+     Sem um controle aqui, quem abrisse o app pela primeira vez não teria
+     como escolher. position:fixed porque em tela baixa o login rola.
+
+     O afastamento da direita não é estético: .sb-corner-badge (o selo do
+     Grupo Setup) é fixed em right:16px com 40px de largura e z-index 10000,
+     acima do próprio #loginScreen. Em right:1rem o botão ficava por baixo
+     dele. 70px deixa o selo livre com uma folga. */
+  #sbLoginModo {
+    position: fixed; top: 1rem; right: 70px; z-index: 10;
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem .85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.06);
+    color: var(--prose);
+    font-family: 'DM Mono', monospace;
+    font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color .2s, color .2s, background .2s, transform .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #sbLoginModo:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+  #sbLoginModo:active { transform: translateY(0) scale(0.96); }
+  #sbLoginModo .sb-lm-icone { font-size: .9rem; line-height: 1; }
+  html:not([data-sb="escuro"]) #sbLoginModo { background: rgba(255,255,255,0.7); }
+
+  @media (max-width: 859px) {
+    #sbLoginModo { top: .8rem; right: 66px; padding: .45rem .7rem; font-size: .62rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #sbLoginModo { transition: none; }
+    #sbLoginModo:hover, #sbLoginModo:active { transform: none; }
+  }
+
+</style>
+<script id="sb-login-claro-js">
+(function () {
+  'use strict';
+
+  var login = document.getElementById('loginScreen');
+  if (!login || document.getElementById('sbLoginModo')) return;
+
+  var raiz = document.documentElement;
+  function escuro() { return raiz.getAttribute('data-sb') === 'escuro'; }
+
+  var btn = document.createElement('button');
+  btn.id = 'sbLoginModo';
+  btn.type = 'button';
+
+  function pintar() {
+    var e = escuro();
+    btn.innerHTML = '<span class="sb-lm-icone">' + (e ? '☀' : '☾') + '</span>' +
+                    '<span>' + (e ? 'Claro' : 'Escuro') + '</span>';
+    btn.setAttribute('aria-pressed', e ? 'true' : 'false');
+    btn.title = e ? 'Voltar ao tema claro' : 'Mudar para o modo escuro';
+  }
+
+  btn.addEventListener('click', function () {
+    /* Delegar para o botão da barra lateral, que é o dono do estado: ele
+       grava o localStorage e repinta o próprio rótulo. Se a gente trocasse
+       o data-sb por fora, o rótulo dele ficaria mentindo depois do login.
+       A busca é feita na hora do clique porque o sb-modo-escuro-js troca
+       esse elemento por um clone no DOMContentLoaded. */
+    var lateral = document.getElementById('themeToggle');
+    if (lateral) {
+      lateral.click();
+    } else {
+      var ligar = !escuro();
+      if (ligar) raiz.setAttribute('data-sb', 'escuro');
+      else       raiz.removeAttribute('data-sb');
+      try { localStorage.setItem('sbModo', ligar ? 'escuro' : 'claro'); } catch (e) {}
+    }
+    pintar();
+  });
+
+  pintar();
+  login.appendChild(btn);
 })();
 </script>
 </body>

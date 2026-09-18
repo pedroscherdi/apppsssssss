@@ -17628,5 +17628,491 @@ Como posso ajudar?</div>
   login.appendChild(btn);
 })();
 </script>
+
+<script id="alcas-lacos">
+/* ══════════════════════════════════════════════════════════════════════
+   ALÇAS E LAÇOS  (18/09/2026)
+
+   Pergunta de campo: "tenho esse cabo — que alça e que laço eu peço, e
+   qual o código?". A tabela de origem é a planilha de amarração da
+   distribuição, com três blocos: cabo → alça pré-formada, cabo → laço
+   pré-formado, e o bloco solto dos cabos de cobre isolado 0,6/1 kV.
+
+   A alça vem CRAVADA na linha do cabo (relação 1:1 da planilha).
+   O laço é derivado por BITOLA + MATERIAL, porque a planilha lista os
+   laços por conta própria, sem repetir o código do cabo. É por isso que
+   um cabo pode ter alça e não ter laço (cobre 120 mm²) ou o contrário.
+
+   Códigos repetidos NÃO foram "consertados" aqui: estão como na planilha
+   e o card avisa quando um código serve mais de um item. Consertar em
+   silêncio esconderia um erro de cadastro que é do material, não do app.
+
+   Bloco aditivo: painel e botão criados por DOM, nada de HTML novo.
+   ══════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── laços, agrupados pela chave bitola+material ─────────────────── */
+  var P60 = 'Pescoço Isolador 60 mm';
+  var P45 = 'Pescoço Isolador 45 mm';
+
+  var LACOS = {
+    'ca4': { rot: '4 AWG CA/CAA',
+      topo: ['134310030', 'Laço Pré-formado Tipo topo ' + P60 + '. Cabo 4 AWG CA/CAA'] },
+    'ca10': { rot: '1/0 AWG CA/CAA',
+      topo: ['134310032', 'Laço Pré-formado Tipo topo ' + P60 + '. Cabo 1/0 AWG CA/CAA'],
+      lat:  ['134310002', 'Laço Pré-formado Tipo lateral Simples ' + P60 + '. Cabo 1/0 AWG CA/CAA'],
+      dup:  ['134310009', 'Laço Pré-formado Tipo lateral Duplo ' + P60 + '. Cabo 1/0 AWG CA/CAA'] },
+    'ca40': { rot: '4/0 AWG CA/CAA',
+      topo: ['134310037', 'Laço Pré-formado Tipo topo ' + P60 + '. Cabo 4/0 AWG CA/CAA'],
+      lat:  ['134310006', 'Laço Pré-formado Tipo lateral Simples ' + P60 + '. Cabo 4/0 AWG CA/CAA'],
+      dup:  ['134310011', 'Laço Pré-formado Tipo lateral Duplo ' + P60 + '. Cabo 4/0 AWG CA/CAA'] },
+    '336ca': { rot: '336,4 MCM CA',
+      topo: ['134310029', 'Laço Pré-formado Tipo topo ' + P60 + '. Cabo 336,4 AWG CA'],
+      lat:  ['134310001', 'Laço Pré-formado Tipo lateral Simples ' + P60 + '. Cabo 336,4 MCM CA'],
+      dup:  ['134310008', 'Laço Pré-formado Tipo lateral Duplo ' + P60 + '. Cabo: 336,4 MCM CA'] },
+    '336caa': { rot: '336,4 MCM CAA',
+      topo: ['134310049', 'Laço Pré-formado Tipo topo ' + P60 + '. Cabo 336,4 CAA'],
+      lat:  ['134310002', 'Laço Pré-formado Tipo lateral Simples ' + P60 + '. Cabo 336,4 MCM CAA'],
+      dup:  ['134310013', 'Laço Pré-formado Tipo lateral Duplo ' + P60 + '. Cabo 336,4 MCM CAA'] },
+    'cu25': { rot: 'Cobre 25 mm²',
+      topo: ['134310063', 'Laço de Topo, ' + P60 + ', Cabo Cobre 25 mm²'],
+      lat:  ['134310066', 'Laço Lateral, ' + P60 + ', Cabo Cobre 25 mm²'],
+      dup:  ['',          'Laço Lateral Duplo, ' + P60 + ', Cabo Cobre 25 mm²'] },
+    'cu50': { rot: 'Cobre 50 mm²',
+      topo: ['134310062', 'Laço de Topo, ' + P60 + ', Cabo Cobre 50 mm²'],
+      lat:  ['134310065', 'Laço Lateral, ' + P60 + ', Cabo Cobre 50 mm²'],
+      dup:  ['',          'Laço Lateral Duplo, ' + P60 + ', Cabo Cobre 50 mm²'] },
+    'cu70': { rot: 'Cobre 70 mm²',
+      topo: ['134310067', 'Laço de Topo, ' + P60 + ', Cabo Cobre 70 mm²'],
+      lat:  ['134310064', 'Laço Lateral, ' + P60 + ', Cabo Cobre 70 mm²'],
+      dup:  ['',          'Laço Lateral Duplo, ' + P60 + ', Cabo Cobre 70 mm²'] },
+    'mpx35':  { rot: 'Multiplex 35 mm²',
+      rold: ['134310020', 'Laço Pré-formado Roldana ' + P45 + '. Cabo 35 mm²'] },
+    'mpx70':  { rot: 'Multiplex 70 mm²',
+      rold: ['134310023', 'Laço Pré-formado Roldana ' + P45 + '. Cabo 70 mm²'] },
+    'mpx120': { rot: 'Multiplex 120 mm²',
+      rold: ['134310023', 'Laço Pré-formado Roldana ' + P45 + '. Cabo 120 mm²'] }
+  };
+
+  /* ── cabos: [código, descrição, família, alça, desc. alça, chave do laço, obs] ── */
+  var FAM = {
+    CA:  { rot: 'Alumínio CA',      cor: '#40c4ff' },
+    CAA: { rot: 'Alumínio CAA',     cor: '#00e676' },
+    CU:  { rot: 'Cobre Nu',         cor: '#ffb74d' },
+    MPX: { rot: 'Multiplexado',     cor: '#b388ff' },
+    ACO: { rot: 'Aço / Estai',      cor: '#90a4ae' },
+    CUI: { rot: 'Cobre Isolado',    cor: '#ff8a65' }
+  };
+
+  var ALC_DIST = 'Alça Pré-Formada de Distribuição ';
+  var CABOS = [
+    ['122020001', 'Cabo de Alumínio Simples CA 1/0 AWG', 'CA',
+      '134300002', ALC_DIST + 'Cabo Al CA/CAA 1/0 AWG', 'ca10', ''],
+    ['122020006', 'Cabo de Alumínio Simples CA 4/0 AWG', 'CA',
+      '134300005', ALC_DIST + 'Cabo Al CA/CAA 4/0 AWG', 'ca40', ''],
+    ['122020004', 'Cabo de Alumínio Simples CA 336,4 MCM', 'CA',
+      '134300001', ALC_DIST + 'Cabo Al CA 336,4 MCM', '336ca', ''],
+
+    ['122020012', 'Cabo Alumínio Reforçado CAA 4 AWG', 'CAA',
+      '134300006', ALC_DIST + 'Cabo Al CA/CAA 4 AWG', 'ca4', ''],
+    ['122020008', 'Cabo Alumínio Reforçado CAA 1/0 AWG', 'CAA',
+      '134300002', ALC_DIST + 'Cabo Al CA/CAA 1/0 AWG', 'ca10', ''],
+    ['122020013', 'Cabo Alumínio Reforçado CAA 4/0 AWG', 'CAA',
+      '134300005', ALC_DIST + 'Cabo Al CA/CAA 4/0 AWG', 'ca40', ''],
+    ['122020011', 'Cabo Alumínio Reforçado CAA 336,4 MCM', 'CAA',
+      '134300008', ALC_DIST + 'Cabo Al CAA 336,4 MCM', '336caa', ''],
+
+    ['122030004', 'Cabo de Cobre Nu 16 mm²', 'CU', '', '', '', ''],
+    ['122030005', 'Cabo de Cobre Nu 25 mm²', 'CU',
+      '134300013', ALC_DIST + 'Cabo Cu 25 mm²', 'cu25', ''],
+    ['122030007', 'Cabo de Cobre Nu 50 mm²', 'CU',
+      '134300047', ALC_DIST + 'Cabo Cu 50 mm²', 'cu50', ''],
+    ['122030009', 'Cabo de Cobre Nu 70 mm²', 'CU',
+      '134300046', ALC_DIST + 'Cabo Cu 70 mm²', 'cu70', ''],
+    ['122030010', 'Cabo de Cobre Nu 95 mm²', 'CU', '', '', '', ''],
+    ['122030002', 'Cabo de Cobre Nu 120 mm²', 'CU',
+      '134300048', ALC_DIST + 'Cabo Cu 120 mm²', '', ''],
+
+    ['122300014', 'Cabo de Alumínio Multiplexado Quadruplex 0,6/1 kV Neutro Nu 35 mm²', 'MPX',
+      '134300004', 'Alça Pré-Formada Cabo Multiplex 35 mm²', 'mpx35', ''],
+    ['122300015', 'Cabo de Alumínio Multiplexado Quadruplex 0,6/1 kV Neutro Nu 70 mm²', 'MPX',
+      '134300002', 'Alça Pré-Formada Cabo Multiplex 70 mm²', 'mpx70', ''],
+    ['122300013', 'Cabo de Alumínio Multiplexado Quadruplex 0,6/1 kV Neutro Nu 120 mm²', 'MPX',
+      '134300002', 'Alça Pré-Formada Cabo Multiplex 120 mm²', 'mpx120', ''],
+
+    ['144010001', 'Cabo de Aço SM de 1/4" (6,5mm)', 'ACO',
+      '134300032', 'Alça Pré-Formada de Estai Cabo 6,4 mm', '',
+      'Estai não leva laço — a amarração é a própria alça de estai.'],
+    ['144010004', 'Cabo de Aço SM de 5/16" (7,9mm)', 'ACO', '', '', '',
+      'Estai não leva laço — a amarração é a própria alça de estai.'],
+    ['144010003', 'Cabo de Aço SM de 3/8" (9,5mm)', 'ACO',
+      '134300033', 'Alça Pré-Formada de Estai Cabo 9,5 mm', '',
+      'Estai não leva laço — a amarração é a própria alça de estai.'],
+
+    ['122230007', 'Cabo de cobre isolado, 0,6/1 kV, 10 mm², PVC', 'CUI', '', '', '', ''],
+    ['122230119', 'Cabo de cobre isolado, 0,6/1 kV, 10 mm², XLPE', 'CUI', '', '', '',
+      'Cabo do TR para a BT · fator 1,33 na planilha de origem.']
+  ];
+
+  /* itens da tabela que não casam com nenhum cabo da lista — ficam visíveis
+     na nota em vez de sumir, porque em campo eles aparecem no almoxarifado */
+  var ORFAOS = [
+    ['134300014', ALC_DIST + 'Cabo Cu 35 mm²',
+      'não há "Cabo de Cobre Nu 35 mm²" na lista de cabos da planilha']
+  ];
+
+  var CAB = CABOS.map(function (r) {
+    return { cod: r[0], desc: r[1], fam: r[2], alca: r[3], alcaD: r[4], lc: r[5], obs: r[6] };
+  });
+
+  /* ── quem repete código: contado, não chutado ────────────────────── */
+  var USOS = {};
+  function marcar(cod, quem) {
+    if (!cod) return;
+    (USOS[cod] = USOS[cod] || []).push(quem);
+  }
+  CAB.forEach(function (c) { marcar(c.alca, c.alcaD); });
+  Object.keys(LACOS).forEach(function (k) {
+    ['topo', 'lat', 'dup', 'rold'].forEach(function (t) {
+      if (LACOS[k][t]) marcar(LACOS[k][t][0], LACOS[k][t][1]);
+    });
+  });
+  function repetido(cod) {
+    if (!cod || !USOS[cod]) return null;
+    var u = USOS[cod].filter(function (v, i, a) { return a.indexOf(v) === i; });
+    return u.length > 1 ? u : null;
+  }
+
+  var filtroF = null, abaMontada = false, painel = null, selecionado = null;
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function corDe(f) { return (FAM[f] || {}).cor || '#8a8f98'; }
+
+  /* ── linha de item (alça ou laço) ────────────────────────────────── */
+  function linha(tipo, par, cor) {
+    if (!par) return '';
+    var cod = par[0], desc = par[1];
+    var rep = repetido(cod);
+    return '<div class="alz-item">' +
+      '<div class="alz-tipo">' + esc(tipo) + '</div>' +
+      (cod
+        ? '<button class="alz-cod" data-copia="' + esc(cod) + '" style="color:' + cor + ';border-color:' + cor + '55;" ' +
+          'title="clique para copiar">' + esc(cod) + '</button>'
+        : '<span class="alz-cod alz-vazio">sem código</span>') +
+      '<div class="alz-desc">' + esc(desc) + '</div>' +
+      (rep
+        ? '<div class="alz-rep">⚠ este código também é o de: ' + esc(rep.filter(function (d) { return d !== desc; }).join(' · ')) + '</div>'
+        : '') +
+      '</div>';
+  }
+
+  /* ── card do cabo escolhido ──────────────────────────────────────── */
+  function mostrar(c) {
+    selecionado = c;
+    var cor = corDe(c.fam);
+    var L = c.lc ? LACOS[c.lc] : null;
+    var alvo = document.getElementById('alz-detalhe');
+
+    var htmlAlca = c.alca
+      ? linha('Alça pré-formada', [c.alca, c.alcaD], cor)
+      : '<div class="alz-item alz-nada">A planilha não traz alça pré-formada para este cabo.</div>';
+
+    var htmlLaco;
+    if (!L) {
+      htmlLaco = '<div class="alz-item alz-nada">' +
+        (c.obs ? esc(c.obs) : 'A planilha não traz laço pré-formado para esta bitola.') + '</div>';
+    } else {
+      htmlLaco =
+        linha('Laço de topo', L.topo, cor) +
+        linha('Laço lateral simples', L.lat, cor) +
+        linha('Laço lateral duplo', L.dup, cor) +
+        linha('Laço roldana (isolador 45 mm)', L.rold, cor);
+      if (!L.lat && !L.dup && L.topo) {
+        htmlLaco += '<div class="alz-item alz-nada">Nesta bitola a planilha só lista o laço de topo — ' +
+          'não há lateral simples nem duplo cadastrados.</div>';
+      }
+    }
+
+    alvo.innerHTML =
+      '<div class="alz-card" style="border-color:' + cor + '55;">' +
+        '<div class="alz-fam" style="color:' + cor + ';">' + esc((FAM[c.fam] || {}).rot || '') +
+          (L ? ' · ' + esc(L.rot) : '') + '</div>' +
+        '<div class="alz-nome">' + esc(c.desc) + '</div>' +
+        '<button class="alz-cod alz-cod-cabo" data-copia="' + esc(c.cod) + '" title="clique para copiar">' +
+          esc(c.cod) + '</button>' +
+        (c.obs && L ? '<div class="alz-obs">' + esc(c.obs) + '</div>' : '') +
+        '<div class="alz-sec">Alça</div>' + htmlAlca +
+        '<div class="alz-sec">Laço</div>' + htmlLaco +
+      '</div>';
+
+    alvo.querySelectorAll('[data-copia]').forEach(function (b) {
+      b.addEventListener('click', function () { copiar(b); });
+    });
+  }
+
+  function copiar(b) {
+    var txt = b.getAttribute('data-copia');
+    var antes = b.textContent;
+    function ok() { b.textContent = 'copiado ✓'; setTimeout(function () { b.textContent = antes; }, 1200); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok, function () { fallback(); });
+    } else { fallback(); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); ok(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  /* ── busca ───────────────────────────────────────────────────────── */
+  function buscar(cod) {
+    var alvo = String(cod || '').trim().toUpperCase();
+    if (!alvo) return;
+    var c = null, i;
+    for (i = 0; i < CAB.length; i++) { if (CAB[i].cod === alvo) { c = CAB[i]; break; } }
+    if (!c) {
+      for (i = 0; i < CAB.length; i++) {
+        if (CAB[i].desc.toUpperCase().indexOf(alvo) >= 0) { c = CAB[i]; break; }
+      }
+    }
+    var inp = document.getElementById('alz-input');
+    if (inp) inp.value = c ? c.cod : cod;
+    var dd = document.getElementById('alz-drop');
+    if (dd) dd.style.display = 'none';
+    if (c) mostrar(c);
+    else {
+      document.getElementById('alz-detalhe').innerHTML =
+        '<div class="alz-card"><div class="alz-nada">Cabo "' + esc(cod) + '" não está nesta tabela. ' +
+        'São ' + CAB.length + ' cabos — use a lista abaixo ou digite parte da descrição.</div></div>';
+    }
+  }
+
+  function filtrar() {
+    var termo = document.getElementById('alz-input').value.trim().toUpperCase();
+    var dd = document.getElementById('alz-drop');
+    if (termo.length < 1) { dd.style.display = 'none'; return; }
+    var hits = CAB.filter(function (c) {
+      return c.cod.indexOf(termo) >= 0 || c.desc.toUpperCase().indexOf(termo) >= 0;
+    }).slice(0, 30);
+    if (!hits.length) { dd.style.display = 'none'; return; }
+    dd.innerHTML = hits.map(function (c) {
+      return '<div class="alz-it" data-cod="' + c.cod + '">' +
+        '<b style="color:' + corDe(c.fam) + ';">' + esc(c.cod) + '</b> ' +
+        '<span class="alz-it-d">' + esc(c.desc) + '</span></div>';
+    }).join('');
+    dd.style.display = 'block';
+    dd.querySelectorAll('.alz-it').forEach(function (el) {
+      el.addEventListener('click', function () { buscar(el.dataset.cod); });
+    });
+  }
+
+  /* ── chips de família + lista ────────────────────────────────────── */
+  function renderChips() {
+    var wrap = document.getElementById('alz-chips');
+    wrap.innerHTML = Object.keys(FAM).map(function (f) {
+      var n = CAB.filter(function (c) { return c.fam === f; }).length;
+      return '<button class="alz-chip" data-f="' + f + '" style="border-color:' + FAM[f].cor + '66;">' +
+        '<span style="color:' + FAM[f].cor + ';font-weight:700;">' + FAM[f].rot + '</span>' +
+        '<span class="alz-chip-n">' + n + '</span></button>';
+    }).join('');
+    wrap.querySelectorAll('.alz-chip').forEach(function (b) {
+      b.addEventListener('click', function () {
+        filtroF = (filtroF === b.dataset.f) ? null : b.dataset.f;
+        wrap.querySelectorAll('.alz-chip').forEach(function (x) {
+          x.classList.toggle('on', x.dataset.f === filtroF);
+        });
+        renderLista();
+      });
+    });
+  }
+
+  function renderLista() {
+    var wrap = document.getElementById('alz-lista');
+    var itens = filtroF ? CAB.filter(function (c) { return c.fam === filtroF; }) : CAB;
+    wrap.innerHTML =
+      '<div class="alz-rot" style="margin:.9rem 0 .5rem;">' + itens.length + ' cabo(s)' +
+        (filtroF ? ' · ' + FAM[filtroF].rot : ' · todos') + ' — toque para ver alça e laço</div>' +
+      itens.map(function (c) {
+        var cor = corDe(c.fam);
+        return '<button class="alz-linha" data-cod="' + c.cod + '" style="border-left-color:' + cor + ';">' +
+          '<span class="alz-linha-cod">' + esc(c.cod) + '</span>' +
+          '<span class="alz-linha-d">' + esc(c.desc) + '</span>' +
+          '<span class="alz-linha-tags">' +
+            (c.alca ? '<i class="alz-tag" style="color:' + cor + ';border-color:' + cor + '55;">alça</i>'
+                    : '<i class="alz-tag alz-tag-off">sem alça</i>') +
+            (c.lc ? '<i class="alz-tag" style="color:' + cor + ';border-color:' + cor + '55;">laço</i>'
+                  : '<i class="alz-tag alz-tag-off">sem laço</i>') +
+          '</span></button>';
+      }).join('');
+    wrap.querySelectorAll('.alz-linha').forEach(function (el) {
+      el.addEventListener('click', function () {
+        buscar(el.dataset.cod);
+        document.getElementById('alz-detalhe').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+  }
+
+  /* ── montagem da aba ─────────────────────────────────────────────── */
+  function montarAba() {
+    if (abaMontada) return;
+    var nav = document.querySelector('.sidebar-nav');
+    var main = document.querySelector('.main-content');
+    if (!nav || !main) return;
+    abaMontada = true;
+
+    var st = document.createElement('style');
+    st.textContent = [
+      '#tab-alcas-lacos .alz-busca{display:flex;gap:.5rem;margin-bottom:.4rem;}',
+      '#tab-alcas-lacos .alz-busca input{flex:1;padding:.7rem .9rem;border-radius:var(--radius);',
+        'border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:.9rem;}',
+      '#alz-drop{display:none;position:relative;background:var(--surface);border:1px solid var(--accent);',
+        'border-radius:var(--radius);max-height:280px;overflow-y:auto;z-index:50;margin-bottom:.8rem;}',
+      '#alz-drop .alz-it{padding:.5rem .9rem;cursor:pointer;font-family:"DM Mono",monospace;font-size:.76rem;',
+        'display:flex;gap:.6rem;align-items:baseline;}',
+      '#alz-drop .alz-it:hover{background:var(--bg);}',
+      '#alz-drop .alz-it-d{color:var(--muted);font-size:.7rem;}',
+      '#alz-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:.9rem 0;}',
+      '#tab-alcas-lacos .alz-chip{display:flex;align-items:center;gap:.45rem;padding:.45rem .8rem;cursor:pointer;',
+        'border:1px solid var(--border);border-radius:999px;background:var(--surface);font-family:inherit;font-size:.76rem;}',
+      '#tab-alcas-lacos .alz-chip.on{background:var(--bg);box-shadow:0 0 0 1px currentColor inset;}',
+      '#tab-alcas-lacos .alz-chip-n{font-family:"DM Mono",monospace;color:var(--muted);font-size:.72rem;}',
+      '#tab-alcas-lacos .alz-card{background:var(--surface);border:1px solid var(--border);',
+        'border-radius:var(--radius);padding:1.1rem 1.25rem;margin-top:.5rem;}',
+      '#tab-alcas-lacos .alz-fam{font-family:"DM Mono",monospace;font-size:.68rem;text-transform:uppercase;',
+        'letter-spacing:.09em;font-weight:700;}',
+      '#tab-alcas-lacos .alz-nome{font-size:1.15rem;font-weight:800;letter-spacing:-.02em;line-height:1.3;',
+        'margin:.25rem 0 .5rem;}',
+      '#tab-alcas-lacos .alz-cod{font-family:"DM Mono",monospace;font-size:.82rem;letter-spacing:.05em;',
+        'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.28rem .65rem;',
+        'cursor:pointer;color:var(--text);}',
+      '#tab-alcas-lacos .alz-cod:hover{filter:brightness(1.15);}',
+      '#tab-alcas-lacos .alz-cod-cabo{color:var(--muted);font-size:.78rem;}',
+      '#tab-alcas-lacos .alz-vazio{color:var(--muted);cursor:default;opacity:.7;font-size:.72rem;}',
+      '#tab-alcas-lacos .alz-sec{font-family:"DM Mono",monospace;font-size:.62rem;text-transform:uppercase;',
+        'letter-spacing:.11em;color:var(--muted);margin:1.2rem 0 .4rem;padding-top:.7rem;',
+        'border-top:1px solid var(--border);}',
+      '#tab-alcas-lacos .alz-item{display:grid;grid-template-columns:auto 1fr;gap:.35rem .7rem;',
+        'align-items:center;padding:.55rem 0;border-bottom:1px solid var(--border);}',
+      '#tab-alcas-lacos .alz-item:last-child{border-bottom:none;}',
+      '#tab-alcas-lacos .alz-tipo{grid-column:1/-1;font-family:"DM Mono",monospace;font-size:.62rem;',
+        'text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}',
+      '#tab-alcas-lacos .alz-desc{font-size:.82rem;font-weight:600;line-height:1.4;}',
+      '#tab-alcas-lacos .alz-rep{grid-column:1/-1;font-size:.7rem;color:#ffb74d;line-height:1.5;margin-top:.15rem;}',
+      '#tab-alcas-lacos .alz-nada{font-size:.78rem;color:var(--muted);line-height:1.5;padding:.55rem 0;}',
+      '#tab-alcas-lacos .alz-obs{font-size:.74rem;color:var(--muted);line-height:1.5;margin-top:.5rem;}',
+      '#tab-alcas-lacos .alz-rot{font-family:"DM Mono",monospace;font-size:.62rem;text-transform:uppercase;',
+        'letter-spacing:.09em;color:var(--muted);}',
+      '#tab-alcas-lacos .alz-linha{display:flex;flex-wrap:wrap;gap:.3rem .7rem;align-items:center;width:100%;',
+        'text-align:left;background:var(--surface);border:1px solid var(--border);border-left:3px solid;',
+        'border-radius:var(--radius);padding:.55rem .8rem;margin-bottom:.35rem;cursor:pointer;',
+        'font-family:inherit;color:var(--text);}',
+      '#tab-alcas-lacos .alz-linha:hover{background:var(--bg);}',
+      '#tab-alcas-lacos .alz-linha-cod{font-family:"DM Mono",monospace;font-size:.74rem;color:var(--muted);}',
+      '#tab-alcas-lacos .alz-linha-d{flex:1;font-size:.8rem;font-weight:600;min-width:180px;}',
+      '#tab-alcas-lacos .alz-linha-tags{display:flex;gap:.3rem;}',
+      '#tab-alcas-lacos .alz-tag{font-style:normal;font-family:"DM Mono",monospace;font-size:.6rem;',
+        'border:1px solid var(--border);border-radius:999px;padding:.1rem .45rem;}',
+      '#tab-alcas-lacos .alz-tag-off{color:var(--muted);opacity:.55;}',
+      '#tab-alcas-lacos .alz-nota{font-size:.72rem;color:var(--muted);line-height:1.6;margin-top:1.4rem;',
+        'padding-top:.9rem;border-top:1px solid var(--border);}'
+    ].join('');
+    document.head.appendChild(st);
+
+    var nRep = Object.keys(USOS).filter(function (k) { return repetido(k); }).length;
+
+    painel = document.createElement('div');
+    painel.className = 'tab-panel';
+    painel.id = 'tab-alcas-lacos';
+    painel.innerHTML = ''
+      + '<div style="margin-bottom:1.2rem;">'
+      +   '<h2 style="font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.2rem;">'
+      +     '🔗 Alças e <span style="color:var(--accent)">Laços</span></h2>'
+      +   '<p style="font-family:\'DM Mono\',monospace;font-size:.72rem;color:var(--muted);'
+      +     'text-transform:uppercase;letter-spacing:.06em;">Escolha o cabo · receba alça, laço e código</p>'
+      + '</div>'
+      + '<div class="alz-busca">'
+      +   '<input type="text" id="alz-input" placeholder="Código ou descrição do cabo (ex: 122020001, 4/0, cobre 50)..." autocomplete="off"/>'
+      +   '<button class="btn" id="alz-btn" style="padding:.7rem 1.1rem;font-size:.85rem;white-space:nowrap;">🔍 Buscar</button>'
+      + '</div>'
+      + '<div id="alz-drop"></div>'
+      + '<div id="alz-detalhe"></div>'
+      + '<div id="alz-chips"></div>'
+      + '<div id="alz-lista"></div>'
+      + '<div class="alz-nota"><b>Como este cruzamento é feito:</b> a <b>alça</b> vem cravada na linha do cabo '
+      +   'na planilha de origem — é relação um-para-um, sem interpretação. O <b>laço</b> a planilha lista à parte, '
+      +   'sem repetir o código do cabo, então aqui ele é casado por <b>bitola + material</b> '
+      +   '(4 AWG, 1/0, 4/0, 336,4 CA, 336,4 CAA, cobre 25/50/70, multiplex 35/70/120). '
+      +   'Por isso existe cabo com alça e sem laço (cobre 120 mm²) e bitola que só tem laço de topo (4 AWG). '
+      +   '<b>Nada foi inventado para preencher lacuna:</b> onde a planilha não traz item, a aba diz que não traz. '
+      +   (nRep
+        ? '<br><br><b style="color:#ffb74d;">⚠ ' + nRep + ' código(s) repetido(s) na planilha de origem:</b> '
+          + 'o mesmo número aparece em itens diferentes (por exemplo a alça <code>134300002</code>, que está '
+          + 'na linha do 1/0 CA/CAA e também nos multiplex de 70 e 120 mm²; e o laço lateral simples '
+          + '<code>134310002</code>, no 1/0 CA/CAA e no 336,4 MCM CAA). Mantivemos como está na planilha e o card '
+          + 'avisa quando o código serve mais de um item — vale conferir no SAP antes de pedir material.'
+        : '')
+      +   '<br><br><b>Item sem cabo correspondente:</b> '
+      +   ORFAOS.map(function (o) { return '<code>' + o[0] + '</code> ' + esc(o[1]) + ' — ' + esc(o[2]); }).join('; ') + '.'
+      +   '<br><br>Os <b>cabos de cobre isolado 0,6/1 kV</b> (10 mm² PVC e XLPE) vêm do bloco separado da planilha '
+      +   'e não têm alça nem laço listados — o XLPE é o cabo do TR para a BT.</div>';
+    main.appendChild(painel);
+
+    var btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.setAttribute('data-tab', 'alcas-lacos');
+    btn.innerHTML = '<svg class="tab-icon" aria-hidden="true"><use href="#i-link"/></svg> Alças e Laços';
+    var ancora = nav.querySelector('[data-tab="conectores"]');
+    if (ancora && ancora.nextSibling) nav.insertBefore(btn, ancora.nextSibling);
+    else nav.appendChild(btn);
+
+    /* o listener de abas do site já rodou no load; este botão traz o seu */
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      painel.classList.add('active');
+      var lbl = document.getElementById('mobCurrentTab');
+      if (lbl) lbl.textContent = 'Alças e Laços';
+      if (typeof closeSidebar === 'function') closeSidebar();
+    });
+
+    document.getElementById('alz-input').addEventListener('input', filtrar);
+    document.getElementById('alz-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') buscar(this.value);
+    });
+    document.getElementById('alz-btn').addEventListener('click', function () {
+      buscar(document.getElementById('alz-input').value);
+    });
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('#tab-alcas-lacos .alz-busca') && !e.target.closest('#alz-drop')) {
+        var dd = document.getElementById('alz-drop');
+        if (dd) dd.style.display = 'none';
+      }
+    });
+
+    renderChips();
+    renderLista();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', montarAba);
+  } else {
+    montarAba();
+  }
+  if (!document.querySelector('.sidebar-nav')) {
+    var n = 0, t = setInterval(function () {
+      n++;
+      montarAba();
+      if (abaMontada || n > 240) clearInterval(t);
+    }, 500);
+  }
+})();
+</script>
+
 </body>
 </html>

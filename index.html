@@ -18114,5 +18114,354 @@ Como posso ajudar?</div>
 })();
 </script>
 
+
+<script id="biblioteca-docs">
+/* ══════════════════════════════════════════════════════════════════════
+   BIBLIOTECA DE DOCUMENTOS — Normas Técnicas + POP's  (18/09/2026)
+
+   Duas abas, um componente só. O pedido foi "deixa as 2 iguais", então
+   o layout, o CSS e o comportamento vivem numa função e as abas só
+   entregam os dados.
+
+   NORMAS: o HTML da aba continua intacto no fonte — este bloco LÊ os
+   <a> que já estão lá e redesenha por cima. Nada de reescrever 40 URLs
+   à mão, e nada de mexer em HTML perto das abas (é onde os </div> se
+   extraviam). Se um link novo for colado no HTML antigo, ele aparece
+   no desenho novo sozinho.
+
+   POP'S: 36 PDFs da pasta POPS do Drive, com o id de cada arquivo para
+   abrir direto no documento em vez de jogar o cara na pasta. Os "Anexo
+   I/II/III..." entram agrupados sob o POP a que pertencem, porque na
+   pasta eles aparecem soltos entre os principais.
+   ══════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var PASTA_POPS = 'https://drive.google.com/drive/folders/1BleouOe1-D2z0u5IbQCDfSemSxGC23DN';
+
+  /* [código, revisão, título, id do arquivo no Drive] */
+  var POPS = [
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança','1WfvML9ZXLER8go2QCYaeGUryuo5d505B'],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)','1rwCnmha0Rjxi8keqhWmpZaEG_L72z6eu'],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos','1EPWgTPIMGm0U1aCqhdGQkaLoJxVUHXHy'],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva','14InSQuvXAB_1Jfj3yn8dVvwLQ1CCpuzm'],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile','1_VrCYDqANbHJqRTfTea_lU6If0WZ6tAi'],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais','1KJ3ZGK3BwG53KvZD95DUUd2ZfgnK1rGh'],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B','1IUuoR0FOVItxr-GMdJi4eq33PuwMiM1c'],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura','1rXcB8vN5tGSXstX0-yMepW8kmBaLxUke'],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas','11ZG2ILryy0hsv1i3Lc6AjahnEngFexbe'],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B','1cqB3CNhIB3MLBi2HLXmiRBlrEY2WZOSh'],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto','1QyiAT_NPDOiZBaosc6lj0Wa6ElGHNETy'],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração','1HbiRpVJ_gD9YOxbHVfi-eTSu2TN7S9zU'],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores','1brxvZXdTlV3xVYHjkeAAIsjw6srRM5u-'],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP','183Epk8QOMu9ERF2aYKr8xNc1YieVZ83r'],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares','1h73B9ZISHwCNF5jkgXReSXE35VPhUICW'],
+    ['POP.00375.EQTL','02','Executar Obras','1HXuN_4S-78t7sn80b1YtGrD9wBdjdPlc'],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos','1nZpNTy0AnciWObfT7-YvMA2SFw641QSh'],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea','13c3F63_Br8_ouYoPoz0NcRR11XzdH-d2'],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação','1cbXy9LGdu5EvIruJgEzGqptk9V_ZJUVF'],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV','1ou6ubJKh079pR2gzRJWcGbVUd8SwM-jv'],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores','1z2u3XKhjjTrk-4f6GsC9PkQhJ24iy7mN'],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas','1UD1NyDhH4w-FP7KBxM7cHILQJOcs4Ncu'],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato','1ykZUIkYE5uLl6wyII3a9s_9Tew6lbn7a'],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato','1y2KmoWaydpUXGr_Kvyc-LxyQxT69fHA4'],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato','1imeRkcbzpHDRJvCofqnxHUToxCkvQn3C'],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato','1ml1jOcali9_9K-cjq1ze6-DUzdbBBp-Z'],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato','1w3LHM6MTr34ZY6632TqQOS1GOfSq15qV'],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT','1VXxEBMXItVQ303RUMuJSs-D0c101FjFQ'],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6','1qSUvIfdXC-r-arlFzjY9Wp5PvTB1dSjm'],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil','1N-5SQC8sx0TGTriTlEwS1zB-v0LP-b2g'],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec','1phRUOpH8nMsnv3rCbwscDZsjVHRHWCRJ'],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja','1pza6ypa0IvIKzNdzY_myonq1HuMBdajL'],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE','1Xm4nRva501D2AieaxjVAzqmRLYAnjub1'],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão','1gbMG7V4BD8CDoay2CM9CuBXr2X8CXWTj'],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves','1CggMV7dpF9A3diQHdJ5NpV0e-nrot6t6'],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)','1acnH0r1ip5S5hleebgni3jkS51jX1HMc']
+  ];
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* ── CSS, um só para as duas abas ────────────────────────────────── */
+  function injetarCSS() {
+    if (document.getElementById('bib-css')) return;
+    var st = document.createElement('style');
+    st.id = 'bib-css';
+    st.textContent = [
+      '.bib-wrap{max-width:1100px;margin:0 auto;}',
+      '.bib-hero{display:flex;align-items:center;gap:.9rem;margin-bottom:1.1rem;}',
+      '.bib-hero-ico{width:46px;height:46px;border-radius:12px;flex-shrink:0;display:flex;',
+        'align-items:center;justify-content:center;font-size:1.4rem;',
+        'background:rgba(0,230,118,.10);border:1px solid rgba(0,230,118,.22);}',
+      '.bib-hero h2{font-family:"Syne",sans-serif;font-weight:800;font-size:1.45rem;',
+        'letter-spacing:-.02em;color:var(--text);line-height:1.15;margin:0;}',
+      '.bib-hero h2 span{color:var(--accent);}',
+      '.bib-hero p{font-family:"DM Mono",monospace;font-size:.7rem;color:var(--muted);',
+        'text-transform:uppercase;letter-spacing:.08em;margin:.15rem 0 0;}',
+      '.bib-barra{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.7rem;}',
+      '.bib-busca{flex:1;min-width:210px;position:relative;display:flex;align-items:center;}',
+      '.bib-busca input{width:100%;padding:.7rem .9rem .7rem 2.1rem;border-radius:var(--radius);',
+        'border:1px solid var(--border);background:var(--surface);color:var(--text);',
+        'font-family:inherit;font-size:.88rem;}',
+      '.bib-busca input:focus{outline:none;border-color:var(--accent);}',
+      '.bib-busca-ico{position:absolute;left:.75rem;font-size:.85rem;opacity:.5;pointer-events:none;}',
+      '.bib-fonte{display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;',
+        'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);',
+        'padding:.7rem 1rem;font-family:"DM Mono",monospace;font-size:.72rem;color:var(--muted);',
+        'white-space:nowrap;transition:border-color .18s,color .18s;}',
+      '.bib-fonte:hover{border-color:var(--accent);color:var(--accent);}',
+      '.bib-cont{font-family:"DM Mono",monospace;font-size:.66rem;text-transform:uppercase;',
+        'letter-spacing:.1em;color:var(--muted);margin:.3rem 0 .9rem;}',
+      '.bib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:.8rem;}',
+      /* o card é uma DIV, não um <a>: os anexos são links e <a> dentro de <a>
+         é inválido — o parser fecha o externo e o card inteiro sai vazio.
+         Quem leva o href é o .bib-card-main, que cobre o topo e o título. */
+      '.bib-card{display:flex;flex-direction:column;background:var(--surface);',
+        'border:1px solid var(--border);border-radius:14px;padding:.95rem 1.05rem;',
+        'color:var(--text);transition:border-color .18s,transform .18s,background .18s;}',
+      '.bib-card:hover{border-color:var(--accent);background:rgba(0,230,118,.04);transform:translateY(-2px);}',
+      '.bib-card-main{display:flex;flex-direction:column;flex:1;text-decoration:none;color:inherit;}',
+      '.bib-card-topo{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem;}',
+      '.bib-cod{font-family:"DM Mono",monospace;font-size:.68rem;letter-spacing:.05em;',
+        'color:var(--accent);font-weight:700;}',
+      '.bib-rev{margin-left:auto;font-family:"DM Mono",monospace;font-size:.6rem;',
+        'background:var(--bg);border:1px solid var(--border);border-radius:999px;',
+        'padding:.1rem .5rem;color:var(--muted);white-space:nowrap;}',
+      '.bib-tit{font-family:"Syne",sans-serif;font-weight:700;font-size:.9rem;line-height:1.35;',
+        'letter-spacing:-.01em;}',
+      '.bib-anexos{margin-top:.6rem;padding-top:.55rem;border-top:1px solid var(--border);',
+        'display:flex;flex-wrap:wrap;gap:.3rem;}',
+      '.bib-anexo{font-family:"DM Mono",monospace;font-size:.63rem;text-decoration:none;',
+        'border:1px solid var(--border);border-radius:999px;padding:.16rem .5rem;',
+        'color:var(--muted);transition:border-color .18s,color .18s;}',
+      '.bib-anexo:hover{border-color:var(--accent);color:var(--accent);}',
+      '.bib-anexo-txt{font-family:"DM Mono",monospace;font-size:.63rem;color:var(--muted);',
+        'line-height:1.5;opacity:.85;}',
+      '.bib-vazio{font-family:"DM Mono",monospace;font-size:.78rem;color:var(--muted);',
+        'padding:1.5rem;text-align:center;border:1px dashed var(--border);border-radius:14px;}',
+      '.bib-nota{font-size:.72rem;color:var(--muted);line-height:1.6;margin-top:1.4rem;',
+        'padding-top:.9rem;border-top:1px solid var(--border);}',
+      '@media(max-width:520px){.bib-grid{grid-template-columns:1fr;}}'
+    ].join('');
+    document.head.appendChild(st);
+  }
+
+  /* ── desenho, idêntico para as duas abas ─────────────────────────── */
+  function desenhar(painel, cfg) {
+    var id = cfg.id;
+    painel.innerHTML = ''
+      + '<div class="bib-wrap">'
+      +   '<div class="bib-hero">'
+      +     '<div class="bib-hero-ico">' + cfg.icone + '</div>'
+      +     '<div><h2>' + cfg.titulo + '</h2><p>' + esc(cfg.sub) + '</p></div>'
+      +   '</div>'
+      +   '<div class="bib-barra">'
+      +     '<div class="bib-busca"><span class="bib-busca-ico">🔍</span>'
+      +       '<input type="text" id="' + id + '-q" placeholder="' + esc(cfg.placeholder) + '" autocomplete="off"/></div>'
+      +     (cfg.fonteUrl
+          ? '<a class="bib-fonte" href="' + cfg.fonteUrl + '" target="_blank" rel="noopener">'
+            + esc(cfg.fonteRot) + ' ↗</a>'
+          : '')
+      +   '</div>'
+      +   '<div class="bib-cont" id="' + id + '-cont"></div>'
+      +   '<div class="bib-grid" id="' + id + '-grid"></div>'
+      +   '<div class="bib-nota">' + cfg.nota + '</div>'
+      + '</div>';
+
+    var grid = document.getElementById(id + '-grid');
+    var cont = document.getElementById(id + '-cont');
+    var inp  = document.getElementById(id + '-q');
+
+    function render(termo) {
+      var t = (termo || '').trim().toUpperCase();
+      var itens = cfg.docs.filter(function (d) {
+        if (!t) return true;
+        if ((d.cod + ' ' + d.tit).toUpperCase().indexOf(t) >= 0) return true;
+        return d.anexos.some(function (a) { return a.tit.toUpperCase().indexOf(t) >= 0; });
+      });
+
+      var nAnexos = itens.reduce(function (n, d) { return n + d.anexos.length; }, 0);
+      cont.textContent = itens.length + ' ' + (itens.length === 1 ? 'documento' : 'documentos')
+        + (nAnexos ? ' · ' + nAnexos + ' anexo' + (nAnexos === 1 ? '' : 's') : '')
+        + (t ? ' · filtrando por "' + termo.trim() + '"' : '');
+
+      if (!itens.length) {
+        grid.innerHTML = '<div class="bib-vazio">Nada encontrado para "' + esc(termo) + '".</div>';
+        return;
+      }
+
+      grid.innerHTML = itens.map(function (d) {
+        var anexos = '';
+        if (d.anexos.length) {
+          anexos = '<div class="bib-anexos">' + d.anexos.map(function (a) {
+            return a.url
+              ? '<a class="bib-anexo" href="' + a.url + '" target="_blank" rel="noopener">📎 ' + esc(a.tit) + '</a>'
+              : '<span class="bib-anexo-txt">📎 ' + esc(a.tit) + '</span>';
+          }).join('') + '</div>';
+        }
+        return '<div class="bib-card">'
+          + '<a class="bib-card-main" href="' + d.url + '" target="_blank" rel="noopener">'
+          +   '<div class="bib-card-topo"><span class="bib-cod">' + esc(d.cod) + '</span>'
+          +   (d.rev ? '<span class="bib-rev">rev ' + esc(d.rev) + '</span>' : '')
+          +   '</div>'
+          +   '<div class="bib-tit">' + esc(d.tit) + '</div>'
+          + '</a>'
+          + anexos
+          + '</div>';
+      }).join('');
+    }
+
+    inp.addEventListener('input', function () { render(this.value); });
+    render('');
+  }
+
+  /* ── NORMAS: lê o que já está no HTML e redesenha ─────────────────── */
+  function lerNormas(painel) {
+    var docs = [];
+    var filhos = painel.querySelectorAll('a[href]');
+    for (var i = 0; i < filhos.length; i++) {
+      var a = filhos[i];
+      var txt = (a.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!txt) continue;
+      var m = txt.match(/^(NT\.[\d]+\.EQTL)\s*(?:\((.*?)\))?\s*(?:rev\s*0*(\d+))?\s*$/i);
+      var cod = m ? m[1] : txt;
+      var tit = (m && m[2]) ? m[2] : (m ? txt.replace(m[1], '').trim() : '');
+      var rev = (m && m[3]) ? (m[3].length < 2 ? '0' + m[3] : m[3]) : '';
+
+      /* o texto de anexos vive num <span> logo depois do link */
+      var anexos = [];
+      var nx = a.nextElementSibling;
+      if (nx && nx.tagName === 'SPAN') {
+        var at = (nx.textContent || '').replace(/\s+/g, ' ').trim()
+          .replace(/^\(\s*\+?\s*/, '').replace(/\)$/, '').trim();
+        if (at) anexos.push({ tit: at, url: '' });
+      }
+      docs.push({ cod: cod, tit: tit || '—', rev: rev, url: a.getAttribute('href'), anexos: anexos });
+    }
+    return docs;
+  }
+
+  /* ── POPs: agrupa os "Anexo …" sob o POP a que pertencem ─────────── */
+  function montarPops() {
+    var porCod = {};
+    var ordem = [];
+    POPS.forEach(function (p) {
+      var cod = p[0];
+      if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
+      porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
+                         url: 'https://drive.google.com/file/d/' + p[3] + '/view' });
+    });
+
+    var docs = [];
+    ordem.forEach(function (cod) {
+      var grupo = porCod[cod];
+      var principais = grupo.filter(function (x) { return !/^anexo\b/i.test(x.tit); });
+      var anexos     = grupo.filter(function (x) { return  /^anexo\b/i.test(x.tit); });
+      /* sem principal (o POP.00168 só tem o anexo na pasta): o anexo vira o card */
+      if (!principais.length) { principais = [anexos.shift()]; }
+      principais.forEach(function (pr, i) {
+        docs.push({ cod: pr.cod, rev: pr.rev, tit: pr.tit, url: pr.url,
+                    anexos: i === 0 ? anexos : [] });
+      });
+    });
+    return docs;
+  }
+
+  /* ── montagem ────────────────────────────────────────────────────── */
+  var montado = false;
+
+  function montar() {
+    if (montado) return;
+    var nav    = document.querySelector('.sidebar-nav');
+    var main   = document.querySelector('.main-content');
+    var normas = document.getElementById('tab-normas-tecnicas');
+    if (!nav || !main || !normas) return;
+    montado = true;
+
+    injetarCSS();
+
+    /* 1. redesenha Normas com os dados que já estavam no HTML */
+    var docsNormas = lerNormas(normas);
+    desenhar(normas, {
+      id: 'bibnt',
+      icone: '📘',
+      titulo: 'Normas <span>Técnicas</span>',
+      sub: 'Documentos EQTL e anexos oficiais',
+      placeholder: 'Buscar norma (ex: NT.00006, compacta, medição)...',
+      fonteUrl: 'https://ceee.equatorialenergia.com.br/normas-tecnicas/',
+      fonteRot: 'Portal Equatorial',
+      docs: docsNormas,
+      nota: '<b>' + docsNormas.length + ' normas</b> com link direto para o PDF no portal da Equatorial. '
+          + 'Os anexos aparecem como etiqueta no card, sem link próprio: o portal não publica uma URL por '
+          + 'anexo, eles ficam na mesma pasta da norma — abra a norma e navegue a partir dela. '
+          + 'Mesmo desenho da aba <b>POP\'s</b>.'
+    });
+
+    /* 2. cria a aba POP's com o mesmo desenho */
+    var docsPops = montarPops();
+    var painel = document.createElement('div');
+    painel.className = 'tab-panel';
+    painel.id = 'tab-pops';
+    main.appendChild(painel);
+
+    desenhar(painel, {
+      id: 'bibpop',
+      icone: '📋',
+      titulo: 'POP\'s <span>Equatorial</span>',
+      sub: 'Procedimentos operacionais padrão',
+      placeholder: 'Buscar POP (ex: POP.00559, religador, poda, cesta)...',
+      fonteUrl: PASTA_POPS,
+      fonteRot: 'Pasta no Drive',
+      docs: docsPops,
+      nota: '<b>' + POPS.length + ' arquivos</b> da pasta <b>POPS</b> no Google Drive, '
+          + 'cada card abrindo direto no PDF em vez de largar você na pasta. '
+          + 'Os <b>Anexos</b> entram agrupados sob o POP a que pertencem — na pasta eles aparecem soltos '
+          + 'no meio dos principais, misturados em ordem alfabética. '
+          + 'Duas observações sobre a pasta, não sobre a aba: o <code>POP.00110</code> está lá '
+          + '<b>duas vezes</b> (o mesmo documento, com e sem "(1)") e o <code>POP.00168</code> tem '
+          + 'só o Anexo III, sem o procedimento principal. '
+          + 'O link depende do compartilhamento da pasta: se ela sair do ar ou virar restrita, os cards '
+          + 'param de abrir. Mesmo desenho da aba <b>Normas Técnicas</b>.'
+    });
+
+    /* 3. botão na barra, logo depois de Normas Técnicas */
+    var btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.setAttribute('data-tab', 'pops');
+    btn.innerHTML = '<svg class="tab-icon" aria-hidden="true"><use href="#i-clipboard"/></svg> POP\'s';
+    var ancora = nav.querySelector('[data-tab="normas-tecnicas"]');
+    if (ancora && ancora.nextSibling) nav.insertBefore(btn, ancora.nextSibling);
+    else nav.appendChild(btn);
+
+    /* o listener de abas do site já rodou no load; este botão traz o seu */
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      painel.classList.add('active');
+      var lbl = document.getElementById('mobCurrentTab');
+      if (lbl) lbl.textContent = "POP's";
+      if (typeof closeSidebar === 'function') closeSidebar();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', montar);
+  } else {
+    montar();
+  }
+  if (!document.querySelector('.sidebar-nav')) {
+    var n = 0, t = setInterval(function () {
+      n++;
+      montar();
+      if (montado || n > 240) clearInterval(t);
+    }, 500);
+  }
+})();
+</script>
+
 </body>
 </html>

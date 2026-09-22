@@ -73,7 +73,7 @@ self.addEventListener('fetch', e => {
   const url = e.request.url;
   // open-meteo fica de fora do cache: o SW responde cache-first, e previsão
   // servida do cache ficaria congelada na primeira leitura do dia.
-  if (url.includes('googleapis.com') || url.includes('gstatic.com') || url.includes('firebasejs') || url.includes('fonts.google') || url.includes('open-meteo.com')) return;
+  if (url.includes('googleapis.com') || url.includes('gstatic.com') || url.includes('firebasejs') || url.includes('fonts.google') || url.includes('open-meteo.com') || url.includes('nominatim.openstreetmap.org')) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -598,6 +598,101 @@ self.addEventListener('fetch', e => {
     @media (prefers-reduced-motion: reduce) {
       .cliente-placa { transition: none; }
       .cliente-placa:hover { transform: none; }
+    }
+
+    /* ── Câmera de campo ─────────────────────────────────────────────── */
+    .cam-palco {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      aspect-ratio: 3 / 4;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    @media (min-width: 760px) { .cam-palco { aspect-ratio: 4 / 3; } }
+
+    .cam-palco video,
+    .cam-palco canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .cam-palco.ao-vivo video { display: block; }
+    .cam-palco.congelado canvas { display: block; }
+
+    .cam-vazio {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+    }
+    .cam-vazio svg {
+      width: 42px; height: 42px;
+      fill: none; stroke: currentColor;
+      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+      opacity: 0.6;
+    }
+    .cam-palco.ao-vivo .cam-vazio,
+    .cam-palco.congelado .cam-vazio { display: none; }
+
+    /* Carimbo: alinhado à direita, branco com sombra dura — o mesmo desenho
+       é redesenhado no canvas ao capturar, então o preview não mente. */
+    .cam-carimbo {
+      position: absolute;
+      top: 3.5%;
+      right: 3.5%;
+      left: 8%;
+      text-align: right;
+      pointer-events: none;
+      display: none;
+      font-family: 'Manrope', system-ui, sans-serif;
+      line-height: 1.18;
+      color: #fff;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9);
+    }
+    .cam-palco.ao-vivo .cam-carimbo { display: block; }
+    .cam-linha {
+      font-size: clamp(0.85rem, 3.6vw, 1.45rem);
+      font-weight: 600;
+    }
+    .cam-linha:empty { display: none; }
+    .cam-linha--data { font-weight: 700; }
+
+    .cam-barra {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 0.9rem;
+    }
+    .cam-status {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .cam-aviso {
+      background: rgba(255,183,77,0.08);
+      border: 1px solid #ffb74d;
+      border-left: 4px solid #ffb74d;
+      border-radius: var(--radius);
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 1rem;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.6;
     }
 
     /* ── Tempo nas bases ─────────────────────────────────────────────── */
@@ -2709,6 +2804,7 @@ self.addEventListener('fetch', e => {
     <symbol id="i-predio" viewBox="0 0 24 24"><path d="M4 3.5h11v17.5H4z"/><path d="M15 8.5h5V21h-5"/><path d="M7.3 7.2h1.6M11 7.2h1.6M7.3 11h1.6M11 11h1.6M7.3 14.8h1.6M11 14.8h1.6"/><path d="M9 21v-3h1.9v3"/></symbol>
     <symbol id="i-ia" viewBox="0 0 24 24"><path d="m11 2.8 1.75 4.35L17 8.9l-4.25 1.75L11 15l-1.75-4.35L5 8.9l4.25-1.75z"/><path d="m18 14.2.9 2.15L21 17.2l-2.1.85-.9 2.15-.9-2.15-2.1-.85 2.1-.85z"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11.2v5M12 7.9h.01"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 8.5a2 2 0 0 1 2-2h2.2l1.4-2.2h6.8L16.8 6.5H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.8" r="3.6"/></symbol>
 
     <!-- Tempo nas bases (códigos WMO da Open-Meteo) -->
     <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.4M12 19v2.4M4.2 12H1.8M22.2 12h-2.4M6.5 6.5 4.8 4.8M19.2 19.2l-1.7-1.7M17.5 6.5l1.7-1.7M4.8 19.2l1.7-1.7"/></symbol>
@@ -2760,6 +2856,7 @@ self.addEventListener('fetch', e => {
     <button class="tab" data-tab="orcamento"><svg class="tab-icon" aria-hidden="true"><use href="#i-dinheiro"/></svg> Orçamento</button>
     <button class="tab" data-tab="normas-tecnicas"><svg class="tab-icon" aria-hidden="true"><use href="#i-livro"/></svg> Normas Técnicas</button>
     <button class="tab" data-tab="noticias"><svg class="tab-icon" aria-hidden="true"><use href="#i-noticias"/></svg> Notícias</button>
+    <button class="tab" data-tab="camera"><svg class="tab-icon" aria-hidden="true"><use href="#i-camera"/></svg> Câmera de Campo</button>
     <button class="tab" data-tab="quem-somos"><svg class="tab-icon" aria-hidden="true"><use href="#i-predio"/></svg> Quem Somos</button>
     <button class="tab" data-tab="ia" style="margin-top:0.3rem;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:8px;"><svg class="tab-icon" aria-hidden="true"><use href="#i-ia"/></svg> IA</button>
   </div>
@@ -3888,6 +3985,7 @@ self.addEventListener('fetch', e => {
     'equipamentos':'Equipamentos',
     'mapa-unificado': 'Mapa',
     'normas-tecnicas':'Normas Técnicas',
+    'camera':      'Câmera de Campo',
     'quem-somos':  'Quem Somos',
     'rebaixadores': 'Rebaixadores',
     'ia':           'IA',
@@ -8317,6 +8415,391 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     </div>
   </div>
 </div>
+<div class="tab-panel" id="tab-camera">
+
+  <div style="margin-bottom:1.25rem;">
+    <h1 style="font-size:1.7rem;font-weight:800;letter-spacing:-0.03em;line-height:1;">
+      Câmera de <span style="color:var(--accent)">Campo</span>
+    </h1>
+    <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">
+      Foto com data, hora e endereço gravados na imagem
+    </p>
+  </div>
+
+  <div id="cam-aviso" class="cam-aviso" style="display:none;"></div>
+
+  <div class="cam-palco" id="cam-palco">
+    <video id="cam-video" playsinline muted autoplay></video>
+    <canvas id="cam-foto"></canvas>
+    <!-- Carimbo ao vivo: o que aparece aqui é exatamente o que é gravado na
+         imagem no momento da captura (o canvas redesenha as mesmas linhas). -->
+    <div class="cam-carimbo" id="cam-carimbo">
+      <div class="cam-linha cam-linha--data" id="cam-l-data">—</div>
+      <div class="cam-linha" id="cam-l-rua"></div>
+      <div class="cam-linha" id="cam-l-bairro"></div>
+      <div class="cam-linha" id="cam-l-cidade"></div>
+      <div class="cam-linha" id="cam-l-cep"></div>
+      <div class="cam-linha" id="cam-l-pais"></div>
+    </div>
+    <div class="cam-vazio" id="cam-vazio">
+      <svg aria-hidden="true"><use href="#i-camera"/></svg>
+      <span>Câmera desligada</span>
+    </div>
+  </div>
+
+  <div class="cam-barra">
+    <button class="btn" id="cam-btn-ligar" onclick="camLigar()">Ligar câmera</button>
+    <button class="btn-ghost" id="cam-btn-trocar" onclick="camTrocar()" disabled>Trocar câmera</button>
+    <button class="btn" id="cam-btn-tirar" onclick="camCapturar()" disabled>Tirar foto</button>
+    <button class="btn-ghost" id="cam-btn-nova" onclick="camNovaFoto()" style="display:none;">Nova foto</button>
+    <button class="btn" id="cam-btn-baixar" onclick="camBaixar()" style="display:none;">Baixar</button>
+    <button class="btn-ghost" id="cam-btn-enviar" onclick="camCompartilhar()" style="display:none;">Enviar</button>
+  </div>
+
+  <div class="cam-status" id="cam-status">Toque em "Ligar câmera" para começar.</div>
+
+</div>
+
+<script>
+(function () {
+  /* ══════════════════════════════════════════════════════════════════
+     CÂMERA DE CAMPO
+
+     Foto com data, hora e endereço gravados NA IMAGEM (não em metadado),
+     que é o que serve como comprovação de visita.
+
+     O carimbo que aparece sobre o vídeo e o que é gravado no arquivo saem
+     da mesma lista de linhas — o preview não pode mentir sobre o resultado.
+
+     Endereço: Nominatim (OpenStreetMap), gratuito e sem chave. Fica fora do
+     cache do service worker (exceção lá em cima), senão o endereço da
+     primeira foto grudaria em todas as seguintes.
+     ══════════════════════════════════════════════════════════════════ */
+
+  var video   = document.getElementById('cam-video');
+  var canvas  = document.getElementById('cam-foto');
+  var palco   = document.getElementById('cam-palco');
+  var statusEl= document.getElementById('cam-status');
+  var avisoEl = document.getElementById('cam-aviso');
+
+  var stream = null;
+  var camAtual = 'environment';       // traseira por padrão: é a útil em campo
+  var relogio = null;
+  var endereco = [];                  // linhas já prontas, sem a data
+  var blobFoto = null;
+  var coords = null;
+
+  function status(msg) { statusEl.textContent = msg; }
+
+  function aviso(msg) {
+    if (!msg) { avisoEl.style.display = 'none'; return; }
+    avisoEl.textContent = msg;
+    avisoEl.style.display = 'block';
+  }
+
+  /* Data no formato do app de campo: "22 de set. de 2026, 08:57:43" */
+  function agoraTexto() {
+    var d = new Date();
+    var data = d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+    var hora = d.toLocaleTimeString('pt-BR', { hour12: false });
+    return data + ', ' + hora;
+  }
+
+  function linhasCarimbo() {
+    return [agoraTexto()].concat(endereco);
+  }
+
+  function pintarCarimbo() {
+    document.getElementById('cam-l-data').textContent = agoraTexto();
+    var ids = ['cam-l-rua','cam-l-bairro','cam-l-cidade','cam-l-cep','cam-l-pais'];
+    ids.forEach(function (id, i) {
+      document.getElementById(id).textContent = endereco[i] || '';
+    });
+  }
+
+  /* ── Câmera ── */
+
+  window.camLigar = async function () {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      aviso('Este navegador não expõe a câmera. Em celular, use Chrome ou Safari atualizados.');
+      return;
+    }
+    // getUserMedia exige contexto seguro: abrir o arquivo por file:// não funciona
+    if (!window.isSecureContext) {
+      aviso('A câmera só funciona em https:// (ou localhost). Abrindo o arquivo direto do computador, ' +
+            'o navegador bloqueia o acesso — use o endereço publicado do SetupBoom.');
+      return;
+    }
+    aviso('');
+    status('Pedindo acesso à câmera...');
+    try {
+      camParar();
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: camAtual, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+      palco.classList.add('ao-vivo');
+      palco.classList.remove('congelado');
+      document.getElementById('cam-btn-tirar').disabled = false;
+      document.getElementById('cam-btn-trocar').disabled = false;
+      document.getElementById('cam-btn-ligar').textContent = 'Reiniciar câmera';
+
+      pintarCarimbo();
+      if (relogio) clearInterval(relogio);
+      relogio = setInterval(pintarCarimbo, 1000);
+
+      status('Câmera ligada. Buscando localização...');
+      localizar();
+    } catch (e) {
+      var msg = 'Não consegui abrir a câmera: ' + e.name;
+      if (e.name === 'NotAllowedError') msg = 'Permissão de câmera negada. Libere nas configurações do site e tente de novo.';
+      if (e.name === 'NotFoundError')  msg = 'Nenhuma câmera encontrada neste aparelho.';
+      aviso(msg);
+      status('Câmera não iniciada.');
+    }
+  };
+
+  window.camTrocar = function () {
+    camAtual = (camAtual === 'environment') ? 'user' : 'environment';
+    window.camLigar();
+  };
+
+  function camParar() {
+    if (stream) {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      stream = null;
+    }
+  }
+
+  /* ── Localização e endereço ── */
+
+  /* Localização real, com duas precauções que a leitura simples não tem:
+
+     1. maximumAge: 0 — sem isso o navegador pode devolver uma posição em
+        cache, tirada em outro lugar minutos antes. Numa foto que serve de
+        comprovação de visita, carimbar o endereço anterior é pior que não
+        carimbar nada.
+
+     2. watchPosition em vez de getCurrentPosition — a primeira leitura
+        costuma vir da rede/wi-fi, com erro de centenas de metros ou mais; o
+        GPS só converge alguns segundos depois. Ficamos ouvindo e trocamos o
+        endereço sempre que chega uma leitura mais precisa, até travar num
+        bom valor. */
+  var vigia = null;
+  var melhorPrecisao = Infinity;
+  var PRECISAO_BOA = 30;      // metros: a partir daqui é GPS de verdade
+  var PRECISAO_RUIM = 150;    // acima disso o endereço não é confiável
+
+  function pararVigia() {
+    if (vigia !== null) { navigator.geolocation.clearWatch(vigia); vigia = null; }
+  }
+
+  function localizar() {
+    if (!navigator.geolocation) { status('Câmera ligada. Sem GPS neste aparelho.'); return; }
+    pararVigia();
+    melhorPrecisao = Infinity;
+    status('Câmera ligada. Procurando sinal de GPS...');
+
+    vigia = navigator.geolocation.watchPosition(function (pos) {
+      var p = pos.coords.accuracy;
+      // só reage se a leitura for melhor que a que já temos
+      if (p >= melhorPrecisao) return;
+      melhorPrecisao = p;
+      coords = pos.coords;
+
+      var aviso = p > PRECISAO_RUIM
+        ? ' — precisão baixa (±' + Math.round(p) + ' m), ainda buscando GPS'
+        : ' (±' + Math.round(p) + ' m)';
+      status('Localização obtida' + aviso + '. Traduzindo em endereço...');
+      buscarEndereco(pos.coords.latitude, pos.coords.longitude, p);
+
+      // fix bom o bastante: para de ouvir para não gastar bateria
+      if (p <= PRECISAO_BOA) pararVigia();
+    }, function (err) {
+      pararVigia();
+      var m = err.code === 1
+        ? 'Permissão de localização negada — a foto sai só com data e hora.'
+        : 'GPS indisponível (' + err.message + ') — a foto sai só com data e hora.';
+      status(m);
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  }
+
+  async function buscarEndereco(lat, lon, precisao) {
+    try {
+      var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18' +
+                '&lat=' + lat + '&lon=' + lon + '&accept-language=pt-BR';
+      var r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var j = await r.json();
+      var a = j.address || {};
+
+      // "Praça 20 de Setembro, 121"
+      var rua = a.road || a.pedestrian || a.footway || a.square || '';
+      if (rua && a.house_number) rua += ', ' + a.house_number;
+
+      var bairro = a.suburb || a.neighbourhood || a.city_district || a.quarter || '';
+
+      /* "Pelotas RS" — a sigla vem do ISO (BR-RS); o nome por extenso não cabe.
+         A ordem dos campos aqui NÃO é arbitrária. No Nominatim brasileiro o
+         campo "city" às vezes traz o distrito, não o município: em Pelotas ele
+         devolve "Sede", e a foto sairia carimbada como "Sede RS". Já
+         "municipality" traz "Pelotas" — mas vem vazio em Rio Grande, Bagé e
+         Camaquã, onde o certo está em city/town. Testado nas quatro bases:
+         municipality → city → town acerta todas. */
+      var cidade = a.municipality || a.city || a.town || a.village || '';
+      var uf = '';
+      var iso = a['ISO3166-2-lvl4'] || '';
+      if (iso.indexOf('-') > -1) uf = iso.split('-').pop();
+      var linhaCidade = [cidade, uf].filter(Boolean).join(' ');
+
+      endereco = [rua, bairro, linhaCidade, a.postcode || '', a.country || ''].filter(Boolean);
+
+      /* Com precisão ruim o endereço pode ser de outra quadra — nesse caso
+         some com a rua e o CEP (que é o que erra) e mantém só cidade/estado,
+         em vez de carimbar na foto um endereço que não é onde a pessoa está. */
+      if (precisao != null && precisao > PRECISAO_RUIM) {
+        endereco = [linhaCidade, a.country || ''].filter(Boolean);
+        status('Localização aproximada (±' + Math.round(precisao) + ' m). ' +
+               'Carimbando só cidade/estado até o GPS firmar.');
+      } else {
+        status('Pronto (±' + Math.round(precisao || 0) + ' m). ' + endereco.join(' · '));
+      }
+      pintarCarimbo();
+    } catch (e) {
+      console.warn('[SetupBoom] endereço falhou:', e);
+      // Sem endereço, ainda vale registrar onde foi: coordenadas servem de prova
+      if (coords) {
+        endereco = [coords.latitude.toFixed(6) + ', ' + coords.longitude.toFixed(6)];
+        pintarCarimbo();
+        status('Endereço indisponível — gravando as coordenadas na foto.');
+      } else {
+        status('Endereço indisponível. A foto sai só com data e hora.');
+      }
+    }
+  }
+
+  /* ── Captura ── */
+
+  window.camCapturar = function () {
+    if (!stream) return;
+    var w = video.videoWidth, h = video.videoHeight;
+    if (!w || !h) { status('A câmera ainda não entregou imagem. Tente de novo em um instante.'); return; }
+
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, w, h);
+    desenharCarimbo(ctx, w, h);
+
+    palco.classList.remove('ao-vivo');
+    palco.classList.add('congelado');
+    if (relogio) { clearInterval(relogio); relogio = null; }
+
+    canvas.toBlob(function (b) {
+      blobFoto = b;
+      status('Foto capturada com o carimbo gravado na imagem.');
+    }, 'image/jpeg', 0.92);
+
+    document.getElementById('cam-btn-tirar').disabled = true;
+    document.getElementById('cam-btn-trocar').disabled = true;
+    ['cam-btn-nova','cam-btn-baixar','cam-btn-enviar'].forEach(function (id) {
+      document.getElementById(id).style.display = '';
+    });
+  };
+
+  /* Mesmo layout do carimbo em HTML, agora em pixels do arquivo final.
+     As medidas são proporcionais à largura para o resultado ficar igual em
+     qualquer resolução de câmera. */
+  function desenharCarimbo(ctx, w, h) {
+    var linhas = linhasCarimbo();
+    var tam = Math.round(w * 0.038);
+    var alturaLinha = Math.round(tam * 1.32);
+    var margem = Math.round(w * 0.035);
+    var x = w - margem;
+    var y = margem + tam;
+
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '700 ' + tam + "px Manrope, system-ui, sans-serif";
+    ctx.shadowColor = 'rgba(0,0,0,0.85)';
+    ctx.shadowBlur = Math.round(tam * 0.35);
+    ctx.shadowOffsetY = Math.round(tam * 0.08);
+
+    linhas.forEach(function (txt, i) {
+      if (!txt) return;
+      ctx.font = (i === 0 ? '700 ' : '600 ') + tam + "px Manrope, system-ui, sans-serif";
+      ctx.fillStyle = '#fff';
+      ctx.fillText(txt, x, y + i * alturaLinha);
+    });
+
+    ctx.shadowColor = 'transparent';
+  }
+
+  /* ── Depois da foto ── */
+
+  function nomeArquivo() {
+    var d = new Date();
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    return 'campo-' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) +
+           '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.jpg';
+  }
+
+  window.camNovaFoto = function () {
+    ['cam-btn-nova','cam-btn-baixar','cam-btn-enviar'].forEach(function (id) {
+      document.getElementById(id).style.display = 'none';
+    });
+    blobFoto = null;
+    window.camLigar();
+  };
+
+  window.camBaixar = function () {
+    if (!blobFoto) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blobFoto);
+    a.download = nomeArquivo();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  };
+
+  window.camCompartilhar = async function () {
+    if (!blobFoto) return;
+    var arq = new File([blobFoto], nomeArquivo(), { type: 'image/jpeg' });
+    // No celular isso abre a folha de compartilhamento, com WhatsApp incluso
+    if (navigator.canShare && navigator.canShare({ files: [arq] })) {
+      try {
+        await navigator.share({ files: [arq], title: 'Foto de campo' });
+        return;
+      } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    status('Compartilhamento direto não disponível neste aparelho — use "Baixar" e anexe a foto.');
+  };
+
+  /* Desliga a câmera ao sair da aba: é um PWA de campo, manter a câmera
+     aberta em segundo plano gasta bateria e acende o LED sem motivo. */
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      if (t.dataset.tab !== 'camera') {
+        camParar();
+        pararVigia();
+        if (relogio) { clearInterval(relogio); relogio = null; }
+        palco.classList.remove('ao-vivo', 'congelado');
+        document.getElementById('cam-btn-tirar').disabled = true;
+        document.getElementById('cam-btn-trocar').disabled = true;
+        document.getElementById('cam-btn-ligar').textContent = 'Ligar câmera';
+        status('Câmera desligada ao sair da aba.');
+      }
+    });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && stream) { camParar(); palco.classList.remove('ao-vivo'); }
+  });
+})();
+</script>
+
 <div class="tab-panel" id="tab-quem-somos">
 
   <!-- Hero Banner -->

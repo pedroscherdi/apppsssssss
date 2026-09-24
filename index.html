@@ -4147,7 +4147,13 @@ self.addEventListener('fetch', e => {
     document.getElementById('results').classList.add('visible', 'fade-in');
 
     // ── Imagem da estrutura ──
-    const imgRaw = imgIndex[code.toUpperCase()] || '';
+    const achada = imagemDaEstrutura(code);
+    const imgRaw = achada ? achada.link : '';
+    // desenho do tipo (não do código exato): o título diz de qual tipo é
+    const tituloImg = !achada || !achada.tipo
+      ? `🖼️ Desenho da Estrutura — <strong style="color:var(--accent)">${code}</strong>`
+      : `🖼️ Desenho do tipo <strong style="color:var(--accent)">${achada.tipo}</strong>` +
+        (achada.variante ? ` <span style="text-transform:none;letter-spacing:0;">(referência para a variante ${achada.variante})</span>` : '');
     const imgDiv = document.getElementById('estrutura-img-wrap');
     if (imgDiv) {
       if (imgRaw) {
@@ -4156,7 +4162,7 @@ self.addEventListener('fetch', e => {
         imgDiv.innerHTML = `
           <div style="margin-top:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
             <div style="padding:0.6rem 1rem;font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;">
-              <span>🖼️ Desenho da Estrutura — <strong style="color:var(--accent)">${code}</strong></span>
+              <span>${tituloImg}</span>
               <a href="${driveUrl}" target="_blank" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);text-decoration:none;">Abrir ↗</a>
             </div>
             <div style="padding:1rem;text-align:center;">
@@ -4587,12 +4593,41 @@ self.addEventListener('fetch', e => {
     if (!id) return val;
     return `https://drive.google.com/file/d/${id}/view`;
   }
+  /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
+     N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
+     depois dos prefixos entre parênteses: "(CNV) (ZCORR) N4 13,8KV CRUZ..." → N4.
+     Só o começo conta: "CH FACA 630A 23,1KV, PARA N4 OU B4" é uma chave, não N4.
+     Variante com letra no fim (N1B, N3B, N3S, N4B) usa o desenho do tipo-base
+     quando não tem desenho próprio — mude para false para desligar. */
+  const VARIANTE_USA_DESENHO_DO_BASE = true;
+  let imgPorTipo = {};
+  function tipoEstrutura(code) {
+    const s = String(code || '').toUpperCase().replace(/^(\s*\([^)]*\))+\s*/, '');
+    const m = s.match(/^(2CE\d|2CUF\d|CUF\d|CE\d[A-Z]?|[NTUB]\d[A-Z]?)(?=[^A-Z0-9]|$)/);
+    return m ? m[1] : '';
+  }
+  function imagemDaEstrutura(code) {
+    const exata = imgIndex[String(code).toUpperCase()];
+    if (exata) return { link: exata, tipo: '' };
+    const tipo = tipoEstrutura(code);
+    if (!tipo) return null;
+    if (imgPorTipo[tipo]) return { link: imgPorTipo[tipo], tipo };
+    const base = tipo.replace(/[A-Z]$/, '');
+    if (VARIANTE_USA_DESENHO_DO_BASE && base !== tipo && imgPorTipo[base]) return { link: imgPorTipo[base], tipo: base, variante: tipo };
+    return null;
+  }
+
   function buildImgIndex() {
     imgIndex = {};
+    imgPorTipo = {};
     allData.forEach(row => {
       const code = String(row['__O'] || '').trim();
       const link = String(row['__P'] || '').trim();
-      if (code && link) imgIndex[code.toUpperCase()] = link;
+      if (!code || !link) return;
+      imgIndex[code.toUpperCase()] = link;
+      // o primeiro desenho cadastrado de cada tipo vale para o tipo inteiro
+      const tipo = tipoEstrutura(code);
+      if (tipo && !imgPorTipo[tipo]) imgPorTipo[tipo] = link;
     });
   }
 

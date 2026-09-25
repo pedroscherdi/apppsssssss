@@ -13444,7 +13444,8 @@ Como posso ajudar?</div>
 
 
 
-<!-- SETEMBRO AMARELO: laco amarelo sobre o "m" de SetupBoom, na tela de login.
+<!-- OUTUBRO ROSA: laco rosa sobre o "m" de SetupBoom, na tela de login
+     (era o laco amarelo do Setembro Amarelo; mesmas medidas, outra cor).
      Bloco 100% aditivo: nenhum HTML existente e movido. O JS quebra o texto
      do <span> verde em "Boo" + um <span> so com o "m" e pendura o laco
      (position:absolute) dentro dele, apoiado na propria letra. -->
@@ -13466,9 +13467,11 @@ Como posso ajudar?</div>
       'pointer-events:none;overflow:visible;',
       'filter:drop-shadow(0 1px 3px rgba(0,0,0,0.55)) drop-shadow(0 0 10px rgba(0,0,0,0.35));',
       '}',
-    /* "Sua vida importa" ao lado da assinatura, no amarelo do laco. Herda
-       DM Mono, caixa alta e o tracking de .14em da propria .sbl2-tag. */
-    '#loginScreen .sbl2-tag #sb-vida{color:#FFC400;}',
+    /* "Faca mamografia" + coracao ao lado da assinatura, no rosa do laco. Herda
+       DM Mono, caixa alta e o tracking de .14em da propria .sbl2-tag. O coracao
+       e SVG em currentColor: emoji de coracao rosa falta em celular antigo. */
+    '#loginScreen .sbl2-tag #sb-vida{color:#FF6FB5;}',
+    '#sb-vida svg{width:1em;height:1em;vertical-align:-0.14em;margin-left:0.4em;fill:currentColor;}',
     /* No celular a linha nao cabe: o separador some e a frase vira linha propria. */
     '@media (max-width:859px){',
       '#loginScreen .sbl2-tag #sb-vida-sep{display:none;}',
@@ -13485,12 +13488,12 @@ Como posso ajudar?</div>
     '<svg id="sb-laco-fita" viewBox="0 0 44 64" fill="none" aria-hidden="true" focusable="false">' +
       '<defs>' +
         '<linearGradient id="sbLacoGrad" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0" stop-color="#FFE566"/><stop offset="1" stop-color="#FFC400"/>' +
+          '<stop offset="0" stop-color="#FFA3D1"/><stop offset="1" stop-color="#F0529F"/>' +
         '</linearGradient>' +
       '</defs>' +
       '<g stroke-linecap="round" stroke-linejoin="round" stroke-width="9">' +
         /* fita de tras (mais escura) sobe pela esquerda */
-        '<path d="M33 59C30 50 25 45 22 38C19 30 10 27 10 18C10 10 15.5 6 22 6" stroke="#E5A700"/>' +
+        '<path d="M33 59C30 50 25 45 22 38C19 30 10 27 10 18C10 10 15.5 6 22 6" stroke="#C2296F"/>' +
         /* fita da frente sobe pela direita e cruza por cima */
         '<path d="M11 59C14 50 19 45 22 38C25 30 34 27 34 18C34 10 28.5 6 22 6" stroke="url(#sbLacoGrad)"/>' +
       '</g>' +
@@ -13577,7 +13580,11 @@ Como posso ajudar?</div>
 
     var frase = document.createElement('span');
     frase.id = 'sb-vida';
-    frase.textContent = 'Sua vida importa';
+    frase.textContent = 'Faça mamografia';
+    frase.insertAdjacentHTML('beforeend',
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+        '<path d="M12 21.2l-1.5-1.3C5.4 15.3 2 12.2 2 8.4 2 5.3 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.3 22 8.4c0 3.8-3.4 6.9-8.5 11.5L12 21.2z"/>' +
+      '</svg>');
 
     tag.appendChild(sep);
     tag.appendChild(frase);
@@ -18148,12 +18155,12 @@ Como posso ajudar?</div>
   /* O ícone do WhatsApp era #7fdca2: 1,9:1 sobre branco. */
   html:not([data-sb="escuro"]) #loginScreen .sbl2-help svg { color: #1ea855; }
 
-  /* Setembro Amarelo: o laço leva drop-shadow preto (desenhado para fundo
-     escuro) e o "sua vida importa" é #FFC400, que no branco dá 1,7:1. */
+  /* Outubro Rosa: o laço leva drop-shadow preto (desenhado para fundo
+     escuro) e o rosa claro da frase some no branco — aqui um rosa fechado. */
   html:not([data-sb="escuro"]) #sb-laco-fita {
     filter: drop-shadow(0 1px 3px rgba(16,70,40,0.30));
   }
-  html:not([data-sb="escuro"]) #loginScreen .sbl2-tag #sb-vida { color: #9a6a00; }
+  html:not([data-sb="escuro"]) #loginScreen .sbl2-tag #sb-vida { color: #C2185B; }
 
   /* ── 3. O botão de tema da própria tela de login ────────────────────────
      O #themeToggle mora na barra lateral, que só existe depois de entrar.

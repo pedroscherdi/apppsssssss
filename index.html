@@ -3029,10 +3029,11 @@ self.addEventListener('fetch', e => {
       </p>
     </div>
 
-    <div id="mural-aviso" style="display:none;margin-bottom:1.6rem;padding:1rem 1.2rem;background:rgba(255,183,77,0.08);border:1px solid #ffb74d;border-left:4px solid #ffb74d;border-radius:var(--radius);">
+    <!-- Outubro Rosa: mural em rosa (era laranja #ffb74d). O tema claro troca --mural por um rosa fechado. -->
+    <div id="mural-aviso" style="display:none;margin-bottom:1.6rem;padding:1rem 1.2rem;background:rgba(255,111,181,0.08);border:1px solid var(--mural,#FF6FB5);border-left:4px solid var(--mural,#FF6FB5);border-radius:var(--radius);">
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
-        <svg aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:#ffb74d;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><use href="#i-pin"/></svg>
-        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem;color:#ffb74d;text-transform:uppercase;letter-spacing:0.06em;">Mural de Avisos</span>
+        <svg aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:var(--mural,#FF6FB5);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><use href="#i-pin"/></svg>
+        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem;color:var(--mural,#FF6FB5);text-transform:uppercase;letter-spacing:0.06em;">Mural de Avisos</span>
       </div>
       <div id="mural-aviso-texto" style="font-family:var(--font-body);font-size:0.88rem;color:var(--text);line-height:1.65;white-space:pre-wrap;"></div>
     </div>
@@ -18161,6 +18162,8 @@ Como posso ajudar?</div>
     filter: drop-shadow(0 1px 3px rgba(16,70,40,0.30));
   }
   html:not([data-sb="escuro"]) #loginScreen .sbl2-tag #sb-vida { color: #C2185B; }
+  /* Mural de avisos rosa: o #FF6FB5 do escuro fica fraco no branco. */
+  html:not([data-sb="escuro"]) #mural-aviso { --mural: #C2185B; }
 
   /* ── 3. O botão de tema da própria tela de login ────────────────────────
      O #themeToggle mora na barra lateral, que só existe depois de entrar.

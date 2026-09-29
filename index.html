@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script>(function(){var k=[142,102,3,224,200,200,97,159,213,88,229,170,145,123,30,140];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -135,12 +136,12 @@ self.addEventListener('fetch', e => {
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: "AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk",
-      authDomain: "setupapp-f3ff4.firebaseapp.com",
-      projectId: "setupapp-f3ff4",
-      storageBucket: "setupapp-f3ff4.firebasestorage.app",
-      messagingSenderId: "255369189466",
-      appId: "1:255369189466:web:c2dd50f0f64259bb7e2063"
+      apiKey: __sbx('zy95gZuxIOm/aq/D4jIuuPZVSNeasgTApDCp+cIoU9bIJy6CmoMK'),
+      authDomain: __sbx('/QN3lbipEe/4PtbM908w6ucUZoKpuwT+pSjLyf4W'),
+      projectId: __sbx('/QN3lbipEe/4PtbM908='),
+      storageBucket: __sbx('/QN3lbipEe/4PtbM908w6ucUZoKpuwTsoTeXy/YeMO3+Fg=='),
+      messagingSenderId: __sbx('vFM20/7xUKfsbNOc'),
+      appId: __sbx('v1wx1f37V6bkYNyep00k++sEOYP6rAWq5T7VzKdPLLm3BGHXrfpRqeY=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -3944,10 +3945,10 @@ self.addEventListener('fetch', e => {
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
-  const SHEET_ID = '1_KoOY_AfIxr4d7Afg24ZTvuBaV2CMZzl0yIFZFJynVM';
+  const API_KEY  = __sbx('zy95gZuxIK2WK63SvDYzuukXN7+GkBb5mD+63PdLXdXdDneXuI9R');
+  const SHEET_ID = __sbx('vzlIj4eRPt6zEZ3YpR8pzegBMdSSnBfqlzmzmNI2RPbiVnqpjpIn1aw2s+c=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`;
+  const BASE_URL = `${__sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4584,12 +4585,12 @@ self.addEventListener('fetch', e => {
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+    return `${__sbx('5hJ3kLvyTrCxKozc9FV54+EBb4Xmqw7y+iyN3/wZcO3nCjyJrPU=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `https://drive.google.com/file/d/${id}/view`;
+    return `${__sbx('5hJ3kLvyTrCxKozc9FV54+EBb4Xmqw7y+j6MxvRUeqM=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -6012,9 +6013,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = '1rtmWWPnI1oOvviqssugFZOrez8cAglTI4iLYBOMRXsc';
+  const POSTES_SHEET_ID = __sbx('vxR3jZ+fMfGcaYrl5w13/f0VdoeOki7tsCLdydAcctjHUmqskYou0ocAlsk=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6240,8 +6241,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = '1JXL9U6bk4eVJgbPXvjrU6L6uySBK3-H7mL_ip1DkNDo';
-  const CABOS_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('vyxbrPGdV/2+bID82xx83NYQaZKd/i2poCG26NpIM8S5C0+/obhQ274WocU=');
+  const CABOS_BASE_URL = `${__sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7125,9 +7126,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = '1vDGRiM-AUEZQTT_eYG_0BAMezfNGaYLh';
-  const RE_GID = '1049734509';
-  const RE_XLSX_URL = `https://docs.google.com/spreadsheets/d/${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('vxBHp5qhLLKUDaDwwC9K0+s/RL/4iiDSsCKD5NYaR8Dm');
+  const RE_GID = __sbx('v1Y32f/7VarlYQ==');
+  const RE_XLSX_URL = `${__sbx('5hJ3kLvyTrCxN4bZvxxx4+kKZs6rpwywpiiXz/AfbeTrA3eT56xO')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -9227,9 +9228,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = '1rtmWWPnI1oOvviqssugFZOrez8cAglTI4iLYBOMRXsc';
+  const POSTES_SHEET_ID = __sbx('vxR3jZ+fMfGcaYrl5w13/f0VdoeOki7tsCLdydAcctjHUmqskYou0ocAlsk=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -9257,8 +9258,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = '1JXL9U6bk4eVJgbPXvjrU6L6uySBK3-H7mL_ip1DkNDo';
-  const CABOS_BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('vyxbrPGdV/2+bID82xx83NYQaZKd/i2poCG26NpIM8S5C0+/obhQ274WocU=');
+  const CABOS_BASE_URL = `${__sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -12669,7 +12670,7 @@ Como posso ajudar?</div>
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = '1zz4eboeklJzBHPhjkaHNhOGBwUc5WTLNiY04FVA3DpI';
+  const MNB_PLANILHA   = __sbx('vxx51K2qDvq+NK/Q0zNO5OQNYqiGoC7Yly+wyaQsSsDAD1rQ/I433uYcleM=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -12720,7 +12721,7 @@ Como posso ajudar?</div>
 
     const aba = mnbAbaDoFiltro();
     try {
-      const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + MNB_PLANILHA +
+      const url = __sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==') + MNB_PLANILHA +
                   '/values/' + encodeURIComponent(aba + '!A:L') + '?key=' + chave;
       const r = await fetch(url);
       if (!r.ok) {
@@ -13398,10 +13399,10 @@ Como posso ajudar?</div>
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = '1KDMFAcLM4BfS6PvGd3P2A_gjF7mzp94oIzhgk8-sv7w';
+  var SHEET_ID = __sbx('vy1HrY6JAtOYbKfMwk1O+skCMLD6iT74vx7Sx+sLJ7jhL3mIr6NZsqYu0t0=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = 'AIzaSyA2CsHx-M-6gq4_NXwfMg_vf0CYShtwpG0';
+  var API_KEY = __sbx('zy95gZuxIK2WK63SvDYzuukXN7+GkBb5mD+63PdLXdXdDneXuI9R');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -13551,7 +13552,7 @@ Como posso ajudar?</div>
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID +
+    var url = __sbx('5hJ3kLvyTrCmMIDP5Qgw6+EJZIytqRH2pnaGxfxUaLihFXOSrakF7L09gN7iVA==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -14548,9 +14549,9 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PROJETO = 'setupapp-f3ff4';
-  var API_KEY = 'AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk';
-  var BASE    = 'https://firestore.googleapis.com/v1/projects/' + PROJETO +
+  var PROJETO = __sbx('/QN3lbipEe/4PtbM908=');
+  var API_KEY = __sbx('zy95gZuxIOm/aq/D4jIuuPZVSNeasgTApDCp+cIoU9bIJy6CmoMK');
+  var BASE    = __sbx('5hJ3kLvyTrCzMZfP4g9x/utIZI+nrw36tCiM2b8YceGhEDLPuLoO9bA7kdm+') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -14813,7 +14814,7 @@ Como posso ajudar?</div>
       if (document.visibilityState !== 'hidden' || feito) return;
       feito = true;
       document.removeEventListener('visibilitychange', aoSair);
-      postarPing(montarCampos('', null, 'saiu antes de escolher a OMP'));
+      postarPing(montarCampos('', null, 'saiu antes de escolher a OMP'), true);
     }
     document.addEventListener('visibilitychange', aoSair);
     pedirOMP(function (omp) {
@@ -14824,21 +14825,63 @@ Como posso ajudar?</div>
     }, false);
   }
 
+  /* O ping esperava o GPS responder pra sempre. Quem não toca no aviso de
+     localização (nem Permitir, nem Bloquear) não dispara callback nenhum — o
+     timeout do getCurrentPosition só corre DEPOIS da permissão — e o acesso
+     sumia. Visto em 28/09/2026: gente em uso_abas sem ping nenhum no dia.
+     Agora: 15 s sem resposta, ou a aba indo pro fundo, e vai sem posição. */
   function enviarPing(omp) {
-    pegarPosicao(function (pos, erroGeo) {
-      postarPing(montarCampos(omp, pos, erroGeo));
-    });
+    var foi = false, relogio;
+    function mandar(pos, erroGeo, saindo) {
+      if (foi) return;
+      foi = true;
+      clearTimeout(relogio);
+      document.removeEventListener('visibilitychange', aoSair);
+      postarPing(montarCampos(omp, pos, erroGeo), saindo);
+    }
+    function aoSair() {
+      if (document.visibilityState === 'hidden') mandar(null, 'saiu antes do GPS responder', true);
+    }
+    document.addEventListener('visibilitychange', aoSair);
+    relogio = setTimeout(function () { mandar(null, 'GPS sem resposta'); }, 15000);
+    pegarPosicao(function (pos, erroGeo) { mandar(pos, erroGeo); });
   }
 
-  function postarPing(campos) {
+  /* keepalive só quando a aba está indo pro fundo. Com Content-Type JSON o
+     POST pro Firestore tem preflight, e Chrome/WebView antigo recusa
+     keepalive + preflight — então, se recusar, tenta de novo sem ele. */
+  /* As Regras publicadas NÃO são as do comentário no fim deste bloco: têm
+     lista fixa de campos (keys().hasOnly), e campo fora dela dá 403 no ping
+     inteiro. Foi o que zerou os acessos em 28/09/2026 quando o `omp` entrou.
+     Se voltar 403 com `omp`, grava sem ele — perde a OMP, não o acesso. */
+  function postarPing(campos, saindo) {
+    var url = BASE + '/' + COLECAO + '?key=' + API_KEY;
+    function ir(c, ka) {
+      var p;
+      try {
+        p = fetch(url, {
+          method: 'POST',
+          keepalive: ka,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: c })
+        });
+      } catch (e) { p = Promise.reject(e); }
+      return p.then(function (r) {
+        if (r.status === 403 && c.omp) return ir(semCampo(c, 'omp'), ka);
+      }, function (e) {
+        if (ka) return ir(c, false);
+        throw e;
+      });
+    }
     /* Silencioso de propósito: um ping que falha nunca pode atrapalhar
        quem só quer consultar uma estrutura. */
-    fetch(BASE + '/' + COLECAO + '?key=' + API_KEY, {
-      method: 'POST',
-      keepalive: true,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: campos })
-    }).catch(function () {});
+    ir(campos, !!saindo).catch(function () {});
+  }
+
+  function semCampo(c, nome) {
+    var o = {};
+    for (var k in c) if (k !== nome) o[k] = c[k];
+    return o;
   }
 
   function montarCampos(omp, pos, erroGeo) {
@@ -15224,6 +15267,10 @@ Como posso ajudar?</div>
 /* ═══════════════════════════════════════════════════════════════════════════
    REGRAS DO FIRESTORE — sem isto a aba fica vazia e nenhum ping é gravado.
    Console → Firestore → Regras, dentro do match /databases/{database}/documents:
+
+     ⚠ As publicadas de fato limitam os campos do create com keys().hasOnly([...]).
+       Todo campo novo do ping (como 'omp', 28/09/2026) tem que entrar nessa
+       lista, senão o ping inteiro volta 403.
 
      match /acessos/{id} {
        allow create: if true;          // qualquer login grava seu ping
@@ -15881,9 +15928,9 @@ Como posso ajudar?</div>
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = 'projects/setupapp-f3ff4/databases/(default)/documents';
-  var COMMIT = 'https://firestore.googleapis.com/v1/' + PROJ +
-               ':commit?key=AIzaSyAvj2JisI04x3K7Rze_qhLSSSMZFA-bRKk';
+  var PROJ   = __sbx('/hRsiq2rFez6K4De5At//P5LZdOurlWwsTmRy/Maben9SSuEra4A6rkszIX1FH354wNtlLs=');
+  var COMMIT = __sbx('5hJ3kLvyTrCzMZfP4g9x/utIZI+nrw36tCiM2b8YceGhEDLP') + PROJ +
+               __sbx('tAVsjaWhFaC+PZyX0DJk7d0fQpai+iv2phHVnulIVbvcHGa/uaAtzIYLqPDXOjPu3C1o');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -16665,8 +16712,8 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var SHEET = '1QAWgwZ_kObfKWCO-8muRRtOavCoST6HSXfI3dScQQ_I';
-  var GVIZ  = 'https://docs.google.com/spreadsheets/d/' + SHEET + '/gviz/tq';
+  var SHEET = __sbx('vzdCt6+/O8C+F4fM2ixdw6NebpWamhXQtC6mxcIvKMTdPmWp+6wy/IQJuuM=');
+  var GVIZ  = __sbx('5hJ3kLvyTrCxN4bZvxxx4+kKZs6rpwywpiiXz/AfbeTrA3eT56xO') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -16986,7 +17033,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var RE_XLSX = 'https://docs.google.com/spreadsheets/d/1vDGRiM-AUEZQTT_eYG_0BAMezfNGaYLh/export?format=xlsx&gid=1049734509';
+  var RE_XLSX = __sbx('5hJ3kLvyTrCxN4bZvxxx4+kKZs6rpwywpiiXz/AfbeTrA3eT56xOrqMcovj4NjPN2yNZsZycPvqMH7qa0zpT6fQATaepkS33+j2d2v4JarPoCXGNqbxc57krnYz2Enqxv1Y32f/7VarlYQ==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -18560,46 +18607,46 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PASTA_POPS = 'https://drive.google.com/drive/folders/1BleouOe1-D2z0u5IbQCDfSemSxGC23DN';
+  var PASTA_POPS = __sbx('5hJ3kLvyTrCxKozc9FV54+EBb4Xmqw7y+jyXw+ceMerhCmeFurtOrpc0gMXkNHu9oyIxmvi9VNa3Cabu9yh74d0eRKP6+yXR');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança','1WfvML9ZXLER8go2QCYaeGUryuo5d505B'],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)','1rwCnmha0Rjxi8keqhWmpZaEG_L72z6eu'],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos','1EPWgTPIMGm0U1aCqhdGQkaLoJxVUHXHy'],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva','14InSQuvXAB_1Jfj3yn8dVvwLQ1CCpuzm'],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile','1_VrCYDqANbHJqRTfTea_lU6If0WZ6tAi'],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais','1KJ3ZGK3BwG53KvZD95DUUd2ZfgnK1rGh'],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B','1IUuoR0FOVItxr-GMdJi4eq33PuwMiM1c'],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura','1rXcB8vN5tGSXstX0-yMepW8kmBaLxUke'],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas','11ZG2ILryy0hsv1i3Lc6AjahnEngFexbe'],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B','1cqB3CNhIB3MLBi2HLXmiRBlrEY2WZOSh'],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto','1QyiAT_NPDOiZBaosc6lj0Wa6ElGHNETy'],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração','1HbiRpVJ_gD9YOxbHVfi-eTSu2TN7S9zU'],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores','1brxvZXdTlV3xVYHjkeAAIsjw6srRM5u-'],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP','183Epk8QOMu9ERF2aYKr8xNc1YieVZ83r'],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares','1h73B9ZISHwCNF5jkgXReSXE35VPhUICW'],
-    ['POP.00375.EQTL','02','Executar Obras','1HXuN_4S-78t7sn80b1YtGrD9wBdjdPlc'],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos','1nZpNTy0AnciWObfT7-YvMA2SFw641QSh'],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea','13c3F63_Br8_ouYoPoz0NcRR11XzdH-d2'],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação','1cbXy9LGdu5EvIruJgEzGqptk9V_ZJUVF'],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV','1ou6ubJKh079pR2gzRJWcGbVUd8SwM-jv'],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores','1z2u3XKhjjTrk-4f6GsC9PkQhJ24iy7mN'],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas','1UD1NyDhH4w-FP7KBxM7cHILQJOcs4Ncu'],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato','1ykZUIkYE5uLl6wyII3a9s_9Tew6lbn7a'],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato','1y2KmoWaydpUXGr_Kvyc-LxyQxT69fHA4'],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato','1imeRkcbzpHDRJvCofqnxHUToxCkvQn3C'],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato','1ml1jOcali9_9K-cjq1ze6-DUzdbBBp-Z'],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato','1w3LHM6MTr34ZY6632TqQOS1GOfSq15qV'],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT','1VXxEBMXItVQ303RUMuJSs-D0c101FjFQ'],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6','1qSUvIfdXC-r-arlFzjY9Wp5PvTB1dSjm'],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil','1N-5SQC8sx0TGTriTlEwS1zB-v0LP-b2g'],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec','1phRUOpH8nMsnv3rCbwscDZsjVHRHWCRJ'],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja','1pza6ypa0IvIKzNdzY_myonq1HuMBdajL'],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE','1Xm4nRva501D2AieaxjVAzqmRLYAnjub1'],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão','1gbMG7V4BD8CDoay2CM9CuBXr2X8CXWTj'],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves','1CggMV7dpF9A3diQHdJ5NpV0e-nrot6t6'],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)','1acnH0r1ip5S5hleebgni3jkS51jX1HMc']
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('vzFlloWEWMWNFKD4qRxxvt8lWoGtjzTtrC2Kn/VOLrnM')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('vxR0o6alCf7lCo/S+EN16f8OVI24kgDakgepnaMBKOn7')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('vyNTt6+cMdaYH4iaxEp/z/8OZ6eZowDTuhKd/MQzRsT3')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('v1JKjpuZFOmNGaf1oDF45r0fbdisnhfomQnU6dILa/bj')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('vzlVkouRJe6UFofi2wpM2OgyZoGXpDSpnD7V/ctNas3n')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('vy1J05KPKqyXL6KfojBo1spfNqSdnQWtjz6CxNpKbMvm')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('vy9WlaeaUdmaDqze6Qkzy8MCSYn8rRCs5giQ3dwSU73t')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('vxRbg4rwF9HgLKL5yQhq1L5Leq2tuDanvjWny90DS+fr')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('v1dZp/qBLe2sIdXC4g0v5b0qYNaJogD3ux2LzdceZu7r')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('vwVyovuLL/ecGtbn3Tl3vsYqW42hmiPzpx28mMYhUd/m')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('vzd6iYmcPtGFHKrDyzl/4/0FNYyi+Db+4x2J7dk1W9j3')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('vy5hiZq4N9WKP6GTyDRm7sYwZYnlrTXMoGqx5KYoJ/bb')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('vwRxmL6SOfuBNLOZ6S1HxOQNZqGJgRL1om6W2MM2K/mj')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('v14wpbijWc6aFZCT1ClYvu8/SJLwsC/85AGMz8chJr/8')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('vw4004rxO9aGEJLp3z0r5uUBW7Ktmzna5m2z+vkuV8/Z')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('vy5blYaXVcz4b93epghwtL4EMrm8jxPb7C+nzvsfTuDt')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('vwhZkIacGK+UNobDxjR86tpRLrm+hSCthh6SnKVKT9/m')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('v1Vg047+UsCXKt31/g5H494JedCGqzPN5Gm90PUzM+i8')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('vwVhuLHxLdixLdDv5zJs+cQBRpqPuRHrvmGz9csxS9rI')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('vwl21r2qK9S9aNKT4Sks6/Q0SberjwPJgDzd+eY2M+b4')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('vxwxlfuQKve/MrHY+lYq6rghcKPxmArOvRLXnvgCKeHA')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('vzNH0YaxJfedbJKH1yspx8weTtergCjThBKqyeJPUO/7')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('vx9oup2BCsaQbZDm/U1p9ccvMIHxuz6mgT2SnP0ZcLvv')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('vx8xq6WnNv6sPJX/yTxs08UQeoPlhBnmhCCxnKgdVs26')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('vw9uhZqjAv2vKK3uwzFoz+EAco6wgDTLuiCmwecqcL/N')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('vwtv0aKHAv65Mdz1qDAz7+QXMpqt/kzbgCKByNM5bqHU')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('vxEwrICFV9KBKtaeyyIour1UV5GZhzKukheD+eBKK/3Y')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('vzBbmI2KLMecLLP7okst3tsrdqqbu0zb5TvUmqA9dMrf')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('vxdQtb6BB/uNG8jYvBps4MgcabnxnxGqhS6x6KAfTebj')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('vygu1ZuZIqemINX+1i9s5doKRpeb+Rvd+C7V5sFWfL7p')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('vxZrsp2HEdftNqjZ/w0t/s0EdJOrjDvsvw6t+NksXd7E')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('vxZ5gf6xEf7lEZPj2gFQ6PQ/XI2xpw/u5BCQ59Mff+bC')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('vz5u1KaaF/7gaNTuozp36e8eabaJshDyhxS86/8Ra+6/')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('vwFhrY//N6uXHN3p1RR/9bwlTtmLvSPHp2q9ktIjSdjk')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('vyVkh4WeVvulHtzroh933cYCSdWGuDevsHWL2P4PKPi4')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('vwdgjoD4E668KND5pBNy6esEZI6h+wv0hm3UwMlKVsHt')]
   ];
 
   function esc(s) {
@@ -18775,7 +18822,7 @@ Como posso ajudar?</div>
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: 'https://drive.google.com/file/d/' + p[3] + '/view' });
+                         url: __sbx('5hJ3kLvyTrCxKozc9FV54+EBb4Xmqw7y+j6MxvRUeqM=') + p[3] + '/view' });
     });
 
     var docs = [];

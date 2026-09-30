@@ -15393,7 +15393,9 @@ Como posso ajudar?</div>
         pingFeito  = true;
         identidade = lerIdentidade();
         registrarPing();
-        if (ehAdmin(identidade)) montarAba();
+        /* A aba "Mapa de Uso" saiu a pedido do Pedro (30/09/2026). O ping de
+           acesso e a pergunta da OMP continuam: alimentam a dashboard.
+           Para voltar a aba: if (ehAdmin(identidade)) montarAba(); */
       } else if (!visivel) {
         pingFeito = false;
       }

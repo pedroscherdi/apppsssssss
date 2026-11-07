@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>(function(){var k=[123,181,69,12,1,61,209,31,235,91,4,61,122,165,57,176];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
+<script>(function(){var k=[170,100,127,245,58,37,215,121,104,100,125,99,126,67,178,19];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -136,12 +136,12 @@ self.addEventListener('fetch', e => {
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: __sbx('Ovw/bVJEkGmBaU5UCewJhAOGDjtTR7RAmjNIbin2dOo99GhuU3a6'),
-      authDomain: __sbx('CNAxeXFcoW/GPTdbHJEX1hLHIG5gTrR+mysqXhXI'),
-      projectId: __sbx('CNAxeXFcoW/GPTdbHJE='),
-      storageBucket: __sbx('CNAxeXFcoW/GPTdbHJEX1hLHIG5gTrRsnzR2XB3AF9ELxQ=='),
-      messagingSenderId: __sbx('SYBwPzcE4CfSbzIL'),
-      appId: __sbx('So93OTQO5ybaYz0JTJMDxx7Xf28zWbUq2z00W0yRC4VC1yc7ZA/hKdg=')
+      apiKey: __sbx('6y0FlGlclg8CVjcKDQqCJ9JXNMJoX7ImGQwxMC0Q/0nsJVKXaG68'),
+      authDomain: __sbx('2QELgEpEpwlFAk4FGHecdcMWGpdbVrIYGBRTABEu'),
+      projectId: __sbx('2QELgEpEpwlFAk4FGHc='),
+      storageBucket: __sbx('2QELgEpEpwlFAk4FGHecdcMWGpdbVrIKHAsPAhkmnHLaFA=='),
+      messagingSenderId: __sbx('mFFKxgwc5kFRUEtV'),
+      appId: __sbx('m15NwA8W4UBZXERXSHWIZM8GRZYIQbNMWAJNBUh3gCaTBh3CXxfnT1s=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -179,7 +179,7 @@ self.addEventListener('fetch', e => {
        Não fica sessão salva: cada abertura pede usuário e senha (o navegador
        pode lembrar). Sessão antiga do Firebase Auth (login Google) é
        desconectada, senão a pessoa entrava sem usuário e senha. */
-    const FS_DOCS       = __sbx('E8ExfHIH/jCNMnZYCdFWwh6bImNuWr16iittTlTGVt1Uw3QjcU++dY44cE5V') + firebaseConfig.projectId + '/databases/(default)/documents';
+    const FS_DOCS       = __sbx('whALhUkf+FYODQ8GDTfdYc9KGJpVQrscCRQUEFAg3X6FEk7aSle4Ew0HCRBR') + firebaseConfig.projectId + '/databases/(default)/documents';
     const WHATS_SUPORTE = '5553984742332';
     const $l = id => document.getElementById(id);
 
@@ -4088,10 +4088,10 @@ self.addEventListener('fetch', e => {
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = __sbx('Ovw/bVJEkC2oKExFV+gUhhzEcVNPZaZ5pjxbSxyVeuko3TF7cXrh');
-  const SHEET_ID = __sbx('SuoOY05kjl6NEnxPTsEO8R3SdzhbaadqqTpSDznoY8oXhTxFR2eXVZI1UnA=');
+  const API_KEY  = __sbx('6y0FlGlclksrFzUbUw6fJc0VS6p0faAfJQMiFRhz8Ur5DAuCSmLn');
+  const SHEET_ID = __sbx('mzs0mnV8iDgOLQURSieFUswDTcFgcaEMKgUrUT0O6GnGVAa8fH+RMxEKKy4=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `${__sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==')}${SHEET_ID}`;
+  const BASE_URL = `${__sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4728,12 +4728,12 @@ self.addEventListener('fetch', e => {
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `${__sbx('E8ExfHIH/jCPKW1LH4te3xTSKWkvXr5yxC9sSBfHV9ES2XplZQA=')}${id}&sz=w1200`;
+    return `${__sbx('whALhUkf+FYMFhQVG23VfMUDE5AURrgURxAVFhMh3HLDCECcXhg=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `${__sbx('E8ExfHIH/jCPKW1LH4te3xTSKWkvXr5yxD1tUR+KXZ8=')}${id}/view`;
+    return `${__sbx('whALhUkf+FYMFhQVG23VfMUDE5AURrgURwIUDxts1jw=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -4797,8 +4797,9 @@ self.addEventListener('fetch', e => {
     const q = caboSearch.value.trim().toLowerCase();
     const matches = Object.keys(cabosIndex).filter(k => k.includes(q));
     if (!matches.length) { dropdownCabo.classList.remove('open'); return; }
+    const qRe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');   // "+" ou "(" no nome do cabo quebravam a lista
     dropdownCabo.innerHTML = matches.slice(0, 60).map(k => {
-      const hl = q ? cabosIndex[k].nome.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>') : cabosIndex[k].nome;
+      const hl = q ? cabosIndex[k].nome.replace(new RegExp(`(${qRe})`, 'gi'), '<mark>$1</mark>') : cabosIndex[k].nome;
       return `<div class="dropdown-item" data-key="${k}">${hl}</div>`;
     }).join('');
     dropdownCabo.classList.add('open');
@@ -6156,9 +6157,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('SscxYVZqgXGiamtyDNNQwQjGMGtHZ55tjiE8XjvCVeQygSxAWH+eUrkDd14=');
+  const POSTES_SHEET_ID = __sbx('mxYLmG1yhxchVRIsCDXbYtkXCpJ8f5gLDR5FAD8k3kfjUBa5Y2eYNDo8DgA=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6384,8 +6385,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = __sbx('Sv8dQDho532Ab2FrMMJb4CPDL35UC50pniJXfzGWFPhM2AlTaE3gW4AVQFI=');
-  const CABOS_BASE_URL = `${__sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('my4nuQNw4RsDUBg1NCTQQ/ISFYdvE5tPHR0uITVwn1udCTOqU1XmPQMqOQw=');
+  const CABOS_BASE_URL = `${__sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7339,9 +7340,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = __sbx('SsMBS1NUnDKqDkFnK/Ft7x7sAlMxf5BSjiFicz3EYPwT');
-  const RE_GID = __sbx('SoVxNTYO5SrbYg==');
-  const RE_XLSX_URL = `${__sbx('E8ExfHIH/jCPNGdOVMJW3xzZICJiUrwwmCt2WBvBStge0DF/Lln+')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('mxI7smhMmlQpMTg5LxfmTM89OKoKZ5Y0DR4bLTki61/C');
+  const RE_GID = __sbx('m1RLzA0W40xYXQ==');
+  const RE_XLSX_URL = `${__sbx('whALhUkf+FYMCx4QUCTdfM0IGttZSrpWGxQPBh8nwXvPAQuGFUH4')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -9441,9 +9442,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('SscxYVZqgXGiamtyDNNQwQjGMGtHZ55tjiE8XjvCVeQygSxAWH+eUrkDd14=');
+  const POSTES_SHEET_ID = __sbx('mxYLmG1yhxchVRIsCDXbYtkXCpJ8f5gLDR5FAD8k3kfjUBa5Y2eYNDo8DgA=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -9471,8 +9472,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = __sbx('Sv8dQDho532Ab2FrMMJb4CPDL35UC50pniJXfzGWFPhM2AlTaE3gW4AVQFI=');
-  const CABOS_BASE_URL = `${__sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('my4nuQNw4RsDUBg1NCTQQ/ISFYdvE5tPHR0uITVwn1udCTOqU1XmPQMqOQw=');
+  const CABOS_BASE_URL = `${__sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -13445,7 +13446,7 @@ Como posso ajudar?</div>
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = __sbx('Ss8/OGRfvnqAN05HOO1p2BHeJERPVZ5YqSxRXk/ybfw13Bw8NXuHXtgfdHQ=');
+  const MNB_PLANILHA   = __sbx('mx4FwV9HuBwDCDcZPAvie8APHr10TZg+KhMoAEsU5l/kDSbFDmOBOFsgDSo=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -13496,7 +13497,7 @@ Como posso ajudar?</div>
 
     const aba = mnbAbaDoFiltro();
     try {
-      const url = __sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==') + MNB_PLANILHA +
+      const url = __sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==') + MNB_PLANILHA +
                   '/values/' + encodeURIComponent(aba + '!A:L') + '?key=' + chave;
       const r = await fetch(url);
       if (!r.ok) {
@@ -13983,10 +13984,10 @@ Como posso ajudar?</div>
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = __sbx('Sv4BQUd8slOmb0ZbKZNpxjzRdlwzfI54gR0zUADVAIQU/D9kZlbpMpgtM0o=');
+  var SHEET_ID = __sbx('my87uHxktDUlUD8FLXXiZe0ATKUIZIgeAiJKDgQziyfFLQWdXU7vVBsSShQ=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = __sbx('Ovw/bVJEkC2oKExFV+gUhhzEcVNPZaZ5pjxbSxyVeuko3TF7cXrh');
+  var API_KEY = __sbx('6y0FlGlclksrFzUbUw6fJc0VS6p0faAfJQMiFRhz8Ur5DAuCSmLn');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -14136,7 +14137,7 @@ Como posso ajudar?</div>
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = __sbx('E8ExfHIH/jCYM2FYDtYX1xTaImBkXKF2mHVnUheKT4RUxjV+ZFy1bIM+YUkJig==') + SHEET_ID +
+    var url = __sbx('whALhUkf+FYbDBgGCjCcdMULGJlfRKcQG0oeDBNsxCeFFw+HX0SzCgABGBcNbA==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -15133,9 +15134,9 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PROJETO = __sbx('CNAxeXFcoW/GPTdbHJE=');
-  var API_KEY = __sbx('Ovw/bVJEkGmBaU5UCewJhAOGDjtTR7RAmjNIbin2dOo99GhuU3a6');
-  var BASE    = __sbx('E8ExfHIH/jCNMnZYCdFWwh6bImNuWr16iittTlTGVt1Uw3QjcU++dY44cE5V') + PROJETO +
+  var PROJETO = __sbx('2QELgEpEpwlFAk4FGHc=');
+  var API_KEY = __sbx('6y0FlGlclg8CVjcKDQqCJ9JXNMJoX7ImGQwxMC0Q/0nsJVKXaG68');
+  var BASE    = __sbx('whALhUkf+FYODQ8GDTfdYc9KGJpVQrscCRQUEFAg3X6FEk7aSle4Ew0HCRBR') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -16514,9 +16515,9 @@ Como posso ajudar?</div>
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = __sbx('C8cqZmRepWzEKGFJD9VYwAuYIz9nW+UwjzpwXBjEStUImm1oZFuwaocvLRIeylrFFtAreHI=');
-  var COMMIT = __sbx('E8ExfHIH/jCNMnZYCdFWwh6bImNuWr16iittTlTGVt1Uw3Qj') + PROJ +
-               __sbx('QdYqYWxUpSCAPn0AO+xD0SjMBHprD5t2mBI0CQKWcocpzyBTcFWdTLgISWc85BTSKf4u');
+  var PROJ   = __sbx('2hYQn19GowpHFxgXCzPTY9pJGcZcQ+NWDAUJAhwiwXbZS1eRX0O2DAQQVEwaLNFmxwERgUk=');
+  var COMMIT = __sbx('whALhUkf+FYODQ8GDTfdYc9KGJpVQrscCRQUEFAg3X6FEk7a') + PROJ +
+               __sbx('kAcQmFdMo0YDAQRePwrIcvkdPoNQF50QGy1NVwZw+ST4HhqqS02bKjs3MDk4Ap9x+C8U');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -17298,8 +17299,8 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var SHEET = __sbx('SuQEW2ZKi0CAFGZbMfJ6/1aNKHlTb6VQii1HUinxD/go7SNFMlmCfLoKW3Q=');
-  var GVIZ  = __sbx('E8ExfHIH/jCPNGdOVMJW3xzZICJiUrwwmCt2WBvBStge0DF/Lln+') + SHEET + '/gviz/tq';
+  var SHEET = __sbx('mzU+ol1SjSYDKx8FNRTxXIdcEoBod6M2CRI+DC0XhFv5PBm8CUGEGjk1Iio=');
+  var GVIZ  = __sbx('whALhUkf+FYMCx4QUCTdfM0IGttZSrpWGxQPBh8nwXvPAQuGFUH4') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -17619,7 +17620,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var RE_XLSX = __sbx('E8ExfHIH/jCPNGdOVMJW3xzZICJiUrwwmCt2WBvBStge0DF/Lln+Lp0fQ28T6BTxLvAfXVVpjnqyHFsNOOR01QHTC0tgZJ13xD58TRXXTY8d2jdhYEnsZ4cofBsdzF2NSoVxNTYO5SrbYg==');
+  var RE_XLSX = __sbx('whALhUkf+FYMCx4QUCTdfM0IGttZSrpWGxQPBh8nwXvPAQuGFUH4SB4gOjEXDp9S/yElpG5xiBwxIyJTPAL/dtACMbJbfJsRRwEFExExxizMCw2YW1HqAQQXBUUZKtYum1RLzA0W40xYXQ==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -18901,46 +18902,46 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PASTA_POPS = __sbx('E8ExfHIH/jCPKW1LH4te3xTSKWkvXr5yxD92VAzAFtYU2SFpc07+Lqk3YVIP6lyBVvF3djFI5FaJCkd5HPZc3SjNAk8zDpVR');
+  var PASTA_POPS = __sbx('whALhUkf+FYMFhQVG23VfMUDE5AURrgURwAPCggmnXXFCBuQSFb4SCoIGAwLDNcihyBNjwpQ4jAKNT4nGBDXfvkcOLYIFpM3');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('SuIjekxx6EWzF0FvQsJWgir2HG1keoRtki5rCB6QCYU5')],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('SscyT29QuX7bCW5FE51S1QrdEmFxZ7BarARICkjfD9UO')],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('SvAVW2ZpgVamHGkNL5RY8wrdIUtQVrBThBF8ay/tYfgC')],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('SoEMYlJspGmzGkZiS+9f2kjMKzRla6dopwo1fjnVTMoW')],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('SuoTfkJklW6qFWZ1MNRr5B3hIG1eUYQpoj00aiCTTfES')],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('Sv4PP1t6miypLEMISe5P6j+McEhUaLUtsT1jUzGUS/cT')],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('SvwQeW5v4VmkDU1JAtcU9zbRD2U1WKAs2AtxSjfMdIEY')],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('Sscdb0MFp1HeL0NuItZN6EuYPEFkTYYngDZGXDbdbNse')],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('SoQfSzN0nW2SIjRVCdMI2Uj5JjpAV7B3hR5qWjzAQdIe')],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('StY0TjJ+n3eiGTdwNudQgjP5HWFob5NzmR5dDy3/duMT')],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('SuQ8ZUBpjlG7H0tUIOdY3wjWc2BrDYZ+3R5oejLrfOQC')],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('Sv0nZVNNh1W0PEAEI+pB0jPjI2UsWIVMnmlQc032AMou')],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('Stc3dHdniXu/N1IOAvNg+BHeIE1AdKJ1nG13TyjoDMVW')],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('So12SXFW6U6kFnEEP/d/ghrsDn45RZ982gJtWCz/AYMJ')],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('St1yP0MEi1a4E3N+NOMM2hDSHV5kbola2G5SbRLwcPMs')],
-    ['POP.00375.EQTL','02','Executar Obras',__sbx('Sv0deU9i5UzGbDxJTdZXiEvXdFV1eqNb0ixGWRDBadwY')],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('StsffE9pqC+qNWdULepb1i+CaFV3cJAtuB1zC06UaOMT')],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('SoYmP0cL4kCpKTxiFdBg3yvaPzxPXoNN2mpcRx7tFNRJ')],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('StYnVHgEnViPLjF4DOxLxTHSAHZGTKFrgGJSYiDvbOY9')],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('StowOnRfm1SDazMECvcL1wHnD1tierNJvj88bg3oFNoN')],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('Ss93eTJlmneBMVBPEYgN1k3yNk84bbpOgxE2CRPcDt01')],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('SuABPU9ElXejb3MQPPUO+znNCDtidZhTuhFLXgmRd9MO')],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('SswuVlR0ukaubnFxFpNOyTL8dm04To4mvz5zCxbHV4ca')],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('Ssx3R2xShn6SP3RoIuJL7zDDPG8scalmuiNQC0PDcfFP')],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('StwoaVNWsn2RK0x5KO9P8xTTNGJ5dYRLhCNHVgz0V4M4')],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('StgpPWtysn6HMj1iQ+4U0xHEdHZkC/xbviFgXzjnSZ0h')],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('SsJ2QElw51K/KTcJIPwPhkiHEX1QcoIurBRibguUDMEt')],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('SuMddER/nEeiL1JsSZUK4i74MEZSTvxb2zg1DUvjU/Yq')],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('SsQWWXd0t3uzGClPV8RL3D3PL1U4aqEquy1Qf0vBatoW')],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('SvtoOVJskieYIzRpPfFL2S/ZAHtSDKtdxi00cSqIW4Ic')],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('SsUtXlRyoVfTNUlOFNMKwjjXMn9ieYtsgQ1MbzLyeuIx')],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('SsU/bTdEoX7bEnJ0Md931AHsGmF4Ur9u2hNxcDjBWNo3')],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('Su0oOG9vp37eazV5SORQ1RrNL1pAR6ByuRddfBTPTNJK')],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('StInQUYKhyupHzx+PspYyUn2CDVCSJNHmWlcBTn9buQR')],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('SvYia0xr5nubHT18ScFQ4TPRDzlPTYcvjnZqTxXRD8RN')],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('StQmYkkNoy6CKzFuT81V1R7XImJoDrt0uG41VyKUcf0Y')]
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('mzMZg3dp7iMwKDgxRiTdIfsnJpRfYoILERESVhp2gibo')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('mxYItlRIvxhYNhcbF3vZdtsMKJhKf7Y8LzsxVEw5hHbf')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('myEvol1xhzAlIxBTK3LTUNsMG7JrTrY1By4FNSsL6lvT')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('m1A2m2l0og8wJT88TwnUeZkdEc1ec6EOJDVMID0zx2nH')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('mzsph3l8kwgpKh8rNDLgR8wwGpRlSYJPIQJNNCR1xlLD')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('my81xmBinEoqEzpWTQjESe5dSrFvcLNLMgIaDTVywFTC')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('my0qgFV35z8nMjQXBjGfVOcANZwOQKZKWzQIFDMq/yLJ')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('mxYnlngdoTddEDowJjDGS5pJBrhfVYBBAwk/AjI753jP')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('m1UlsghsmwsRHU0LDTWDepkoHMN7T7YRBiETBDgmynHP')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('mwcOtwlmmREhJk4uMgHbIeIoJ5hTd5UVGiEkUSkZ/UDC')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('mzUGnHtxiDc4IDIKJAHTfNkHSZlQFYAYXiERJDYN90fT')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('mywdnGhVgTM3AzlaJwzKceIyGZwXQIMqHVYpLUkQi2n/')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('mwYNjUx/jx08CCtQBhXrW8APGrR7bKQTH1IOESwOh2aH')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('m1xMsEpO7ygnKQhaOxH0Ics9NIcCXZkaWT0UBigZiiDY')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('mwxIxngcjTA7LAogMAWHecEDJ6dfdo88W1ErMxYW+1D9')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('mywngHR64ypFU0UXSTDcK5oGTqxOYqU9URM/BxQn4n/J')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('mwolhXRxrkkpCh4KKQzQdf5TUqxMaJZLOyIKVUpy40DC')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('m1ccxnwT5CYqFkU8ETbrfPoLBcV0RoUrWVUlGRoLn3eY')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('mwcdrUMcmz4MEUgmCArAZuADOo99VKcNA10rPCQJ50Xs')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('mwsKw09HnTIAVEpaDhGAdNA2NaJZYrUvPQBFMAkOn3nc')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('mx5NgAl9nBECDikRFW6GdZwjDLYDdbwoAC5PVxc6hX7k')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('mzE7xHRckxEgUApOOBOFWOgcMsJZbZ41OS4yAA13/HDf')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('mx0Ur29svCAtUQgvEnXFauMtTJQDVohAPAEKVRIh3CTL')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('mx1NvldKgBgRAA02JgTATOESBpYXaa8AORwpVUcl+lKe')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('mw0SkGhOtBsSFDUnLAnEUMUCDptCbYItBxw+CAgS3CDp')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('mwkTxFBqtBgEDUQ8RwifcMAVTo9fE/o9PR4ZATwBwj7w')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('mxNMuXJo4TQ8Fk5XJBqEJZlWK4RraoRILysbMA9yh2L8')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('mzInjX9nmiEhECsyTXOBQf8pCr9pVvo9WAdMU08F2FX7')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('mxUsoExssR0wJ1ARUyLAf+weFawDcqdMOBIpIU8n4XnH')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('mypSwGl0lEEbHE03ORfAev4IOoJpFK07RRJNLy5u0CHN')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('mxQXp29qpzFQCjAQEDWBYekGCIZZYY0KAjI1MTYU8UHg')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('mxQFlAxcpxhYLQsqNTn8d9A9IJhDSrkIWSwILjwn03nm')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('mzwSwVR3oRhdVEwnTALbdsscFaN7X6YUOigkIhApx3Gb')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('mwMduH0SgU0qIEUgOizTapgnMsx5UJUhGlYlWz0b5UfA')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('mycYkndz4B0YIkQiTSfbQuIANcB0VYFJDUkTERE3hGec')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('mwUcm3IVpUgBFEgwSyveds8GGJtTFr0SO1FMCSZy+l7J')]
   ];
 
   function esc(s) {
@@ -19116,7 +19117,7 @@ Como posso ajudar?</div>
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: __sbx('E8ExfHIH/jCPKW1LH4te3xTSKWkvXr5yxD1tUR+KXZ8=') + p[3] + '/view' });
+                         url: __sbx('whALhUkf+FYMFhQVG23VfMUDE5AURrgURwIUDxts1jw=') + p[3] + '/view' });
     });
 
     var docs = [];
@@ -21018,6 +21019,733 @@ Como posso ajudar?</div>
     var suave = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     secT.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'start' });
   });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ABA "CABOS m→kg" REPAGINADA (07/11/2026)
+     Bloco aditivo antes do ÚLTIMO </body>. Não mexe no HTML da aba:
+     move os campos que já existem (#caboSearch, #caboMetros, #caboFases)
+     para o layout novo e esconde o resto. A tabela "Todos os cabos
+     cadastrados" (kg/m) sai de vez, a pedido do Pedro.
+     A conta continua sendo a window.calcularCabo (bloco "cabos-flecha",
+     +5% de flecha): este bloco só chama ela e copia os números para o
+     cartão novo. Apagar <style id="cabos-novo"> e <script id="cabos-novo-js">
+     devolve a aba antiga, menos a tabela.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="cabos-novo">
+  /* a tabela de kg/m some sempre, mesmo se o script abaixo falhar */
+  #caboLista { display: none !important; }
+  :is(#tab-cabos, #tab-elos) .cb-velho { display: none !important; }
+
+  :is(#tab-cabos, #tab-elos) .cb-raiz {
+    --cb-borda: rgba(16, 70, 40, .10);
+    --cb-sombra: 0 1px 2px rgba(16, 70, 40, .05), 0 12px 28px -20px rgba(16, 70, 40, .45);
+    --cb-fundo-suave: rgba(16, 70, 40, .05);
+    --cb-fator: rgba(255, 255, 255, .72);
+    --cb-mola: cubic-bezier(.2, .9, .25, 1);
+    max-width: 1040px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  html[data-sb="escuro"] :is(#tab-cabos, #tab-elos) .cb-raiz {
+    --cb-borda: rgba(105, 240, 174, .13);
+    --cb-sombra: 0 1px 2px rgba(0, 0, 0, .5), 0 18px 40px -26px rgba(0, 0, 0, .95);
+    --cb-fundo-suave: rgba(233, 243, 237, .05);
+    --cb-fator: rgba(233, 243, 237, .05);
+  }
+
+  /* ── cabeçalho, no mesmo desenho da aba POP's + Normas ── */
+  :is(#tab-cabos, #tab-elos) .cb-hero { display: flex; align-items: center; gap: .9rem; }
+  :is(#tab-cabos, #tab-elos) .cb-hero-ico {
+    width: 46px; height: 46px; flex: none;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    background: rgba(0, 230, 118, .10);
+    border: 1px solid rgba(0, 230, 118, .22);
+    color: var(--accent);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-hero-ico svg { width: 24px; height: 24px; opacity: 1; }
+  :is(#tab-cabos, #tab-elos) .cb-hero h2 {
+    margin: 0;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.45rem;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    color: var(--text);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-hero h2 span { color: var(--accent); }
+  :is(#tab-cabos, #tab-elos) .cb-hero p {
+    margin: .15rem 0 0;
+    font-family: 'DM Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── corpo: um embaixo do outro no celular, lado a lado no computador ── */
+  :is(#tab-cabos, #tab-elos) .cb-corpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
+  @media (min-width: 960px) {
+    :is(#tab-cabos, #tab-elos) .cb-corpo { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
+  }
+
+  :is(#tab-cabos, #tab-elos) .cb-cartao {
+    background: var(--surface);
+    border: 1px solid var(--cb-borda);
+    border-radius: 18px;
+    box-shadow: var(--cb-sombra);
+    padding: 1.15rem;
+  }
+
+  /* ── formulário ── */
+  :is(#tab-cabos, #tab-elos) .cb-form { display: flex; flex-direction: column; gap: 1.1rem; }
+  :is(#tab-cabos, #tab-elos) .cb-linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; }
+  @media (max-width: 560px) {
+    :is(#tab-cabos, #tab-elos) .cb-linha { grid-template-columns: minmax(0, 1fr); }
+  }
+  :is(#tab-cabos, #tab-elos) .cb-rot {
+    display: flex; align-items: center; gap: .5rem;
+    margin: 0 0 .5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-rot b {
+    width: 20px; height: 20px; flex: none;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    font-size: .66rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    background: var(--accent-vivo);
+    color: var(--accent-ink);
+  }
+
+  /* busca do cabo: o campo e a lista suspensa são os originais, só mudaram de lugar */
+  :is(#tab-cabos, #tab-elos) .cb-form .search-wrap input { min-height: 50px; padding-right: 2.9rem; }
+  :is(#tab-cabos, #tab-elos) .cb-limpar {
+    position: absolute; right: 6px; top: 25px; transform: translateY(-50%);
+    width: 38px; height: 38px; padding: 0;
+    display: none; place-items: center;
+    border: 0; border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.05rem; line-height: 1;
+    cursor: pointer;
+  }
+  :is(#tab-cabos, #tab-elos) .cb-limpar.on { display: grid; }
+  :is(#tab-cabos, #tab-elos) .cb-limpar:hover { background: var(--cb-fundo-suave); color: var(--text); }
+  :is(#tab-cabos, #tab-elos) .cb-limpar:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* distância */
+  :is(#tab-cabos, #tab-elos) .cb-metros { position: relative; }
+  :is(#tab-cabos, #tab-elos) .cb-metros input {
+    width: 100%;
+    min-height: 50px;
+    padding: .7rem 2.6rem .7rem 1rem;
+    border-radius: var(--radius);
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    -moz-appearance: textfield;
+  }
+  :is(#tab-cabos, #tab-elos) .cb-metros input::-webkit-outer-spin-button,
+  :is(#tab-cabos, #tab-elos) .cb-metros input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  :is(#tab-cabos, #tab-elos) .cb-unid {
+    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: .85rem;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  /* fases: botões no lugar do select (o select segue lá, escondido, e é ele que a conta lê) */
+  :is(#tab-cabos, #tab-elos) .cb-seg {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+    background: var(--cb-fundo-suave);
+    border: 1px solid var(--cb-borda);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-seg button {
+    min-height: 40px;
+    margin: 0; padding: 0 .25rem;
+    border: 0; border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .25s var(--cb-mola), color .25s var(--cb-mola), box-shadow .25s var(--cb-mola);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-seg button:hover { color: var(--text); }
+  :is(#tab-cabos, #tab-elos) .cb-seg button[aria-checked="true"] {
+    background: var(--accent-vivo);
+    color: var(--accent-ink);
+    box-shadow: 0 1px 2px rgba(16, 70, 40, .15), 0 6px 14px -8px rgba(0, 160, 80, .6);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :is(#tab-cabos, #tab-elos) .cb-seg-leg {
+    margin: .45rem 0 0;
+    font-family: 'DM Mono', monospace;
+    font-size: .68rem;
+    color: var(--muted);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-seg-leg:empty { display: none; }
+  :is(#tab-cabos, #tab-elos) .cb-metros input::placeholder { font-weight: 500; font-size: 1rem; }
+
+  /* ── resultado ── */
+  :is(#tab-cabos, #tab-elos) .cb-res {
+    position: relative;
+    padding: 1.3rem 1.25rem 1.2rem;
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(0, 230, 118, .18), transparent 55%),
+      linear-gradient(180deg, #ffffff, #effaf3);
+  }
+  html[data-sb="escuro"] :is(#tab-cabos, #tab-elos) .cb-res {
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(0, 230, 118, .20), transparent 55%),
+      linear-gradient(180deg, #11241a, #0a1510);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-res-rot {
+    display: flex; align-items: center; gap: .55rem;
+    font-family: 'DM Mono', monospace;
+    font-size: .68rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-res-rot::before {
+    content: '';
+    width: 7px; height: 7px; flex: none;
+    border-radius: 50%;
+    background: var(--accent-vivo);
+    box-shadow: 0 0 0 4px rgba(0, 230, 118, .2);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-res.vazio .cb-res-rot { color: var(--muted); }
+  :is(#tab-cabos, #tab-elos) .cb-res.vazio .cb-res-rot::before { background: var(--muted); box-shadow: none; opacity: .5; }
+  :is(#tab-cabos, #tab-elos) .cb-res-num {
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: .1rem .45rem;
+    margin: .55rem 0 .35rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.3rem, 1.7rem + 2.6vw, 3.3rem);
+    line-height: 1;
+    letter-spacing: -.035em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  :is(#tab-cabos, #tab-elos) .cb-res-num small { font-size: .42em; font-weight: 700; letter-spacing: 0; color: var(--muted); }
+  :is(#tab-cabos, #tab-elos) .cb-res.vazio .cb-res-num { color: var(--muted); opacity: .4; }
+  :is(#tab-cabos, #tab-elos) .cb-res-cabo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.3;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+  :is(#tab-cabos, #tab-elos) .cb-res.vazio .cb-res-cabo { font-weight: 600; color: var(--muted); }
+
+  :is(#tab-cabos, #tab-elos) .cb-conta {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.15rem;
+    margin-top: 1.05rem;
+  }
+  :is(#tab-cabos, #tab-elos) .cb-fator {
+    position: relative;
+    min-width: 0;
+    padding: .55rem .6rem;
+    border-radius: 12px;
+    background: var(--cb-fator);
+    border: 1px solid var(--cb-borda);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-fator + .cb-fator::before {
+    content: '×';
+    position: absolute; left: -.58rem; top: 50%; transform: translate(-50%, -50%);
+    font-family: 'DM Mono', monospace;
+    font-size: .9rem;
+    color: var(--muted);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-fator b {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    font-size: clamp(.8rem, .74rem + .3vw, .95rem);
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+  :is(#tab-cabos, #tab-elos) .cb-fator span {
+    display: block;
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+    font-size: .6rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  :is(#tab-cabos, #tab-elos) .cb-nota { margin: .85rem 0 0; font-size: .8rem; line-height: 1.5; color: var(--muted); }
+  :is(#tab-cabos, #tab-elos) .cb-nota strong { color: var(--text); font-weight: 600; }
+  :is(#tab-cabos, #tab-elos) .cb-res.vazio .cb-conta,
+  :is(#tab-cabos, #tab-elos) .cb-res.vazio .cb-nota { display: none; }
+  :is(#tab-cabos, #tab-elos) .cb-res:not(.vazio) .cb-conta { animation: cbEntra .45s var(--cb-mola) backwards; }
+  @keyframes cbEntra { from { opacity: 0; transform: translateY(6px); } }
+  @media (prefers-reduced-motion: reduce) {
+    :is(#tab-cabos, #tab-elos) .cb-res:not(.vazio) .cb-conta { animation: none; }
+    :is(#tab-cabos, #tab-elos) .cb-seg button { transition: none; }
+  }
+</style>
+<script id="cabos-novo-js">
+(function () {
+  'use strict';
+
+  var FASES = {
+    1: { leg: '1 fase', fator: 'fase' },
+    2: { leg: '2 fases', fator: 'fases' },
+    3: { leg: '3 fases', fator: 'fases' },
+    4: { leg: '3 fases + neutro (4 condutores)', fator: '3F + neutro' }
+  };
+
+  function num(v, casas) {
+    return v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: casas });
+  }
+  /* "1.260,00 m" → 1260 */
+  function lerPt(txt) {
+    var m = String(txt || '').replace(/\./g, '').replace(',', '.').match(/-?\d+(?:\.\d+)?/);
+    return m ? parseFloat(m[0]) : NaN;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* caboSelecionado e cabosIndex são `let` no topo do script principal: não
+     estão em window, mas o binding léxico global é visível (e gravável) daqui */
+  function caboAtual() { return (typeof caboSelecionado !== 'undefined') ? caboSelecionado : null; }
+  function indice() { return (typeof cabosIndex !== 'undefined' && cabosIndex) ? cabosIndex : {}; }
+
+  function montar() {
+    var painel = document.getElementById('tab-cabos');
+    var busca = document.getElementById('caboSearch');
+    var metros = document.getElementById('caboMetros');
+    var fases = document.getElementById('caboFases');
+    if (!painel || !busca || !metros || !fases || painel.querySelector('.cb-raiz')) return;
+    var wrap = busca.closest('.search-wrap');
+    var info = painel.querySelector('.info-card');
+    var form = painel.querySelector('.cabo-form');
+    var lista = document.getElementById('caboLista');
+    if (lista) lista.remove();   // a tabela de kg/m não volta nem se a planilha recarregar (buildCabosIndex pula sem o tbody)
+
+    var raiz = document.createElement('div');
+    raiz.className = 'cb-raiz';
+    raiz.innerHTML =
+      '<header class="cb-hero">' +
+        '<div class="cb-hero-ico"><svg class="tab-icon" aria-hidden="true"><use href="#i-cabo"/></svg></div>' +
+        '<div><h2>Cabos <span>m → kg</span></h2><p>Peso do cabo a partir da distância</p></div>' +
+      '</header>' +
+      '<div class="cb-corpo">' +
+        '<section class="cb-cartao cb-form">' +
+          '<div class="cb-campo cb-campo-cabo">' +
+            '<label class="cb-rot" for="caboSearch"><b>1</b> Cabo</label>' +
+          '</div>' +
+          '<div class="cb-linha">' +
+            '<div class="cb-campo">' +
+              '<label class="cb-rot" for="caboMetros"><b>2</b> Distância</label>' +
+              '<div class="cb-metros"><span class="cb-unid">m</span></div>' +
+            '</div>' +
+            '<div class="cb-campo">' +
+              '<span class="cb-rot" id="cbRotFases"><b>3</b> Fases</span>' +
+              '<div class="cb-seg" role="radiogroup" aria-labelledby="cbRotFases">' +
+                '<button type="button" role="radio" data-v="1" aria-label="1 fase">1</button>' +
+                '<button type="button" role="radio" data-v="2" aria-label="2 fases">2</button>' +
+                '<button type="button" role="radio" data-v="3" aria-label="3 fases">3</button>' +
+                '<button type="button" role="radio" data-v="4" aria-label="3 fases mais neutro">3 + N</button>' +
+              '</div>' +
+              '<p class="cb-seg-leg" id="cbSegLeg"></p>' +
+            '</div>' +
+          '</div>' +
+        '</section>' +
+        '<section class="cb-cartao cb-res vazio" id="cbRes" aria-live="polite">' +
+          '<div class="cb-res-rot">Peso total</div>' +
+          '<div class="cb-res-num"><span id="cbKg">0</span><small>kg</small></div>' +
+          '<div class="cb-res-cabo" id="cbCabo"></div>' +
+          '<div class="cb-conta">' +
+            '<div class="cb-fator"><b id="cbFMetros">—</b><span>m por fase</span></div>' +
+            '<div class="cb-fator"><b id="cbFFases">—</b><span id="cbFFasesRot">fases</span></div>' +
+            '<div class="cb-fator"><b id="cbFPpm">—</b><span>kg/m</span></div>' +
+          '</div>' +
+          '<p class="cb-nota" id="cbNota"></p>' +
+        '</section>' +
+      '</div>';
+
+    painel.insertBefore(raiz, painel.firstChild);
+
+    /* os campos originais mudam de casa com os listeners deles junto */
+    var campoCabo = raiz.querySelector('.cb-campo-cabo');
+    var limpar = document.createElement('button');
+    limpar.type = 'button';
+    limpar.className = 'cb-limpar';
+    limpar.setAttribute('aria-label', 'Limpar cabo');
+    limpar.textContent = '✕';
+    if (wrap) { campoCabo.appendChild(wrap); wrap.appendChild(limpar); }
+    else campoCabo.appendChild(busca);
+    busca.placeholder = 'Digite ou toque para ver os cabos';
+    busca.setAttribute('enterkeyhint', 'next');
+
+    var caixaMetros = raiz.querySelector('.cb-metros');
+    caixaMetros.insertBefore(metros, caixaMetros.firstChild);
+    metros.setAttribute('inputmode', 'decimal');
+    metros.setAttribute('enterkeyhint', 'done');
+    metros.placeholder = 'Ex.: 120';
+
+    raiz.querySelector('.cb-seg').parentNode.appendChild(fases);
+    fases.classList.add('cb-velho');
+    fases.setAttribute('aria-hidden', 'true');
+    fases.tabIndex = -1;
+
+    [info, form, document.getElementById('caboResultado')].forEach(function (el) {
+      if (el) el.classList.add('cb-velho');
+    });
+
+    /* o percentual da flecha vem do rótulo que o bloco cabos-flecha criou ("Com flecha (+5%)") */
+    var flechaRot = (document.getElementById('resFlecha') || {}).previousElementSibling;
+    var flechaPct = flechaRot ? (flechaRot.textContent.match(/\+\s*\d+(?:[.,]\d+)?\s*%/) || [''])[0].replace(/\s/g, '') : '';
+
+    var el = {
+      res: raiz.querySelector('#cbRes'),
+      kg: raiz.querySelector('#cbKg'),
+      cabo: raiz.querySelector('#cbCabo'),
+      fM: raiz.querySelector('#cbFMetros'),
+      fF: raiz.querySelector('#cbFFases'),
+      fFr: raiz.querySelector('#cbFFasesRot'),
+      fP: raiz.querySelector('#cbFPpm'),
+      nota: raiz.querySelector('#cbNota'),
+      leg: raiz.querySelector('#cbSegLeg'),
+      seg: [].slice.call(raiz.querySelectorAll('.cb-seg button'))
+    };
+
+    function marcarFases() {
+      var v = String(fases.value);
+      el.seg.forEach(function (b) {
+        var on = b.getAttribute('data-v') === v;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+        b.tabIndex = on ? 0 : -1;
+      });
+      el.leg.textContent = v === '4' ? FASES[4].leg : '';   // 1, 2 e 3 o botão já diz
+    }
+
+    /* texto digitado sem tocar na lista: se bate com um cabo, vale; se não bate
+       com o escolhido antes, desmarca (antes a conta seguia com o cabo velho) */
+    function sincronizarCabo() {
+      if (typeof caboSelecionado === 'undefined') return;
+      var v = busca.value.trim().toLowerCase();
+      var atual = caboAtual();
+      if (atual && atual.nome.toLowerCase() === v) return;
+      caboSelecionado = v ? (indice()[v] || null) : null;
+    }
+
+    function vazio(msg) {
+      el.res.classList.add('vazio');
+      el.kg.textContent = '0';
+      el.cabo.textContent = msg;
+    }
+
+    function recalcular() {
+      sincronizarCabo();
+      limpar.classList.toggle('on', busca.value !== '');
+      var cabo = caboAtual();
+      var m = parseFloat(metros.value);
+      if (!cabo) {
+        if (!Object.keys(indice()).length) return vazio('Carregando a lista de cabos…');
+        return vazio(busca.value.trim() ? 'Toque num cabo da lista' : 'Escolha o cabo para começar');
+      }
+      if (!(m > 0)) { vazio('Informe a distância em metros'); el.cabo.textContent = cabo.nome + ' · falta a distância'; return; }
+      if (typeof window.calcularCabo !== 'function') return vazio('Não deu para calcular');
+
+      window.calcularCabo();   // a conta de sempre (com a flecha); escreve nos #res* escondidos
+
+      var kgTxt = (document.getElementById('resKg') || {}).textContent || '';
+      var porFase = lerPt(((document.getElementById('resFlecha') || document.getElementById('resMetros')) || {}).textContent);
+      var nf = parseInt(fases.value, 10) || 3;
+
+      el.res.classList.remove('vazio');
+      el.kg.textContent = kgTxt.replace(/\s*kg\s*$/i, '');
+      el.cabo.textContent = cabo.nome;
+      el.fM.textContent = isNaN(porFase) ? '—' : num(porFase, 2) + ' m';
+      el.fF.textContent = String(nf);
+      el.fFr.textContent = (FASES[nf] || FASES[3]).fator;
+      el.fP.textContent = num(cabo.ppm, 4);
+
+      var total = porFase * nf;
+      el.nota.innerHTML = flechaPct && !isNaN(porFase)
+        ? 'Você informou <strong>' + esc(num(m, 2)) + ' m</strong>; com ' + esc(flechaPct) + ' de flecha cada fase leva <strong>' +
+          esc(num(porFase, 2)) + ' m</strong>. No total, <strong>' + esc(num(total, 2)) + ' m</strong> de condutor.'
+        : 'No total, <strong>' + esc(num(total, 2)) + ' m</strong> de condutor.';
+    }
+
+    busca.addEventListener('input', recalcular);
+    /* escolha na lista: o listener original grava o cabo antes; este roda depois, na subida */
+    var dd = document.getElementById('dropdownCabo');
+    if (dd) dd.addEventListener('click', function () { setTimeout(recalcular, 0); });
+    metros.addEventListener('input', recalcular);
+    metros.addEventListener('keydown', function (e) { if (e.key === 'Enter') metros.blur(); });
+
+    el.seg.forEach(function (b) {
+      b.addEventListener('click', function () {
+        fases.value = b.getAttribute('data-v');
+        fases.dispatchEvent(new Event('change', { bubbles: true }));
+        marcarFases();
+        recalcular();
+      });
+      b.addEventListener('keydown', function (e) {
+        var passo = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (!passo) return;
+        e.preventDefault();
+        var i = (el.seg.indexOf(b) + passo + el.seg.length) % el.seg.length;
+        el.seg[i].focus();
+        el.seg[i].click();
+      });
+    });
+
+    limpar.addEventListener('click', function () {
+      busca.value = '';
+      if (typeof caboSelecionado !== 'undefined') caboSelecionado = null;
+      recalcular();
+      busca.focus();
+    });
+
+    /* a planilha costuma chegar depois de a página montar: ao abrir a aba, refaz a conta */
+    var botaoAba = document.querySelector('[data-tab="cabos"]');
+    if (botaoAba) botaoAba.addEventListener('click', function () { setTimeout(recalcular, 0); });
+
+    painel.classList.add('cb-pronto');
+    marcarFases();
+    recalcular();
+  }
+
+  /* depois do DOMContentLoaded do cabos-flecha, que cria o #resFlecha */
+  function ligar() { setTimeout(montar, 0); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar);
+  else ligar();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ABA "ELOS" REPAGINADA (07/11/2026)
+     Mesmo desenho da aba Cabos (o CSS base é o <style id="cabos-novo">,
+     que vale para #tab-cabos e #tab-elos). Os selects originais ficam
+     escondidos e continuam sendo a fonte: os botões só trocam o valor
+     deles e chamam a calcularElo de sempre; o cartão novo copia o
+     resultado. A "Tabela completa de referência" sai, como a de kg/m.
+     Apagar <style id="elos-novo"> e <script id="elos-novo-js"> devolve a
+     aba antiga (sem a tabela, por causa da regra de fallback abaixo, que
+     também precisa sair para ela voltar).
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="elos-novo">
+  /* a tabela de referência some mesmo se o script falhar */
+  #tab-elos > div:has(> .table-wrap > #elo_tabela) { display: none !important; }
+
+  #tab-elos .el-pot { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  @media (min-width: 700px) {
+    #tab-elos .el-pot { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  }
+  #tab-elos .el-pot button {
+    position: relative;
+    min-height: 48px;
+    margin: 0; padding: 0 .2rem;
+    border-radius: 12px;
+    border: 1px solid var(--cb-borda);
+    background: var(--cb-fator);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .25s var(--cb-mola), color .25s var(--cb-mola), box-shadow .25s var(--cb-mola), opacity .25s;
+  }
+  #tab-elos .el-pot button:hover { border-color: var(--accent); }
+  #tab-elos .el-pot button[aria-checked="true"] {
+    background: var(--accent-vivo);
+    border-color: transparent;
+    color: var(--accent-ink);
+    box-shadow: 0 1px 2px rgba(16, 70, 40, .15), 0 6px 14px -8px rgba(0, 160, 80, .6);
+  }
+  #tab-elos .el-pot button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* combinação que a tabela não tem nesta tensão (1000 kVA em 11,4 kV) */
+  #tab-elos .el-pot button.sem { color: var(--muted); opacity: .55; text-decoration: line-through; }
+  #tab-elos .el-pot button.sem[aria-checked="true"] { background: transparent; color: var(--danger); border-color: var(--danger); box-shadow: none; opacity: 1; }
+
+  #tab-elos .cb-rot i { font-style: normal; text-transform: none; letter-spacing: .02em; }   /* kV e kVA, não KV */
+  #tab-elos .cb-res-num { text-transform: uppercase; }
+  #tab-elos .cb-res.el-nao .cb-res-cabo { color: var(--danger); }
+  #tab-elos .cb-conta { display: flex; flex-wrap: wrap; gap: .6rem; }
+  #tab-elos .cb-fator { flex: 0 1 auto; min-width: 10.5rem; }
+  #tab-elos .cb-fator b { font-size: 1.05rem; }
+</style>
+<script id="elos-novo-js">
+(function () {
+  'use strict';
+
+  function pt(txt) { return String(txt).replace(/(\d)\.(\d)/g, '$1,$2'); }   // 112.5 → 112,5 · 0.5H → 0,5H
+
+  function montar() {
+    var painel = document.getElementById('tab-elos');
+    var selPot = document.getElementById('elo_potencia');
+    var selTen = document.getElementById('elo_tensao');
+    if (!painel || !selPot || !selTen || painel.querySelector('.cb-raiz')) return;
+    var resVelho = document.getElementById('elo_resultado');
+    var naoVelho = document.getElementById('elo_indisponivel');
+    var tabela = document.getElementById('elo_tabela');
+
+    var tensoes = [].slice.call(selTen.options).filter(function (o) { return o.value; });
+    var potencias = [].slice.call(selPot.options).filter(function (o) { return o.value; })   // <option>15</option>: value = texto
+      .map(function (o) { return o.value; });
+
+    var raiz = document.createElement('div');
+    raiz.className = 'cb-raiz';
+    raiz.innerHTML =
+      '<header class="cb-hero">' +
+        '<div class="cb-hero-ico"><svg class="tab-icon" aria-hidden="true"><use href="#i-zap"/></svg></div>' +
+        '<div><h2>Elos <span>fusíveis</span></h2><p>Transformador trifásico</p></div>' +
+      '</header>' +
+      '<div class="cb-corpo">' +
+        '<section class="cb-cartao cb-form">' +
+          '<div class="cb-campo">' +
+            '<span class="cb-rot" id="elRotTen"><b>1</b> Tensão da rede <i>(kV)</i></span>' +
+            '<div class="cb-seg el-ten" role="radiogroup" aria-labelledby="elRotTen">' +
+              tensoes.map(function (o) {
+                return '<button type="button" role="radio" data-v="' + o.value + '" aria-label="' + o.textContent.trim() + '">' +
+                  o.textContent.replace(/\s*kV\s*$/i, '').trim() + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+          '<div class="cb-campo">' +
+            '<span class="cb-rot" id="elRotPot"><b>2</b> Potência do transformador <i>(kVA)</i></span>' +
+            '<div class="el-pot" role="radiogroup" aria-labelledby="elRotPot">' +
+              potencias.map(function (v) {
+                return '<button type="button" role="radio" data-v="' + v + '" aria-label="' + pt(v) + ' kVA">' + pt(v) + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+        '</section>' +
+        '<section class="cb-cartao cb-res vazio" id="elRes" aria-live="polite">' +
+          '<div class="cb-res-rot">Elo recomendado</div>' +
+          '<div class="cb-res-num"><span id="elElo">—</span></div>' +
+          '<div class="cb-res-cabo" id="elLinha"></div>' +
+          '<div class="cb-conta">' +
+            '<div class="cb-fator"><b id="elIn">—</b><span>corrente nominal (IN)</span></div>' +
+          '</div>' +
+        '</section>' +
+      '</div>';
+    painel.insertBefore(raiz, painel.firstChild);
+
+    [painel.querySelector('.info-card'), selPot.closest('.map-grid'), resVelho, naoVelho,
+     tabela && tabela.closest('.table-wrap') ? tabela.closest('.table-wrap').parentNode : null]
+      .forEach(function (e) { if (e && e !== painel) e.classList.add('cb-velho'); });
+
+    var el = {
+      res: raiz.querySelector('#elRes'),
+      elo: raiz.querySelector('#elElo'),
+      linha: raiz.querySelector('#elLinha'),
+      inn: raiz.querySelector('#elIn'),
+      ten: [].slice.call(raiz.querySelectorAll('.el-ten button')),
+      pot: [].slice.call(raiz.querySelectorAll('.el-pot button'))
+    };
+
+    /* ELO_DATA e ELO_TENSOES são const no topo do script principal: dá para
+       ler daqui e riscar a potência que a tabela não tem na tensão escolhida */
+    function semElo(pot, ten) {
+      if (typeof ELO_DATA === 'undefined' || typeof ELO_TENSOES === 'undefined' || !pot || !ten) return false;
+      var row = ELO_DATA.find(function (r) { return String(r[0]) === pot; });
+      var i = ELO_TENSOES.indexOf(ten);
+      return !row || i < 0 || row[1 + i * 2] === null || row[2 + i * 2] === 'x';
+    }
+
+    function marcar(botoes, valor) {
+      botoes.forEach(function (b) {
+        var on = b.getAttribute('data-v') === valor;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      var algum = botoes.some(function (b) { return b.getAttribute('aria-checked') === 'true'; });
+      botoes.forEach(function (b, i) { b.tabIndex = (b.getAttribute('aria-checked') === 'true' || (!algum && i === 0)) ? 0 : -1; });
+    }
+
+    function vazio(msg, nao) {
+      el.res.classList.add('vazio');
+      el.res.classList.toggle('el-nao', !!nao);
+      el.elo.textContent = '—';
+      el.linha.textContent = msg;
+    }
+
+    function mostrar() {
+      var pot = selPot.value, ten = selTen.value;
+      marcar(el.ten, ten);
+      marcar(el.pot, pot);
+      el.pot.forEach(function (b) {
+        var sem = semElo(b.getAttribute('data-v'), ten);
+        b.classList.toggle('sem', sem);
+        b.title = sem ? 'A tabela não tem elo para esta potência nesta tensão' : '';
+      });
+      var rotTen = ten ? (selTen.options[selTen.selectedIndex] || {}).textContent : '';
+
+      if (!ten && !pot) return vazio('Escolha a tensão e a potência');
+      if (!ten) return vazio(pt(pot) + ' kVA · falta a tensão da rede');
+      if (!pot) return vazio(rotTen + ' · falta a potência');
+      if (naoVelho && naoVelho.style.display === 'block') return vazio(pt(pot) + ' kVA em ' + rotTen + ' não tem elo na tabela', true);
+      if (!resVelho || resVelho.style.display !== 'block') return vazio('Não deu para achar o elo');
+
+      el.res.classList.remove('vazio', 'el-nao');
+      el.elo.textContent = pt(document.getElementById('elo_res_elo').textContent);
+      el.linha.textContent = pt(pot) + ' kVA · ' + rotTen;
+      el.inn.textContent = pt(document.getElementById('elo_res_in').textContent);
+    }
+
+    function escolher(sel, valor) {
+      sel.value = valor;
+      if (typeof window.calcularElo === 'function') window.calcularElo();   // a conta de sempre, nos elementos escondidos
+      mostrar();
+    }
+
+    function ligarGrupo(botoes, sel) {
+      botoes.forEach(function (b) {
+        b.addEventListener('click', function () { escolher(sel, b.getAttribute('data-v')); });
+        b.addEventListener('keydown', function (e) {
+          var passo = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+          if (!passo) return;
+          e.preventDefault();
+          var i = (botoes.indexOf(b) + passo + botoes.length) % botoes.length;
+          botoes[i].focus();
+          botoes[i].click();
+        });
+      });
+    }
+    ligarGrupo(el.ten, selTen);
+    ligarGrupo(el.pot, selPot);
+
+    var botaoAba = document.querySelector('[data-tab="elos"]');
+    if (botaoAba) botaoAba.addEventListener('click', function () { setTimeout(mostrar, 0); });
+
+    painel.classList.add('cb-pronto');
+    mostrar();
+  }
+
+  function ligar() { setTimeout(montar, 0); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar);
+  else ligar();
 })();
 </script>
 

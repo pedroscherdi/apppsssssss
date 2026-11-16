@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.setupboom.app",
+      "sha256_cert_fingerprints": [
+        "CA:67:84:8B:D7:51:A4:0F:B1:01:FE:92:04:23:62:59:C5:DE:08:21:87:51:30:07:CF:9A:69:4D:19:72:18:C4"
+      ]
+    }
+  }
+]

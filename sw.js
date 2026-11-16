@@ -18,11 +18,13 @@
    Ao publicar uma versão nova do site, MUDE o VERSAO abaixo.
    ════════════════════════════════════════════════════════════════════════ */
 
-const VERSAO = 'setupboom-2026-11-16c';
+const VERSAO = 'setupboom-2026-11-16d';
 const SB_LIBS = 'sb-libs-v1';
 const SB_DADOS = 'sb-dados-v1';
 const SB_MAPA = 'sb-mapa-v1';   // pedaços do mapa vetorial (etapa 3, 16/11/2026)
+const SB_R2 = 'sb-r2-v1';       // setas, material dos postes e índices dos pacotes por região (etapa 4/5)
 const R2_MAPAS = 'https://pub-5be5c4c95218461ba8eafdd09a51bfa8.r2.dev/mapas/';
+const R2_DADOS = 'https://pub-5be5c4c95218461ba8eafdd09a51bfa8.r2.dev/dados/';
 const ESPERA = 7000;   // ms esperando a planilha antes de cair na cópia guardada
 const CASCA = ['./', './index.html'];
 
@@ -91,7 +93,7 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  const ficar = [VERSAO, SB_LIBS, SB_DADOS, SB_MAPA];
+  const ficar = [VERSAO, SB_LIBS, SB_DADOS, SB_MAPA, SB_R2];
   e.waitUntil(
     caches.keys()
       .then(ks => Promise.all(ks.filter(k => !ficar.includes(k)).map(k => caches.delete(k))))
@@ -109,15 +111,39 @@ async function avisar(url, em) {
 /* A cópia vai COMPACTADA (gzip): postes e cabos descompactados ocupavam 326 MB
    no aparelho; compactados, perto de um décimo. Quem não tem CompressionStream
    guarda como veio. */
-async function guardar(req, copia) {
+async function guardar(req, copia, nomeCache) {
   const h = new Headers(copia.headers);
   h.set('x-sb-guardado-em', String(Date.now()));
   h.delete('content-length'); h.delete('content-encoding');
   let corpo = copia.body;
   if (self.CompressionStream && corpo) { corpo = corpo.pipeThrough(new CompressionStream('gzip')); h.set('x-sb-gzip', '1'); }
   const blob = await new Response(corpo).blob();
-  const c = await caches.open(SB_DADOS);
+  const c = await caches.open(nomeCache || SB_DADOS);
   await c.put(req, new Response(blob, { status: copia.status, statusText: copia.statusText, headers: h }));
+}
+
+/* Arquivos de dados no R2 (dados/<versão>/...): o caminho tem a versão, então
+   não mudam — cópia primeiro. Só o dados/atual.json (que diz qual é a versão
+   nova) vai à rede primeiro, e cai na cópia sem sinal. */
+async function r2Dado(e) {
+  const req = e.request;
+  const c = await caches.open(SB_R2);
+  if (req.url.split('?')[0].endsWith('/dados/atual.json')) {
+    try {
+      const res = await fetch(req, { cache: 'no-store' });
+      if (res.ok) e.waitUntil(guardar(req, res.clone(), SB_R2).catch(() => {}));
+      return res;
+    } catch (err) {
+      const g = await c.match(req);
+      if (g) return abrirCopia(g);
+      throw err;
+    }
+  }
+  const g = await c.match(req);
+  if (g) return abrirCopia(g);
+  const res = await fetch(req);
+  if (res.ok) e.waitUntil(guardar(req, res.clone(), SB_R2).catch(() => {}));
+  return res;
 }
 
 /* Devolve a cópia descompactada (ou como está, se foi guardada sem gzip). */
@@ -158,7 +184,8 @@ function dadoComCopia(e) {
 async function mapaPedaco(e) {
   const req = e.request;
   const faixa = req.headers.get('range');
-  if (!faixa) return fetch(req);
+  // sem faixa, ou bloco grande pedido pela tela "Usar sem internet" (?sbbaixa=): a própria tela fatia e guarda
+  if (!faixa || req.url.includes('sbbaixa=')) return fetch(req);
   const chave = req.url.split('?')[0] + '?sbfaixa=' + encodeURIComponent(faixa.replace(/\s+/g, ''));
   const c = await caches.open(SB_MAPA);
   const g = await c.match(chave);
@@ -177,6 +204,7 @@ self.addEventListener('fetch', e => {
   const url = e.request.url;
 
   if (url.startsWith(R2_MAPAS)) { e.respondWith(mapaPedaco(e)); return; }
+  if (url.startsWith(R2_DADOS)) { e.respondWith(r2Dado(e)); return; }
 
   if (eLib(url)) {
     e.respondWith(

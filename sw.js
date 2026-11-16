@@ -4,55 +4,152 @@
 
    Por que ele existe como arquivo separado: o navegador recusa registrar
    service worker a partir de blob: ou data: — só aceita um .js servido pela
-   mesma origem. O index.html registrava por blob e por isso o offline
-   nunca funcionou, apesar do app dizer que funcionava.
+   mesma origem.
 
-   Ao publicar uma versão nova do site, MUDE o VERSAO abaixo. É isso que
-   descarta o cache antigo; sem trocar, o celular segue abrindo a versão
-   velha mesmo depois de tu subir a nova.
+   16/11/2026 — offline, etapa 1 (o app abre, loga e consulta sem sinal):
+   - SB_LIBS guarda Firebase, Leaflet, SheetJS, html2canvas e as fontes. São
+     endereços com versão fixa, então nunca mudam: cache primeiro, e já
+     baixados na instalação, para o login funcionar sem sinal desde o início.
+   - SB_DADOS guarda as respostas das planilhas (API do Sheets e o export em
+     xlsx do Rastreio): rede primeiro; se a rede falhar ou demorar mais que
+     ESPERA ms, entrega a última cópia e avisa a página de quando ela é.
+   - Os dois caches sobrevivem à troca de VERSAO; só a casca (index) é refeita.
+
+   Ao publicar uma versão nova do site, MUDE o VERSAO abaixo.
    ════════════════════════════════════════════════════════════════════════ */
 
-const VERSAO = 'setupboom-2026-08-31';
+const VERSAO = 'setupboom-2026-11-16';
+const SB_LIBS = 'sb-libs-v1';
+const SB_DADOS = 'sb-dados-v1';
+const ESPERA = 7000;   // ms esperando a planilha antes de cair na cópia guardada
 const CASCA = ['./', './index.html'];
 
-/* Nunca guardar em cache: dado vivo e autenticação. Servido do cache, o
-   tempo congelaria na primeira leitura do dia e a planilha nunca atualizaria. */
+const LIBS = [
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcviYwY.woff2',
+  'https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcvsYwYL8g.woff2',
+  'https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_24vg6jTY8.woff2',
+  'https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_24vg6tTY_9CQ.woff2'
+];
+
+/* Bibliotecas e fontes com versão no endereço: nunca mudam. */
+const eLib = url =>
+  url.startsWith('https://www.gstatic.com/firebasejs/') ||
+  url.startsWith('https://cdnjs.cloudflare.com/ajax/libs/') ||
+  url.startsWith('https://fonts.gstatic.com/');
+
+/* Planilhas: leitura pela API do Sheets e o xlsx exportado (Rastreio). */
+const eDado = url =>
+  url.startsWith('https://sheets.googleapis.com/v4/spreadsheets/') ||
+  /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[^/]+\/export\?/.test(url);
+
+/* Nunca guardar: dado vivo, autenticação e o mapa (encheria o cache sem fim). */
 const FORA_DO_CACHE = [
-  'googleapis.com',      // Sheets API e Firebase
-  'gstatic.com',
-  'firebasejs',
+  'firestore.googleapis.com',
+  'identitytoolkit.googleapis.com',
+  'securetoken.googleapis.com',
   'firebaseio.com',
-  'fonts.google',
-  'docs.google.com',     // consulta dos religadores: dado vivo
+  'google-analytics.com',
+  'googletagmanager.com',
+  'fonts.googleapis.com',
+  'docs.google.com',     // gviz (consulta por clique) e o resto do Docs
   'open-meteo.com',      // previsão do tempo das bases
-  'tile.openstreetmap',  // tiles do mapa: encheriam o cache sem fim
+  'nominatim.openstreetmap.org',
+  'tile.openstreetmap',
   'arcgis'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(VERSAO)
-      .then(c => c.addAll(CASCA).catch(() => c.add('./')))
-      .then(() => self.skipWaiting())
-  );
+  e.waitUntil((async () => {
+    const casca = await caches.open(VERSAO);
+    await casca.addAll(CASCA).catch(() => casca.add('./'));
+    const libs = await caches.open(SB_LIBS);
+    // uma a uma: se alguma falhar, as outras ficam
+    await Promise.allSettled(LIBS.map(async u => {
+      if (await libs.match(u)) return;
+      const r = await fetch(u, { mode: 'cors', credentials: 'omit' });
+      if (r.ok) await libs.put(u, r);
+    }));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', e => {
+  const ficar = [VERSAO, SB_LIBS, SB_DADOS];
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => !ficar.includes(k)).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
+/* Avisa as abas abertas de que um dado veio da cópia guardada, e de quando. */
+async function avisar(url, em) {
+  const cs = await self.clients.matchAll({ type: 'window' });
+  cs.forEach(c => c.postMessage({ sb: 'dado-guardado', url, em }));
+}
+
+/* Rede primeiro, com prazo; sem rede (ou demorando), a última cópia. */
+async function guardar(req, copia) {
+  const h = new Headers(copia.headers);
+  h.set('x-sb-guardado-em', String(Date.now()));
+  const corpo = await copia.blob();
+  const c = await caches.open(SB_DADOS);
+  await c.put(req, new Response(corpo, { status: copia.status, statusText: copia.statusText, headers: h }));
+}
+
+function dadoComCopia(e) {
+  const req = e.request;
+  // a gravação da cópia segue mesmo depois de a resposta ter sido entregue
+  let fim;
+  e.waitUntil(new Promise(ok => { fim = ok; }));
+  const daRede = fetch(req).then(res => {
+    if (res && res.ok) guardar(req, res.clone()).catch(() => {}).finally(fim);
+    else fim();
+    return res;   // entrega assim que começa a chegar
+  }, err => { fim(); throw err; });
+
+  const prazo = new Promise(ok => setTimeout(ok, ESPERA, 'prazo'));
+  return Promise.race([daRede.catch(() => 'erro'), prazo]).then(async r => {
+    if (r instanceof Response) return r;
+    const guardado = await caches.match(req, { cacheName: SB_DADOS });
+    if (guardado) {
+      avisar(req.url, Number(guardado.headers.get('x-sb-guardado-em')) || 0);
+      return guardado;
+    }
+    return daRede;   // sem cópia: espera a rede (ou falha como antes)
+  });
+}
+
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
+
+  if (eLib(url)) {
+    e.respondWith(
+      caches.match(e.request, { cacheName: SB_LIBS }).then(guardado => guardado || fetch(e.request).then(res => {
+        if (res && res.ok && res.type !== 'opaque') {
+          const c = res.clone();
+          caches.open(SB_LIBS).then(cc => cc.put(e.request, c));
+        }
+        return res;
+      }))
+    );
+    return;
+  }
+
+  if (eDado(url)) { e.respondWith(dadoComCopia(e)); return; }
+
   if (FORA_DO_CACHE.some(p => url.includes(p))) return;
 
   /* Navegação (abrir o app): rede primeiro, para pegar versão nova quando
-     houver sinal, e cair no cache quando não houver. É o que faz o app
-     abrir no meio do vão sem rede. */
+     houver sinal, e cair no cache quando não houver. */
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -66,7 +163,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  /* Resto (fontes, imagens): cache primeiro, que é o que não muda. */
+  /* Resto do próprio site (ícones, imagens): cache primeiro. */
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;

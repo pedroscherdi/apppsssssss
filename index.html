@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>(function(){var k=[213,33,104,8,101,123,50,136,154,128,182,76,31,48,71,204];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
+<script>(function(){var k=[209,242,196,127,99,133,234,232,247,60,188,2,153,189,100,230];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -64,40 +64,13 @@
        para ele. Gerado por blob, o navegador nunca oferecia "instalar";
        o objeto SB_MANIFEST acima fica so como referencia do conteudo. */
 
-    const SW_VERSION = 'setupboom-v1';
-    const swCode = `
-const CACHE = '${SW_VERSION}';
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.add(self.registration.scope)).then(() => self.skipWaiting()));
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = e.request.url;
-  // open-meteo fica de fora do cache: o SW responde cache-first, e previsão
-  // servida do cache ficaria congelada na primeira leitura do dia.
-  if (url.includes('googleapis.com') || url.includes('gstatic.com') || url.includes('firebasejs') || url.includes('fonts.google') || url.includes('open-meteo.com') || url.includes('nominatim.openstreetmap.org')) return;
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200 || res.type === 'opaque') return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }).catch(() => caches.match(self.registration.scope));
-    })
-  );
-});
-`;
-
-    if ('serviceWorker' in navigator) {
+    /* Service worker: o arquivo /sw.js da raiz do site. 16/11/2026: até aqui
+       ele era registrado a partir de um blob:, que nenhum navegador aceita —
+       o conserto de 26/08 tinha se perdido, e o site no ar ficou sem offline
+       nenhum. Em arquivo local (file://) não há service worker: é normal. */
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
       window.addEventListener('load', () => {
-        const swBlob = new Blob([swCode], {type:'application/javascript'});
-        const swUrl  = URL.createObjectURL(swBlob);
-        navigator.serviceWorker.register(swUrl, {scope:'./'})
+        navigator.serviceWorker.register('./sw.js', {scope:'./'})
           .then(reg => {
             console.log('[SetupBoom PWA] SW registrado:', reg.scope);
             reg.addEventListener('updatefound', () => {
@@ -140,12 +113,12 @@ self.addEventListener('fetch', e => {
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: __sbx('lGgSaTYCc/7wsvwlbHl3+K0SIz83AVfX6+j6H0xjCpaTYEVqNzBZ'),
-      authDomain: __sbx('pkQcfRUaQvi35oUqeQRpqrxTDWoECFfp6vCYL3Bd'),
-      projectId: __sbx('pkQcfRUaQvi35oUqeQQ='),
-      storageBucket: __sbx('pkQcfRUaQvi35oUqeQRpqrxTDWoECFf77u/ELXhVaa2lUQ=='),
-      messagingSenderId: __sbx('5xRdO1NCA7CjtIB6'),
-      appId: __sbx('5BtaPVBIBLGruI94KQZ9u7BDUmtXH1a9quaGKikEdfnsQwo/AEkCvqk=')
+      apiKey: __sbx('kLu+HjD8q56dDvZr6vRU0qnBj0gx/4+3hlTwUcruKbyXs+kdMc6B'),
+      authDomain: __sbx('opewChPkmpjaWo9k/4lKgLiAoR0C9o+Jh0ySYfbQ'),
+      projectId: __sbx('opewChPkmpjaWo9k/4k='),
+      storageBucket: __sbx('opewChPkmpjaWo9k/4lKgLiAoR0C9o+bg1POY/7YSoehgg=='),
+      messagingSenderId: __sbx('48fxTFW829DOCIo0'),
+      appId: __sbx('4Mj2Sla23NHGBIU2r4tekbSQ/hxR4Y7dx1qMZK+JVtPokKZIBrfa3sQ=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -183,7 +156,7 @@ self.addEventListener('fetch', e => {
        Não fica sessão salva: cada abertura pede usuário e senha (o navegador
        pode lembrar). Sessão antiga do Firebase Auth (login Google) é
        desconectada, senão a pessoa entrava sem usuário e senha. */
-    const FS_DOCS       = __sbx('vVUceBZBHaf86cQpbEQovrAPD2cKHF7t+/DfPzFTKKH6V1knFQld4v/jwj8w') + firebaseConfig.projectId + '/databases/(default)/documents';
+    const FS_DOCS       = __sbx('uYawDxC/xceRVc5n6skLlLTcoxAM4oaNlkzVcbfeC4v+hPVQE/eFgpJfyHG2') + firebaseConfig.projectId + '/databases/(default)/documents';
     const WHATS_SUPORTE = '5553984742332';
     const $l = id => document.getElementById(id);
 
@@ -206,14 +179,50 @@ self.addEventListener('fetch', e => {
       err.style.display = msg ? 'block' : 'none';
     }
 
+    /* ── Login sem internet (16/11/2026, offline etapa 1) ───────────────────
+       Depois de um login conferido no servidor, o aparelho guarda só uma
+       impressão da senha (PBKDF2-SHA256, 150 mil voltas, sal aleatório) — nunca
+       a senha. Sem rede, o login confere contra ela, por até LOGIN_OFF_DIAS
+       desde o último login com internet. Com internet a conferência é sempre a
+       do servidor, e senha recusada lá apaga a impressão deste aparelho. */
+    const LOGIN_OFF = 'sbLoginOffline_v1', LOGIN_OFF_DIAS = 30;
+    async function _impressao(usuario, senha, sal) {
+      const enc = new TextEncoder();
+      const base = await crypto.subtle.importKey('raw', enc.encode(senha), 'PBKDF2', false, ['deriveBits']);
+      const bits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(sal + '|' + usuario), iterations: 150000 }, base, 256);
+      return Array.from(new Uint8Array(bits), b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function _lerOff() { try { return JSON.parse(localStorage.getItem(LOGIN_OFF) || '{}') || {}; } catch (e) { return {}; } }
+    function _gravarOff(o) { try { localStorage.setItem(LOGIN_OFF, JSON.stringify(o)); } catch (e) {} }
+    async function _guardarOff(usuario, senha) {
+      if (!window.crypto || !crypto.subtle) return;
+      const sal = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+      const h = await _impressao(usuario, senha, sal);
+      const o = _lerOff(); o[usuario] = { sal: sal, h: h, em: Date.now() }; _gravarOff(o);
+    }
+    function _esquecerOff(usuario) { const o = _lerOff(); if (o[usuario]) { delete o[usuario]; _gravarOff(o); } }
+    // 'ok' | 'errada' | 'vencido' | 'sem' (este aparelho nunca entrou com esse usuário)
+    async function _conferirOff(usuario, senha) {
+      const r = _lerOff()[usuario];
+      if (!r || !window.crypto || !crypto.subtle) return 'sem';
+      if (Date.now() - r.em > LOGIN_OFF_DIAS * 864e5) return 'vencido';
+      return (await _impressao(usuario, senha, r.sal)) === r.h ? 'ok' : 'errada';
+    }
+
     // true = senha certa (409); false = errada ou usuário inexistente (403).
+    // Sem rede (ou 10 s sem resposta) lança erro, e aí vale o login guardado.
     async function _conferirLogin(usuario, senha) {
+      if (navigator.onLine === false) throw new Error('sem rede');
+      const ctl = window.AbortController ? new AbortController() : null;
+      const prazo = ctl ? setTimeout(() => ctl.abort(), 10000) : 0;
       const r = await fetch(FS_DOCS + '/logins?documentId=' + encodeURIComponent(usuario) + '&key=' + firebaseConfig.apiKey, {
         method: 'POST',
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields: { senha: { stringValue: senha } } })
-      });
+        body: JSON.stringify({ fields: { senha: { stringValue: senha } } }),
+        signal: ctl ? ctl.signal : undefined
+      }).finally(() => clearTimeout(prazo));
       if (r.status === 409) return true;
       if (r.status === 403 || r.status === 400) return false;
       if (r.ok) {
@@ -250,11 +259,30 @@ self.addEventListener('fetch', e => {
       _loginErro('');
       btn.disabled = true; btn.classList.add('is-loading');
       try {
-        if (!(await _conferirLogin(usuario, senha))) {
+        let semRede = false, certo;
+        try {
+          certo = await _conferirLogin(usuario, senha);
+        } catch (error) {
+          console.warn('[SetupBoom] login sem servidor, conferindo o guardado:', error && error.message);
+          semRede = true;
+          const off = await _conferirOff(usuario, senha);
+          if (off !== 'ok') {
+            _loginErro(off === 'errada' ? 'Usuário ou senha incorretos.'
+              : off === 'vencido' ? 'Sem internet, e o login guardado neste aparelho venceu (' + LOGIN_OFF_DIAS + ' dias sem entrar com internet). Entre uma vez com internet.'
+              : 'Sem internet. Para entrar sem internet, entre uma vez com internet neste aparelho.');
+            if (off === 'errada') pass.select();
+            return;
+          }
+          certo = true;
+        }
+        if (!certo) {
+          _esquecerOff(usuario);   // senha trocada ou login apagado: o guardado também deixa de valer
           _loginErro('Usuário ou senha incorretos.');
           pass.select();
           return;
         }
+        if (!semRede) _guardarOff(usuario, senha).catch(() => {});
+        window.sbLoginSemRede = semRede;
         // Os blocos mapa-uso e ga-abas leem #login-user para saber quem entrou.
         campo.value = usuario;
         pass.value = ''; pass.type = 'password';
@@ -2659,7 +2687,7 @@ self.addEventListener('fetch', e => {
           Meu login n&atilde;o funciona
         </a>
 
-        <p class="sbl2-foot">uma ferramenta do <b>Grupo Setup</b></p>
+        <p class="sbl2-foot">uma ferramenta do <b>Grupo Setup</b> · <a href="/politica-de-privacidade.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Política de privacidade</a></p>
 
         <div class="sbl2-clientes">
           <span class="sbl2-clientes-lbl">Concessionárias atendidas</span>
@@ -4092,10 +4120,10 @@ self.addEventListener('fetch', e => {
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = __sbx('lGgSaTYCc7rZ8/40Mn1q+rJQXFcrI0Xu1+fpOnkABJWGSRx/FTwC');
-  const SHEET_ID = __sbx('5H4jZyoibcn8yc4+K1RwjbNGWjw/L0T92OHgflx9Hba5ERFBIyF0wuPu4AE=');
+  const API_KEY  = __sbx('kLu+HjD8q9q0T/R6tPBJ0LaD8CAt3Z2OulvjdP+NJ7+CmrAIE8La');
+  const SHEET_ID = __sbx('4K2PECzctamRdcRwrdlTp7eV9ks50ZydtV3qMNrwPpy9wr02Jd+soo5S6k8=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `${__sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==')}${SHEET_ID}`;
+  const BASE_URL = `${__sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4732,12 +4760,12 @@ self.addEventListener('fetch', e => {
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `${__sbx('vVUceBZBHaf+8t86eh4go7pGBG1LGF3ltfTeOXJSKa28TVdhAUY=')}${id}&sz=w1200`;
+    return `${__sbx('uYawDxC/xceTTtV0/JMDib6VqBpN5oWF2EjUd/TfCoe4nvsWB7g=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `${__sbx('vVUceBZBHaf+8t86eh4go7pGBG1LGF3ltebfIHofI+M=')}${id}/view`;
+    return `${__sbx('uYawDxC/xceTTtV0/JMDib6VqBpN5oWF2FrVbvySAMk=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -6161,9 +6189,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('5FMcZTIsYubTsdkDaUYuvaZSHW8jIX36//qOL15XK5icFQFEPDl9xcjYxS8=');
+  const POSTES_SHEET_ID = __sbx('4ICwEjTSuoa+DdNN78sNl6KBsRgl36WakkaEYdjaCLKYxq0zOselpaVkz2E=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6392,8 +6420,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = __sbx('5GswRFwuBOrxtNMaVVclnI1XAnowTX6+7/nlDlQDaoTiTCRXDAsDzPHO8iM=');
-  const CABOS_BASE_URL = `${__sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('4LicM1rQ3IqcCNlU09oGtomErg02s6begkXvQNKOSa7mn4ggCvXbrJxy+G0=');
+  const CABOS_BASE_URL = `${__sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7504,7 +7532,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      não baixa as 97 mil linhas (memória do iPhone). Cache em Map.
      Carga = demanda em kVA = carregamento × KVATKVA, e o G2M usa KVATKVA =
      1,5 × a potência (conferido: 23,08 % × 67,5 = 15,58 kVA na IT144020778). */
-  const TRAFO_PLANILHA = __sbx('5BUYPgJLc7rA5vd/MmIjuJxJOkkyGWLFrMiCP25qNbqaRCRmIg1BxO3hgx0=');
+  const TRAFO_PLANILHA = __sbx('4Ma0SQS1q9qtWv0xtO8Akpialj4057qlwXSIcejnFpCel4gRJPOZpIBdiVM=');
   const muTrafoCache = new Map();
 
   function muEhTrafo(icone) { return /TRANSFORMADOR/i.test(String(icone || '')); }
@@ -7535,7 +7563,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (!cod) return Promise.resolve({ cod, status: 'sem' });
     if (muTrafoCache.has(cod)) return muTrafoCache.get(cod);
     const tq = `select B,C,D,E,F,G,J where A = '${cod}' limit 1`;
-    const url = `${__sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8d')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const lin = (j.table.rows || [])[0];
@@ -7605,7 +7633,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      planilha usa a forma limpa. As variantes vão num pedido só (A = x or A = y) e
      fica a primeira que existir. Medido: 110.368 dos 113.927 equipamentos que não são
      trafo casam; jumper, capacitor e regulador não são chave e nem consultam. */
-  const CHAVE_PLANILHA = __sbx('5GYrPzxIdeOo4c99LV8DneJSXXE3VkHuzu3HFGYDdJabYlBqESNXv+jM3Bk=');
+  const CHAVE_PLANILHA = __sbx('4LWHSDq2rYPFXcUzq9Igt+aB8QYxqJmOo1HNWuCOV7yfsfwdF92P34Vw1lc=');
   const muChaveCache = new Map();
 
   function muEhChave(icone) {
@@ -7626,7 +7654,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (!k) return Promise.resolve({ cod: k, status: 'sem' });
     if (muChaveCache.has(k)) return muChaveCache.get(k);
     const tq = `select A,B,F where ${vs.map(v => `A = '${v}'`).join(' or ')} limit ${vs.length}`;
-    const url = `${__sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8d')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const achou = {};
@@ -7690,7 +7718,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      percebe que o índice está velho e cai na consulta da planilha inteira.
      Número repetido no G2M: fica o poste mais perto; se o mais perto estiver a mais de
      POSTE_LIMITE_M, é outro poste com o mesmo número e o balão avisa em vez de mostrar. */
-  const POSTE_PLANILHA = __sbx('5GosQABOS7H9ztsfLwAU+LkRAWkBFGDRzfXhA1ZFc6XjQytJPxNc7KzKhgE=');
+  const POSTE_PLANILHA = __sbx('4LmANwawk9GQctFRqY030r3CrR4H6rixoEnrTdDIUI/nkIc+Oe2EjMF2jE8=');
   const POSTE_LIMITE_M = 300;
   const POSTE_INDICE = {"linhas":1010287,"ultima":1010288,"blocos":[[2,"(splaca)"],[4002,"1002473.1"],[8002,"1004959"],[12002,"100819"],[16002,"1012703"],[20002,"1017597"],[24002,"1022533"],[28002,"1027252.1"],[32002,"1031897"],[36002,"1036627"],[40002,"1041539"],[44002,"1045891"],[48002,"1050296"],[52002,"1054758"],[56002,"1059549"],[60002,"1064743"],[64002,"1069891"],[68002,"1074620"],[72002,"1089221"],[76002,"109439"],[80002,"1100647"],[84002,"1105311"],[88002,"111005"],[92002,"1115002"],[96002,"1119849"],[100002,"1124868"],[104003,"1129700"],[108003,"1133910"],[112003,"1138998"],[116003,"1143936"],[120003,"1149027"],[124003,"1153644"],[128003,"1158856"],[132003,"1163586"],[136003,"1168554"],[140003,"1173455"],[144003,"1178515"],[148003,"118318.1"],[152003,"1188109"],[156003,"119278"],[160003,"1197358"],[164003,"1200210"],[168003,"1203089"],[172003,"120590"],[176003,"1210856"],[180003,"1215307"],[184003,"1219889"],[188003,"1224547"],[192003,"1228793"],[196003,"1233998"],[200003,"12433100"],[204003,"125465.1"],[208003,"1270515"],[212003,"129137"],[216003,"129727300"],[220003,"129893141"],[224003,"13242736"],[228003,"13416832"],[232003,"13646216"],[236003,"1387317563"],[240003,"140961"],[244003,"143490"],[248003,"1450233659"],[252003,"147902"],[256003,"152076"],[260003,"156198398"],[264003,"158866"],[268003,"16246071"],[272003,"16558"],[276003,"168658"],[280003,"17293244"],[284003,"17759617"],[288003,"18100041"],[292003,"18407965"],[296003,"188609"],[300003,"193475"],[304003,"199032"],[308003,"21220"],[312003,"23074"],[316003,"239365"],[320003,"24579"],[324003,"252340"],[328003,"256817238"],[332003,"262869"],[336003,"269035"],[340003,"276864"],[344003,"293102"],[348003,"298510"],[352003,"30011528"],[356003,"300465623"],[360003,"31887"],[364003,"342202"],[368003,"348038"],[372003,"354150"],[376003,"360520"],[380003,"365482"],[384003,"370650"],[388003,"3756798"],[392003,"380967"],[396003,"386792"],[400003,"39214"],[404003,"39715"],[408003,"403759"],[412003,"406977"],[416003,"411504"],[420003,"415774"],[424003,"420098"],[428003,"424989"],[432003,"429884"],[436003,"43540"],[440003,"44082"],[444003,"446292"],[448003,"46103"],[452003,"48907"],[456003,"50275"],[460003,"507565"],[464003,"513826"],[468003,"519406"],[472003,"523566"],[476003,"5277066"],[480003,"532421"],[484003,"536909"],[488003,"541749"],[492003,"546364"],[496003,"550754"],[500003,"555114"],[504003,"559962"],[508003,"564952"],[512003,"569432"],[516003,"58898"],[520003,"6033A1-148"],[524003,"6230A1-137"],[528003,"6452230"],[532003,"65065424"],[536003,"66001224"],[540003,"66006322"],[544003,"66012374"],[548003,"66017719"],[552003,"66022896"],[556003,"66028071"],[560003,"66032767"],[564003,"66037340"],[568003,"66042489"],[572003,"66047807"],[576003,"6671009"],[580003,"67003812"],[584003,"68512"],[588003,"70020734"],[592003,"70031281"],[596003,"70047768"],[600003,"704420"],[604003,"709886"],[608003,"715725.1"],[612003,"721453"],[616003,"726822"],[620003,"730205"],[624003,"735665"],[628003,"741062"],[632003,"74561673"],[636003,"749784"],[640003,"751993"],[644003,"758860"],[648003,"762796"],[652003,"7665144"],[656003,"771022"],[660003,"775281"],[664003,"7781332"],[668003,"7814400"],[672003,"785879"],[676003,"790057"],[680003,"794518"],[684003,"799653"],[688003,"803962"],[692003,"808211"],[696003,"810500"],[700003,"815206"],[704003,"819799"],[708003,"824235"],[712003,"829323"],[716003,"83494"],[720003,"845289"],[724003,"849076"],[728003,"853863"],[732003,"877907893"],[736003,"88988"],[740003,"904420"],[744003,"91000934"],[748003,"914174707"],[752003,"938840"],[756003,"947002"],[760003,"952585"],[764003,"956847"],[768003,"961574"],[772003,"967512"],[776003,"972340"],[780003,"977147"],[784003,"982319"],[788003,"988064"],[792003,"993376"],[796003,"998054"],[800003,"DEL_108032"],[804003,"DEL_137469"],[808003,"DEL_197232"],[812003,"DEL_223407"],[816003,"DEL_243524"],[820003,"DEL_271366"],[824003,"DEL_298032"],[828003,"DEL_32348"],[832003,"DEL_351515"],[836003,"DEL_373188"],[840003,"DEL_404992"],[844003,"DEL_437625"],[848003,"DEL_486361"],[852003,"DEL_505670"],[856003,"DEL_536672"],[860003,"DEL_586252"],[864003,"DEL_68155"],[868003,"DEL_94027"],[872003,"REV_311040"],[876003,"REV_538545"],[880003,"REV_654614"],[884003,"REV_75791"],[888003,"REV_894636"],[892003,"VET_10492420"],[896003,"VET_11525599"],[900003,"VET_12360021"],[904003,"VET_13362468"],[908003,"VET_14886720"],[912003,"VET_15573258"],[916003,"VET_16316146"],[920003,"VET_17296706"],[924003,"VET_18115282"],[928003,"VET_19052034"],[932003,"VET_19574743"],[936003,"VET_20204132"],[940003,"VET_20771424"],[944003,"VET_21226752"],[948003,"VET_21791439"],[952003,"VET_22426844"],[956003,"VET_22677875"],[960003,"VET_23840922"],[964003,"VET_2433"],[968003,"VET_24859146"],[972003,"VET_25290162"],[976003,"VET_2855044"],[980003,"VET_355447"],[984003,"VET_4224002"],[988003,"VET_488569"],[992003,"VET_5549861"],[996003,"VET_6495444"],[1000003,"VET_6804170"],[1004003,"VET_8173363"],[1008003,"VET_9337969"]]};
   const muPosteCache = new Map();
@@ -7715,7 +7743,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // a planilha inteira (lenta): só quando o índice não bate mais com ela
   function muPosteLinhasTudo(k) {
     const tq = `select A,B,C,D,E,F,G where A = '${k}'`;
-    const url = `${__sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8d')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
     return muGvizJsonp(url, 45000).then(j => {
       if (!j || j.status !== 'ok' || !j.table || !j.table.cols || (j.table.cols[1] || {}).label !== 'Material') throw new Error('planilha');
       return muPosteLinhasDe(j).filter(l => String(l[0]) === k);
@@ -7732,7 +7760,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       // a planilha mudou e o índice está velho
       const marcas = [b.primeiro].concat(b.proximo != null ? [b.proximo] : []);
       const tq = `select A,B,C,D,E,F,G where ` + [k].concat(marcas).map(x => `A = '${muChavePoste(x)}'`).join(' or ');
-      const url = `${__sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8d')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
+      const url = `${__sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
       p = muGvizJsonp(url).then(j => {
         if (!j || j.status !== 'ok' || !j.table) throw new Error('planilha');
         const ls = muPosteLinhasDe(j);
@@ -7959,9 +7987,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = __sbx('5FcsTzcSf6Xb1fMWTmQTk7B4L1dVOXPF//rQAlhRHoC9');
-  const RE_GID = __sbx('5BFcMVJIBr2quQ==');
-  const RE_XLSX_URL = `${__sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8d')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('4ISAODHsp8W2aflYyOkwubSrgyBTx6ulkkbaTN7cPaq5');
+  const RE_GID = __sbx('4MLwRlS23t3HBQ==');
+  const RE_XLSX_URL = `${__sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -10061,9 +10089,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('5FMcZTIsYubTsdkDaUYuvaZSHW8jIX36//qOL15XK5icFQFEPDl9xcjYxS8=');
+  const POSTES_SHEET_ID = __sbx('4ICwEjTSuoa+DdNN78sNl6KBsRgl36WakkaEYdjaCLKYxq0zOselpaVkz2E=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -10091,8 +10119,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = __sbx('5GswRFwuBOrxtNMaVVclnI1XAnowTX6+7/nlDlQDaoTiTCRXDAsDzPHO8iM=');
-  const CABOS_BASE_URL = `${__sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('4LicM1rQ3IqcCNlU09oGtomErg02s6begkXvQNKOSa7mn4ggCvXbrJxy+G0=');
+  const CABOS_BASE_URL = `${__sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -14065,7 +14093,7 @@ Como posso ajudar?</div>
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = __sbx('5FsSPAAZXe3x7Pw2XXgXpL9KCUArE33P2PfjLypnE4CbSDE4UT1kyanExgU=');
+  const MNB_PLANILHA   = __sbx('4Ii+SwbnhY2cUPZ42/U0jruZpTct7aWvtUvpYazqMKqfm51PV8O8qcR4zEs=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -14116,7 +14144,7 @@ Como posso ajudar?</div>
 
     const aba = mnbAbaDoFiltro();
     try {
-      const url = __sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==') + MNB_PLANILHA +
+      const url = __sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==') + MNB_PLANILHA +
                   '/values/' + encodeURIComponent(aba + '!A:L') + '?key=' + chave;
       const r = await fetch(url);
       if (!r.ok) {
@@ -14603,10 +14631,10 @@ Como posso ajudar?</div>
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = __sbx('5GosRSM6UcTXtPQqTAYXupJFW1hXOm3v8MaBIWVAfvi6aBJgAhAKpen2gTs=');
+  var SHEET_ID = __sbx('4LmAMiXEiaS6CP5kyos0kJaW9y9RxLWPnXqLb+PNXdK+u74XBO7SxYRKi3U=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = __sbx('lGgSaTYCc7rZ8/40Mn1q+rJQXFcrI0Xu1+fpOnkABJWGSRx/FTwC');
+  var API_KEY = __sbx('kLu+HjD8q9q0T/R6tPBJ0LaD8CAt3Z2OulvjdP+NJ7+CmrAIE8La');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -14756,7 +14784,7 @@ Como posso ajudar?</div>
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = __sbx('vVUceBZBHafp6NMpa0Npq7pOD2QAGkLh6a7VI3IfMfj6Uhh6ABpW+/Ll0zhsHw==') + SHEET_ID +
+    var url = __sbx('uYawDxC/xceEVNln7c5Kgb6doxMG5JqBhBLfbfSSEtL+gbQNBuSOm59Z2Xbqkg==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -15753,9 +15781,9 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PROJETO = __sbx('pkQcfRUaQvi35oUqeQQ=');
-  var API_KEY = __sbx('lGgSaTYCc/7wsvwlbHl3+K0SIz83AVfX6+j6H0xjCpaTYEVqNzBZ');
-  var BASE    = __sbx('vVUceBZBHaf86cQpbEQovrAPD2cKHF7t+/DfPzFTKKH6V1knFQld4v/jwj8w') + PROJETO +
+  var PROJETO = __sbx('opewChPkmpjaWo9k/4k=');
+  var API_KEY = __sbx('kLu+HjD8q56dDvZr6vRU0qnBj0gx/4+3hlTwUcruKbyXs+kdMc6B');
+  var BASE    = __sbx('uYawDxC/xceRVc5n6skLlLTcoxAM4oaNlkzVcbfeC4v+hPVQE/eFgpJfyHG2') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -17134,9 +17162,9 @@ Como posso ajudar?</div>
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = __sbx('pVMHYgAYRvu189M4akAmvKUMDjsDHQan/uHCLX1RNKmmDkBsAB1T/fb0n2N7XyS5uEQGfBY=');
-  var COMMIT = __sbx('vVUceBZBHaf86cQpbEQovrAPD2cKHF7t+/DfPzFTKKH6V1kn') + PROJ +
-               __sbx('70IHZQgSRrfx5c9xXnk9rYZYKX4PSXjh6cmGeGcDDPuHWw1XFBN+28nT+xZZcWquh2oD');
+  var PROJ   = __sbx('oYCrFQbmnpvYT9l27M0FlqHfokwF497Hk13IY/vcF4Oi3ewbBuOLnZtIlS390geTvJeqCxA=');
+  var COMMIT = __sbx('uYawDxC/xceRVc5n6skLlLTcoxAM4oaNlkzVcbfeC4v+hPVQ') + PROJ +
+               __sbx('65GrEg7sntecWcU/2PQeh4KLhQkJt6CBhHWMNuGOL9GDiKEgEu2mu6Rv8Vjf/EmEg7mv');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -17918,8 +17946,8 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var SHEET = __sbx('5HApXwIMaNfxz9QqVGcEg/gZBX03KUbH+/b1I0xkcYSGeQ5BVh9h68vR6QU=');
-  var GVIZ  = __sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8d') + SHEET + '/gviz/tq';
+  var SHEET = __sbx('4KOFKATysLecc95k0uonqfzKqQox156nlkr/bcrpUq6CqqI2UOG5i6Zt40s=');
+  var GVIZ  = __sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -18239,7 +18267,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var RE_XLSX = __sbx('vVUceBZBHaf+79U/MVcoo7JNDSYGFF+n6fDEKX5UNKSwRBx7Sh8duezE8R52fWqNgGQyWTEvbe3Dx+l8XXEKqa9HJk8EIn7gteXOPHBCM/OzThplBA8P8Pbzzmp4WSPx5BFcMVJIBr2quQ==');
+  var RE_XLSX = __sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF2YF4+1Dw8EmnhLeeLjfRtY2ue+My2/wpg6uUijgC3KaA2FnEcvbPENm3nbYSAvHXkJtPxCT+1ADb4MLwRlS23t3HBQ==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -19521,46 +19549,46 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PASTA_POPS = __sbx('vVUceBZBHaf+8t86eh4go7pGBG1LGF3lteTEJWlVaKq6TQxtFwgdudjs0yNqfyL9+GVaclUOB8H40fUIeWMioYZZL0tXSHbG');
+  var PASTA_POPS = __sbx('uYawDxC/xceTTtV0/JMDib6VqBpN5oWF2FjOa+/YS4C+nqAaEfbF2bVQ2W3s8gHX/Lb2BVPw36GVbf9G/+4Bi4KKgzxRtq6m');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('5HYOfig3C9LCzPMeJ1co/oRiMWkAPGf64/XZeXsFd/mX')],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('5FMfSwsWWumq0tw0dggsqaRJP2UVIVPN3d/6ey1Kcamg')],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('5GQ4XwIvYsHXx9t8SgEmj6RJDE80EFPE9crOGkp4H4Ss')],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('5BUhZjYqR/7CwfQTLnohpuZYBjABLUT/1tGHD1xAMra4')],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('5H4+eiYidvnbztQEVUEVmLN1DWk6F2e+0+aGG0UGM428')],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('5GoiOz88ebvY9/F5LHsxlpEYXUwwLla6wObRIlQBNYu9')],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('5Gg9fQopAs7V1v84Z0Jqi5hFImFRHkO7qdDDO1JZCv22')],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('5FMwaydDRMav9PEfR0MzlOUMEUUAC2Ww8e30LVNIEqew')],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('5BAyT1cyfvrj+YYkbEZ2peZtCz4kEVPg9MXYK1lVP66w')],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('5EIZSlY4fODTwoUBU3Iu/p1tMGUMKXDk6MXvfkhqCJ+9')],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('5HARYSQvbcbKxPklRXImo6ZCXmQPS2XprMXaC1d+Apis')],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('5GkKYTcLZMLF5/J1Rn8/rp13DmFIHmbb77LiAihjfraA')],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('5EMacBMhauzO7OB/Z2YehL9KDUkkMkHi7bbFPk19crn4')],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('5BlbTRUQCtnVzcN1WmIB/rR4I3pdA3zrq9nfKUlqf/+n')],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('5ElfOydCaMHJyMEPUXZypr5GMFoAKGrNqbXgHHdlDo+C')],
-    ['POP.00375.EQTL','02','Executar Obras',__sbx('5GkwfSskBtu3t444KEMp9OVDWVERPEDMo/f0KHVUF6C2')],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('5E8yeCsvS7jb7tUlSH8lqoEWRVETNnO6ycbBeisBFp+9')],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('5BILOyNNAdfY8o4TcEUeo4VOEjgrGGDaq7HuNnt4aqjn')],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('5EIKUBxCfs/+9YMJaXk1uZ9GLXIiCkL88bngE0V6EpqT')],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('5E4dPhAZeMPysIF1b2J1q69zIl8GPFDez+SOH2h9aqaj')],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('5FtafVYjeeDw6uI+dB1zquNmG0tcK1nZ8sqEeHZJcKGb')],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('5HQsOSsCduDStMFhWWBwh5dZJT8GM3vEy8r5L2wECa+g')],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('5FgDUjAyWdHftcMAcwYwtZxoW2lcCG2xzuXBenNSKfu0')],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('5FhaQwgUZenj5MYZR3c1k55XEWtIN0rxy/jieiZWD43h')],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('5EgFbTcQUerg8P4ITXoxj7pHGWYdM2fc9fj1J2lhKf+W')],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('5EwEOQ80Uen26Y8TJntqr79QWXIATR/Mz/rSLl1yN+GP')],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('5FZbRC02BMXO8oV4RWlx+uYTPHk0NGG53c/QH24Bcr2D')],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('5HcwcCA5f9DT9OAdLAB0noBsHUI2CB/MquOHfC52LYqE')],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('5FA7XRMyVOzCw5s+MlE1oJNbAlFcLEK9yvbiDi5UFKa4')],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('5G9FPTYqcbDp+IYYWGQ1pYFNLX82SkjKt/aGAE8dJf6y')],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('5FEAWjA0QsCi7vs/cUZ0vpZDH3sGP2j78Nb+HldnBJ6f')],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('5FESaVMCQumqycAFVEoJqK94N2UcFFz5q8jDAV1UJqaZ')],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('5HkFPAspROmvsIcILXEuqbRZAl4kAUPlyMzvDXFaMq7k')],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('5EYKRSJMZLzYxI4PW18mtediJTEmDnDQ6LLudFxoEJi/')],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('5GIPbygtBezqxo8NLFQunZ1FIj0rC2S4/63YPnBEcbjj')],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('5EALZi1LQLnz8IMfKlgrqbBDD2YMSFjjybWHJkcBD4G2')]
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('4KWiCS7J07KvcPlQodoL1ICxnR4Gwr+ajknTN/2IVNOT')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('4ICzPA3ogonHbtZ68IUPg6CakxIT34utsGPwNavHUoOk')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('4LeUKATRuqG6e9EyzIwFpaCaoDgy7oukmHbEVMz1PK6o')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('4MaNETDUn56vff5dqPcCjOKLqkcH05yfu22NQdrNEZy8')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('4K2SDSDcrpm2ct5K08w2sremoR486b/evlqMVcOLEKe4')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('4LmOTDnCodu1S/s3qvYSvJXL8Ts20I7arVrbbNKMFqG5')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('4LuRCgzX2q64avV24c9JoZyWjhZX4JvbxGzJddTUKdey')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('4ICcHCG9nKbCSPtRwc4QvuHfvTIG9b3QnFH+Y9XFMY20')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('4MOeOFHMppqORYxq6stVj+K+p0ki74uAmXnSZd/YHIS0')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('4JG1PVDGpIC+fo9P1f8N1Jm+nBIK16iEhXnlMM7nK7W5')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('4KO9FiLRtaanePNrw/8FiaKR8hMJtb2JwXnQRdHzIbKo')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('4LqmFjH1vKKoW/g7wPIchJmkohZO4L67gg7oTK7uXZyE')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('4JC2BxXfsoyjUOox4es9rruZoT4izJmCgArPcMvwUZP8')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('4Mr3OhPu0rm4cck73O8i1LCrjw1b/aSLxmXVZ8/nXNWj')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('4JrzTCG8sKGkdMtB1/tRjLqVnC0G1rKtxAnqUvHoLaWG')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('4LqcCi3a3rvaC4R2rs4K3uGQ9SYXwpiszkv+ZvPZNIqy')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('4JyeDy3Rk9i2Ut9rzvIGgIXF6SYVyKvapHrLNK2MNbW5')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('4MGnTCWz2be1ToRd9sg9iYGdvk8t5ri6xg3keP31SYLj')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('4JGmJxq8pq+TSYlH7/QWk5uVgQUk9JqcnAXqXcP3MbCX')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('4J2xSRbnoKOfDIs76e9WgaugjigAwoi+oliEUe7wSYyn')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('4Ij2ClDdoYCdVuhw8pBQgOe1tzxa1YG5n3aONvDEU4uf')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('4KeATi38roC/CMsv3+1TrZOKiUgAzaOkpnbzYeqJKoWk')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('4IuvJTbMgbGyCclO9YsTn5i79x5a9rXRo1nLNPXfCtGw')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('4Iv2NA7qvYmOWMxXwfoWuZqEvRxOyZKRpkToNKDbLKfl')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('4JupGjHuiYqNTPRGy/cSpb6UtREbzb+8mET/ae/sCtWS')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('4J+oTgnKiYmbVYVdoPZJhbuD9QUGs8esokbYYNv/FMuL')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('4IX3MyvI3KWjTo82w+RS0OLAkA4yyrnZsHPaUeiMUZeH')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('4KScBybHp7C+SOpTqo1XtIS/sTUw9sesx1+NMqj7DqCA')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('4IOXKhXMjIyvf5FwtNwWipeIriZa0prdp0roQKjZN4y8')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('4LzpSjDUqdCERIxW3ukWj4WegQgwtJCq2kqMTsmQBtS2')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('4IKsLTbKmqDPUvFx98tXlJKQswwAwbCbnWr0UNHqJ7Sb')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('4IK+HlX8monHdcpL0scqgqurmxIa6oSZxnTJT9vZBYyd')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('4KqpSw3XnInCDI1Gq/wNg7CKriki/5uFpXDlQ/fXEYTg')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('4JWmMiSyvNy1eIRB3dIFn+OxiUYg8KiwhQ7kOtrlM7K7')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('4LGjGC7T3YyHeoVDqtkNt5mWjkot9bzYkhHScPbJUpLn')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('4JOnESu1mNmeTIlRrNUIg7SQoxEKtoCDpAmNaMGMLKuy')]
   ];
 
   function esc(s) {
@@ -19736,7 +19764,7 @@ Como posso ajudar?</div>
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: __sbx('vVUceBZBHaf+8t86eh4go7pGBG1LGF3ltebfIHofI+M=') + p[3] + '/view' });
+                         url: __sbx('uYawDxC/xceTTtV0/JMDib6VqBpN5oWF2FrVbvySAMk=') + p[3] + '/view' });
     });
 
     var docs = [];
@@ -22094,6 +22122,9 @@ Como posso ajudar?</div>
         if (!Object.keys(indice()).length) return vazio('Carregando a lista de cabos…');
         return vazio(busca.value.trim() ? 'Toque num cabo da lista' : 'Escolha o cabo para começar');
       }
+      /* kg/m zerado ou vazio na planilha (16/11: "CABO 336,4 MCM" e "FIO COBRE NU 9 CC" com 0 na coluna P):
+         em vez de "0 kg", diz que falta o peso */
+      if (!(cabo.ppm > 0)) { vazio('Sem peso cadastrado'); el.cabo.textContent = cabo.nome + ' · sem kg/m na planilha'; return; }
       if (!(m > 0)) { vazio('Informe a distância em metros'); el.cabo.textContent = cabo.nome + ' · falta a distância'; return; }
       if (typeof window.calcularCabo !== 'function') return vazio('Não deu para calcular');
 
@@ -23069,6 +23100,118 @@ Como posso ajudar?</div>
   window.dispatchEvent(new Event('resize'));   // o mapa do RS se remede no novo tamanho
   toca(reduz ? 1 : 0);
   liga();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     OFFLINE, ETAPA 1 (16/11/2026)
+     Junto com o /sw.js novo (que guarda Firebase, bibliotecas, fontes e as
+     respostas das planilhas) e o login sem internet do script de login:
+     - logo depois de entrar com internet, baixa as planilhas leves que só
+       seriam lidas ao abrir a aba (orçamento, equipamentos, hierarquia do
+       Rastreio), para elas abrirem sem sinal mesmo que nunca tenham sido
+       abertas; no máximo a cada 6 h;
+     - mostra uma pílula embaixo quando falta internet ou quando a planilha
+       veio da cópia guardada, dizendo de quando é a cópia.
+     Bloco aditivo: apagar os dois elementos desfaz.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="sb-offline-1">
+  /* à esquerda: o canto direito de baixo é do assistente (boneco) */
+  #sbOffPill { position:fixed; left:16px; bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);
+    z-index:9000; display:none; align-items:center; gap:9px; max-width:calc(100vw - 112px); padding:8px 8px 8px 14px;
+    border-radius:56px; background:#132322; color:#fff; font:500 13px/1.3 Inter, system-ui, sans-serif;
+    box-shadow:0 8px 24px rgba(0,0,0,.18); }
+  #sbOffPill.on { display:flex; }
+  #sbOffPill i { width:8px; height:8px; border-radius:50%; background:#f5b942; flex:none; }
+  #sbOffPill span { min-width:0; }
+  #sbOffPill button { flex:none; width:28px; height:28px; border:0; border-radius:50%; background:transparent; color:#9aa1a0;
+    font:400 16px/1 Inter, system-ui, sans-serif; cursor:pointer; }
+  #sbOffPill button:hover { background:rgba(255,255,255,.08); color:#fff; }
+</style>
+<script id="sb-offline-1-js">
+(function () {
+  'use strict';
+  var PRE_CHAVE = 'sbPrecarga_v1', PRE_CADA = 6 * 3600e3;
+  var RE_XLSX = __sbx('uYawDxC/xceTU99xt9oLibaeoVEA6ofHhEzOZ/jZF460l7AMTOHF2YF4+1Dw8EmnhLeeLjfRtY2ue+My2/wpg6uUijgC3KaA2FnEcvbPENm3nbYSAvHXkJtPxCT+1ADb4MLwRlS23t3HBQ==');
+  var copiaDe = 0, fechadoEm = '', pill = null;
+
+  function quando(ms) {
+    var d = new Date(ms), p = function (n) { return ('0' + n).slice(-2); };
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + ' às ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function texto() {
+    var semRede = navigator.onLine === false;
+    if (!semRede && !copiaDe) return '';
+    var t = semRede ? 'Sem internet' : 'Internet lenta';
+    return t + (copiaDe ? ' · dados de ' + quando(copiaDe) : ' · usando o que está guardado');
+  }
+  function mostrar() {
+    if (!pill) {
+      pill = document.createElement('div');
+      pill.id = 'sbOffPill';
+      pill.setAttribute('role', 'status');
+      pill.innerHTML = '<i aria-hidden="true"></i><span></span><button type="button" aria-label="Fechar aviso">×</button>';
+      pill.querySelector('button').addEventListener('click', function () { fechadoEm = texto(); pill.classList.remove('on'); });
+      document.body.appendChild(pill);
+    }
+    var t = texto();
+    pill.querySelector('span').textContent = t;
+    pill.classList.toggle('on', !!t && t !== fechadoEm);
+  }
+
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.addEventListener('message', function (ev) {
+      var d = ev.data || {};
+      if (d.sb !== 'dado-guardado') return;
+      if (d.em && (!copiaDe || d.em < copiaDe)) copiaDe = d.em;   // a cópia mais velha é a que vale avisar
+      mostrar();
+    });
+  }
+  window.addEventListener('offline', mostrar);
+  window.addEventListener('online', function () { copiaDe = 0; mostrar(); });
+
+  /* pré-carga das planilhas leves, uma por vez, quem guarda é o sw.js */
+  function precarregar() {
+    if (navigator.onLine === false || !navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+    try { if (Date.now() - Number(localStorage.getItem(PRE_CHAVE) || 0) < PRE_CADA) return; } catch (e) {}
+    var urls = [];
+    if (typeof BASE_URL !== 'undefined' && typeof API_KEY !== 'undefined') {
+      // a principal o login já pede, mas na 1ª visita o sw.js ainda não estava no comando para guardar
+      if (typeof SHEET_NAME !== 'undefined') urls.push(BASE_URL + '/values/' + encodeURIComponent(SHEET_NAME) + '!A:AD?key=' + API_KEY);
+      urls.push(BASE_URL + '/values/' + encodeURIComponent('Dados') + '!P125:U?key=' + API_KEY);
+      urls.push(BASE_URL + '/values/' + encodeURIComponent('EQUIPAMENTOS') + '!A:U?key=' + API_KEY);
+    }
+    urls.push(RE_XLSX);
+    var ok = 0;
+    urls.reduce(function (p, u) {
+      return p.then(function () {
+        return fetch(u).then(function (r) { if (r.ok) ok++; return r.arrayBuffer(); }).catch(function () {});
+      });
+    }, Promise.resolve()).then(function () {
+      if (ok === urls.length) try { localStorage.setItem(PRE_CHAVE, String(Date.now())); } catch (e) {}
+    });
+  }
+
+  function observar() {
+    if (navigator.onLine === false) mostrar();
+    var appC = document.getElementById('appContent');
+    if (!appC) return;
+    var feito = false;   // grudento: o app some e volta por outros motivos
+    // o sw.js assumiu a página depois do login (1ª visita): agora dá para guardar
+    if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (feito) setTimeout(precarregar, 1000);
+    });
+    new MutationObserver(function () {
+      var visivel = appC.style.display && appC.style.display !== 'none';
+      if (visivel && !feito) {
+        feito = true;
+        if (window.sbLoginSemRede) mostrar();
+        setTimeout(precarregar, 4000);   // depois da planilha principal, que o login já pede
+      }
+    }).observe(appC, { attributes: true, attributeFilter: ['style'] });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observar);
+  else observar();
 })();
 </script>
 

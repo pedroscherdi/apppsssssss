@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#132322">
+<title>Política de privacidade · SetupBoom</title>
+<meta name="description" content="Que dados o SetupBoom coleta, para quê, quem vê e como pedir a exclusão.">
+<link rel="icon" href="/favicon.ico">
+<style>
+@font-face { font-family:'Inter'; font-weight:100 900; font-display:swap;
+  src:url(https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcviYwY.woff2) format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family:'Inter'; font-weight:100 900; font-display:swap;
+  src:url(https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcvsYwYL8g.woff2) format('woff2');
+  unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family:'SB Marca'; font-weight:800; font-display:swap;
+  src:url(https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_24vg6jTY8.woff2) format('woff2'); }
+:root { --fundo:#edf7f5; --cartao:#fff; --borda:#d0d3d3; --txt:#132322; --prosa:#424f4f; --apagado:#5d6867; --verde:#167a4c; --neon:#3ddc91; }
+@media (prefers-color-scheme: dark) {
+  :root { --fundo:#0e1a19; --cartao:#132322; --borda:rgba(255,255,255,.1); --txt:#fff; --prosa:#b9c0bf; --apagado:#9aa1a0; --verde:#3ddc91; } }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { background:var(--fundo); -webkit-text-size-adjust:100%; }
+body { font:400 16px/1.65 Inter,system-ui,-apple-system,'Segoe UI',sans-serif; color:var(--prosa); background:var(--fundo);
+       font-feature-settings:"ss01","cv11"; -webkit-font-smoothing:antialiased; }
+.topo { background:#132322; color:#fff; padding:40px 16px 36px; }
+.topo > div, main { max-width:760px; margin:0 auto; }
+.marca { font:800 22px/1 'SB Marca','Syne',sans-serif; letter-spacing:-.02em; color:#fff; text-decoration:none; }
+.marca span { color:#3ddc91; }
+.topo h1 { margin-top:26px; font-size:clamp(30px, 6vw, 42px); font-weight:500; line-height:1.1; letter-spacing:-.025em; color:#fff; }
+.topo p { margin-top:10px; color:#9aa1a0; font-size:15px; }
+main { padding:28px 16px 64px; }
+.resumo { background:var(--cartao); border:1px solid var(--borda); border-radius:20px; padding:20px 22px; }
+.resumo b { color:var(--txt); font-weight:600; }
+.resumo ul { margin:10px 0 0 18px; }
+.resumo li + li { margin-top:4px; }
+h2 { margin:40px 0 10px; font-size:22px; font-weight:500; letter-spacing:-.015em; line-height:1.25; color:var(--txt); }
+h3 { margin:22px 0 6px; font-size:16px; font-weight:600; color:var(--txt); }
+p + p, p + ul, ul + p { margin-top:10px; }
+ul { margin-left:20px; }
+li + li { margin-top:6px; }
+strong { color:var(--txt); font-weight:600; }
+a { color:var(--verde); text-underline-offset:3px; }
+.tabela { margin-top:12px; border:1px solid var(--borda); border-radius:16px; overflow:hidden; background:var(--cartao); }
+.tabela div { display:grid; grid-template-columns:minmax(0, 11rem) minmax(0, 1fr); gap:4px 18px; padding:14px 18px; }
+.tabela div + div { border-top:1px solid var(--borda); }
+.tabela dt { font-weight:600; color:var(--txt); }
+.tabela dd { margin:0; }
+@media (max-width:560px) { .tabela div { grid-template-columns:1fr; } }
+.contato { margin-top:14px; background:var(--cartao); border:1px solid var(--borda); border-radius:20px; padding:18px 22px; }
+.contato a { font-weight:600; }
+footer { max-width:760px; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--apagado); }
+</style>
+</head>
+<body>
+<header class="topo"><div>
+  <a class="marca" href="/">Setup<span>Boom</span></a>
+  <h1>Política de privacidade</h1>
+  <p>Em vigor desde 16 de novembro de 2026.</p>
+</div></header>
+
+<main>
+  <div class="resumo">
+    <b>Em resumo</b>
+    <ul>
+      <li>A cada login o SetupBoom registra quem entrou, quando, de que aparelho e, <strong>se você permitir</strong>, onde estava.</li>
+      <li>Também conta quais telas do app foram abertas.</li>
+      <li>Só o responsável pelo app vê esses registros. Nada é vendido nem usado para publicidade.</li>
+      <li>Você pode pedir para ver ou apagar os seus dados pelo e-mail no fim desta página.</li>
+    </ul>
+  </div>
+
+  <h2>1. O que é o SetupBoom e quem responde por ele</h2>
+  <p>O SetupBoom é uma ferramenta de consulta para as equipes de campo do Grupo Setup que trabalham na rede de distribuição de energia: estruturas e materiais, mapa da rede, normas e cálculos do dia a dia. O acesso exige usuário e senha, que são criados pelo responsável. Não existe cadastro aberto.</p>
+  <p>O SetupBoom é desenvolvido e mantido por <strong>Pedro Scherdien</strong>, responsável pelo tratamento dos dados descritos aqui (o "controlador", nos termos da Lei Geral de Proteção de Dados, Lei nº 13.709/2018). <strong>O SetupBoom não é um aplicativo da CEEE Equatorial nem do Grupo Equatorial Energia.</strong></p>
+
+  <h2>2. Que dados o app coleta</h2>
+  <dl class="tabela">
+    <div><dt>Login</dt><dd>O seu usuário (no formato nome.sobrenome ou matrícula) e a senha. A senha é conferida no servidor. O app não consegue lê-la de volta.</dd></div>
+    <div><dt>Registro de acesso</dt><dd>A cada login: usuário, nome, a OMP escolhida (Sul ou Norte), data e hora, o modelo do aparelho e do navegador e o endereço do site de onde o app foi aberto.</dd></div>
+    <div><dt>Localização no login</dt><dd>Latitude, longitude e precisão do aparelho no momento do login, <strong>só se você autorizar</strong> o acesso à localização. Se você negar, o app funciona do mesmo jeito e o registro fica sem posição.</dd></div>
+    <div><dt>Uso das telas</dt><dd>Para cada dia, quais telas do app foram abertas, quantas vezes no total e quais usuários abriram cada uma.</dd></div>
+    <div><dt>Estatísticas de uso</dt><dd>O Google Analytics registra as telas abertas, o tipo de aparelho e a região aproximada (pelo endereço de internet), ligados a um identificador do navegador, sem o seu nome nem a sua matrícula.</dd></div>
+  </dl>
+
+  <h2>3. Para que esses dados servem</h2>
+  <ul>
+    <li>Saber quem usa o app, em que regiões e com que aparelhos, para decidir o que melhorar.</li>
+    <li>Segurança: perceber login indevido ou senha compartilhada.</li>
+  </ul>
+  <p>Os dados não são vendidos, não são usados para publicidade e não são repassados a ninguém para fins comerciais. A base legal é o legítimo interesse em manter e proteger uma ferramenta de trabalho. Para a localização, é o seu consentimento, que você dá ou nega na permissão do aparelho.</p>
+
+  <h2>4. Quem vê e onde ficam</h2>
+  <p>Os registros de acesso e de uso das telas ficam no Google Firebase (Cloud Firestore), em servidores do Google. <strong>Só a conta do responsável pelo app consegue lê-los.</strong> As estatísticas ficam no Google Analytics, também com acesso restrito ao responsável. O tráfego entre o app e esses serviços é criptografado (HTTPS).</p>
+  <p>Os registros são guardados enquanto o SetupBoom estiver em funcionamento, ou até você pedir a exclusão.</p>
+
+  <h2>5. O que fica só no seu aparelho</h2>
+  <p>Algumas coisas ficam guardadas apenas no seu celular ou computador e não são enviadas a ninguém: anotações e marcações que você faz, a folha de ponto, as suas versões editadas de estruturas, os favoritos, as preferências (tema, OMP) e a cópia da base de materiais que a aba Montar Lista guarda para abrir sem internet. Apagar os dados do app ou do navegador apaga tudo isso.</p>
+
+  <h2>6. Localização dentro do app</h2>
+  <ul>
+    <li><strong>No mapa</strong>, a sua posição é usada no próprio aparelho para mostrar onde você está e o que está por perto. Ela não é gravada.</li>
+    <li><strong>Endereço a partir da localização:</strong> quando você pede para transformar a sua posição em endereço, as coordenadas são enviadas ao OpenStreetMap (Nominatim), que devolve o endereço.</li>
+    <li><strong>Google Maps e Street View:</strong> quando você toca para abrir um ponto no Google, as coordenadas daquele ponto vão para o Google.</li>
+  </ul>
+
+  <h2>7. Serviços de terceiros que o app usa</h2>
+  <ul>
+    <li><strong>Google</strong>: Planilhas (os dados de estruturas e da rede), Firebase (login e registros), Analytics (estatísticas), Maps (links).</li>
+    <li><strong>Esri / ArcGIS</strong>: as imagens de fundo do mapa. O serviço recebe a área do mapa que está na tela.</li>
+    <li><strong>OpenStreetMap (Nominatim)</strong>: endereço a partir de coordenadas, só quando você pede.</li>
+    <li><strong>Open-Meteo</strong>: previsão do tempo das bases. Recebe só as coordenadas fixas das bases, não a sua.</li>
+    <li><strong>WhatsApp</strong>: só quando você escolhe compartilhar algo por ele.</li>
+  </ul>
+  <p>Cada um desses serviços tem a sua própria política de privacidade.</p>
+
+  <h2>8. Seus direitos</h2>
+  <p>Pela LGPD você pode, a qualquer momento: confirmar se temos dados seus, ver quais são, corrigir, pedir a exclusão e retirar o consentimento da localização (é só negar a permissão no aparelho). Para excluir o seu usuário e os seus registros de acesso e de uso, mande um e-mail com o seu usuário. Respondemos em até 15 dias.</p>
+
+  <h2>9. Menores de idade</h2>
+  <p>O SetupBoom é uma ferramenta profissional e não se destina a menores de 18 anos.</p>
+
+  <h2>10. Mudanças nesta política</h2>
+  <p>Quando o app passar a coletar algo diferente, esta página muda antes, com a data nova no topo.</p>
+
+  <h2>11. Contato</h2>
+  <div class="contato">
+    Pedro Scherdien, responsável pelo SetupBoom<br>
+    <a href="mailto:pedro.scherdi@gmail.com">pedro.scherdi@gmail.com</a>
+  </div>
+</main>
+
+<footer>SetupBoom · ferramenta das equipes do Grupo Setup</footer>
+</body>
+</html>

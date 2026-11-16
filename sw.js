@@ -18,7 +18,7 @@
    Ao publicar uma versão nova do site, MUDE o VERSAO abaixo.
    ════════════════════════════════════════════════════════════════════════ */
 
-const VERSAO = 'setupboom-2026-11-16';
+const VERSAO = 'setupboom-2026-11-16b';
 const SB_LIBS = 'sb-libs-v1';
 const SB_DADOS = 'sb-dados-v1';
 const ESPERA = 7000;   // ms esperando a planilha antes de cair na cópia guardada
@@ -31,6 +31,12 @@ const LIBS = [
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
+  // as imagens que o CSS do Leaflet pede (botão de camadas e o pino); sem elas o botão some offline
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/layers.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/layers-2x.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcviYwY.woff2',
   'https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcvsYwYL8g.woff2',
@@ -96,12 +102,26 @@ async function avisar(url, em) {
 }
 
 /* Rede primeiro, com prazo; sem rede (ou demorando), a última cópia. */
+/* A cópia vai COMPACTADA (gzip): postes e cabos descompactados ocupavam 326 MB
+   no aparelho; compactados, perto de um décimo. Quem não tem CompressionStream
+   guarda como veio. */
 async function guardar(req, copia) {
   const h = new Headers(copia.headers);
   h.set('x-sb-guardado-em', String(Date.now()));
-  const corpo = await copia.blob();
+  h.delete('content-length'); h.delete('content-encoding');
+  let corpo = copia.body;
+  if (self.CompressionStream && corpo) { corpo = corpo.pipeThrough(new CompressionStream('gzip')); h.set('x-sb-gzip', '1'); }
+  const blob = await new Response(corpo).blob();
   const c = await caches.open(SB_DADOS);
-  await c.put(req, new Response(corpo, { status: copia.status, statusText: copia.statusText, headers: h }));
+  await c.put(req, new Response(blob, { status: copia.status, statusText: copia.statusText, headers: h }));
+}
+
+/* Devolve a cópia descompactada (ou como está, se foi guardada sem gzip). */
+function abrirCopia(g) {
+  if (g.headers.get('x-sb-gzip') !== '1' || !self.DecompressionStream || !g.body) return g;
+  const h = new Headers(g.headers);
+  h.delete('x-sb-gzip');
+  return new Response(g.body.pipeThrough(new DecompressionStream('gzip')), { status: g.status, statusText: g.statusText, headers: h });
 }
 
 function dadoComCopia(e) {
@@ -121,7 +141,7 @@ function dadoComCopia(e) {
     const guardado = await caches.match(req, { cacheName: SB_DADOS });
     if (guardado) {
       avisar(req.url, Number(guardado.headers.get('x-sb-guardado-em')) || 0);
-      return guardado;
+      return abrirCopia(guardado);
     }
     return daRede;   // sem cópia: espera a rede (ou falha como antes)
   });
@@ -134,7 +154,8 @@ self.addEventListener('fetch', e => {
   if (eLib(url)) {
     e.respondWith(
       caches.match(e.request, { cacheName: SB_LIBS }).then(guardado => guardado || fetch(e.request).then(res => {
-        if (res && res.ok && res.type !== 'opaque') {
+        // imagem pedida pelo CSS chega "opaca" (no-cors); com versão no endereço, guardar assim também serve
+        if (res && (res.ok || res.type === 'opaque')) {
           const c = res.clone();
           caches.open(SB_LIBS).then(cc => cc.put(e.request, c));
         }

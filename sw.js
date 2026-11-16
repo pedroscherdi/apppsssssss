@@ -18,9 +18,11 @@
    Ao publicar uma versão nova do site, MUDE o VERSAO abaixo.
    ════════════════════════════════════════════════════════════════════════ */
 
-const VERSAO = 'setupboom-2026-11-16b';
+const VERSAO = 'setupboom-2026-11-16c';
 const SB_LIBS = 'sb-libs-v1';
 const SB_DADOS = 'sb-dados-v1';
+const SB_MAPA = 'sb-mapa-v1';   // pedaços do mapa vetorial (etapa 3, 16/11/2026)
+const R2_MAPAS = 'https://pub-5be5c4c95218461ba8eafdd09a51bfa8.r2.dev/mapas/';
 const ESPERA = 7000;   // ms esperando a planilha antes de cair na cópia guardada
 const CASCA = ['./', './index.html'];
 
@@ -38,6 +40,7 @@ const LIBS = [
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://unpkg.com/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js',
   'https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcviYwY.woff2',
   'https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTcvsYwYL8g.woff2',
   'https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_24vg6jTY8.woff2',
@@ -48,6 +51,7 @@ const LIBS = [
 const eLib = url =>
   url.startsWith('https://www.gstatic.com/firebasejs/') ||
   url.startsWith('https://cdnjs.cloudflare.com/ajax/libs/') ||
+  url.startsWith('https://unpkg.com/protomaps-leaflet@') ||
   url.startsWith('https://fonts.gstatic.com/');
 
 /* Planilhas: leitura pela API do Sheets e o xlsx exportado (Rastreio). */
@@ -87,7 +91,7 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  const ficar = [VERSAO, SB_LIBS, SB_DADOS];
+  const ficar = [VERSAO, SB_LIBS, SB_DADOS, SB_MAPA];
   e.waitUntil(
     caches.keys()
       .then(ks => Promise.all(ks.filter(k => !ficar.includes(k)).map(k => caches.delete(k))))
@@ -147,9 +151,32 @@ function dadoComCopia(e) {
   });
 }
 
+/* Mapa vetorial (PMTiles no R2): o protomaps-leaflet pede pedaços do arquivo
+   (cabeçalho Range). O Cache não aceita guardar resposta 206, então cada
+   pedaço vai como 200 com a faixa na chave e volta como 206 na hora de usar.
+   O arquivo tem versão no caminho (mapas/v1/...): pedaço guardado não muda. */
+async function mapaPedaco(e) {
+  const req = e.request;
+  const faixa = req.headers.get('range');
+  if (!faixa) return fetch(req);
+  const chave = req.url.split('?')[0] + '?sbfaixa=' + encodeURIComponent(faixa.replace(/\s+/g, ''));
+  const c = await caches.open(SB_MAPA);
+  const g = await c.match(chave);
+  if (g) return new Response(g.body, { status: 206, statusText: 'Partial Content', headers: g.headers });
+  const res = await fetch(req);
+  if (res.status === 206) {
+    const copia = res.clone();
+    // a gravação segue depois de a resposta ter sido entregue
+    e.waitUntil(copia.arrayBuffer().then(b => c.put(chave, new Response(b, { status: 200, headers: copia.headers }))).catch(() => {}));
+  }
+  return res;
+}
+
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
+
+  if (url.startsWith(R2_MAPAS)) { e.respondWith(mapaPedaco(e)); return; }
 
   if (eLib(url)) {
     e.respondWith(

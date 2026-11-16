@@ -18,7 +18,7 @@
    Ao publicar uma versão nova do site, MUDE o VERSAO abaixo.
    ════════════════════════════════════════════════════════════════════════ */
 
-const VERSAO = 'setupboom-2026-11-16d';
+const VERSAO = 'setupboom-2026-11-16e';
 const SB_LIBS = 'sb-libs-v1';
 const SB_DADOS = 'sb-dados-v1';
 const SB_MAPA = 'sb-mapa-v1';   // pedaços do mapa vetorial (etapa 3, 16/11/2026)
@@ -159,21 +159,29 @@ function dadoComCopia(e) {
   // a gravação da cópia segue mesmo depois de a resposta ter sido entregue
   let fim;
   e.waitUntil(new Promise(ok => { fim = ok; }));
-  const daRede = fetch(req).then(res => {
+  const daRede = fetch(req);
+  daRede.catch(() => {});
+
+  // a página fica com a resposta da rede: ela e a cópia leem juntas (clone)
+  const entregar = res => {
     if (res && res.ok) guardar(req, res.clone()).catch(() => {}).finally(fim);
     else fim();
     return res;   // entrega assim que começa a chegar
-  }, err => { fim(); throw err; });
+  };
 
   const prazo = new Promise(ok => setTimeout(ok, ESPERA, 'prazo'));
   return Promise.race([daRede.catch(() => 'erro'), prazo]).then(async r => {
-    if (r instanceof Response) return r;
+    if (r instanceof Response) return entregar(r);
     const guardado = await caches.match(req, { cacheName: SB_DADOS });
     if (guardado) {
       avisar(req.url, Number(guardado.headers.get('x-sb-guardado-em')) || 0);
+      // A página fica com a cópia; a resposta da rede, quando vier, só renova a cópia.
+      // SEM clone: um clone que ninguém lê segura a resposta inteira na memória
+      // (os cabos são ~195 MB, e era o que derrubava o celular). 16/11/2026.
+      daRede.then(res => (res.ok ? guardar(req, res) : null)).catch(() => {}).finally(fim);
       return abrirCopia(guardado);
     }
-    return daRede;   // sem cópia: espera a rede (ou falha como antes)
+    return daRede.then(entregar, err => { fim(); throw err; });   // sem cópia: espera a rede (ou falha como antes)
   });
 }
 

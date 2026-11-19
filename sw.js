@@ -15,10 +15,16 @@
      ESPERA ms, entrega a última cópia e avisa a página de quando ela é.
    - Os dois caches sobrevivem à troca de VERSAO; só a casca (index) é refeita.
 
+   19/11/2026 — o app "Oper - CEEE - Setup" mora na pasta /oper/ do mesmo site,
+   com o sw.js dele. Os dois dividem os caches de dados (mesmos nomes), mas a
+   casca de cada um é só dele: este SW não apaga os caches 'oper-…', e só grava
+   como casca o index DESTE app (antes, qualquer página aberta — baixar.html,
+   a política, o /oper/ — era gravada no lugar do index.html).
+
    Ao publicar uma versão nova do site, MUDE o VERSAO abaixo.
    ════════════════════════════════════════════════════════════════════════ */
 
-const VERSAO = 'setupboom-2026-11-16e';
+const VERSAO = 'setupboom-2026-11-19';
 const SB_LIBS = 'sb-libs-v1';
 const SB_DADOS = 'sb-dados-v1';
 const SB_MAPA = 'sb-mapa-v1';   // pedaços do mapa vetorial (etapa 3, 16/11/2026)
@@ -96,10 +102,17 @@ self.addEventListener('activate', e => {
   const ficar = [VERSAO, SB_LIBS, SB_DADOS, SB_MAPA, SB_R2];
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => !ficar.includes(k)).map(k => caches.delete(k))))
+      // 'oper-…' é a casca do app da pasta /oper/: não é deste SW
+      .then(ks => Promise.all(ks.filter(k => !ficar.includes(k) && !k.startsWith('oper-')).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
+
+/* A casca é o index DESTE app: a raiz do escopo do SW (com ou sem index.html). */
+const ehCasca = url => {
+  const s = self.registration.scope, u = url.split('#')[0].split('?')[0];
+  return u === s || u === s + 'index.html';
+};
 
 /* Avisa as abas abertas de que um dado veio da cópia guardada, e de quando. */
 async function avisar(url, em) {
@@ -235,14 +248,19 @@ self.addEventListener('fetch', e => {
   /* Navegação (abrir o app): rede primeiro, para pegar versão nova quando
      houver sinal, e cair no cache quando não houver. */
   if (e.request.mode === 'navigate') {
+    const casca = ehCasca(url);
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          const clone = res.clone();
-          caches.open(VERSAO).then(c => c.put('./index.html', clone));
+          if (casca && res.ok) {
+            const clone = res.clone();
+            caches.open(VERSAO).then(c => c.put('./index.html', clone));
+          }
           return res;
         })
-        .catch(() => caches.match('./index.html').then(r => r || caches.match('./')))
+        .catch(() => (casca ? Promise.resolve(null) : caches.match(e.request))
+          .then(r => r || caches.match('./index.html', { cacheName: VERSAO }))
+          .then(r => r || caches.match('./', { cacheName: VERSAO })))
     );
     return;
   }

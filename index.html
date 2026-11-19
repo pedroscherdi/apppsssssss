@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>(function(){var k=[223,187,52,71,71,3,25,16,234,204,25,255,195,134,27,51];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
+<script>(function(){var k=[77,229,58,105,80,133,33,23,89,171,189,224,208,59,193,222];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -113,12 +113,12 @@
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: __sbx('nvJOJhR6WGaA/lOWsM8rB6eIf3AVeXxPm6RVrJDVVmmZ+hklFUhy'),
-      authDomain: __sbx('rN5AMjdiaWDHqiqZpbI1VbbJUSUmcHxxmrw3nKzr'),
-      projectId: __sbx('rN5AMjdiaWDHqiqZpbI='),
-      storageBucket: __sbx('rN5AMjdiaWDHqiqZpbI1VbbJUSUmcHxjnqNrnqTjNVKvyw=='),
-      messagingSenderId: __sbx('7Y4BdHE6KCjT+C/J'),
-      appId: __sbx('7oEGcnIwLynb9CDL9bAhRLrZDiR1Z30l2qopmfWyKQbm2VZwIjEpJtk=')
+      apiKey: __sbx('DKxACAP8YGEzmfeJo3Lx6jXWcV4C/0RIKMPxs4NojIQLpBcLAs5K'),
+      authDomain: __sbx('PoBOHCDkUWd0zY6Gtg/vuCSXXwsx9kR2KduTg79W'),
+      projectId: __sbx('PoBOHCDkUWd0zY6Gtg8='),
+      storageBucket: __sbx('PoBOHCDkUWd0zY6Gtg/vuCSXXwsx9kRkLcTPgbde7789lQ=='),
+      messagingSenderId: __sbx('f9APWma8EC9gn4vW'),
+      appId: __sbx('fN8IXGW2Fy5ok4TU5g37qSiHAApi4UUiac2NhuYP8+t0h1heNbcRIWo=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -156,7 +156,7 @@
        Não fica sessão salva: cada abertura pede usuário e senha (o navegador
        pode lembrar). Sessão antiga do Firebase Auth (login Google) é
        desconectada, senão a pessoa entrava sem usuário e senha. */
-    const FS_DOCS       = __sbx('t89ANzQ5Nj+MpWuasPJ0QbqVUygoZHV1i7xwjO3ldF7wzQVoN3F2eo+vbYzs') + firebaseConfig.projectId + '/databases/(default)/documents';
+    const FS_DOCS       = __sbx('JZFOGSO/Djg/ws+Fo0+urCjLXQY/4k1yONvUk/5YrrNikwtGIPdOfTzIyZP/') + firebaseConfig.projectId + '/databases/(default)/documents';
     const WHATS_SUPORTE = '5553984742332';
     const $l = id => document.getElementById(id);
 
@@ -2397,7 +2397,9 @@
       font-family: 'DM Mono', monospace;
       font-size: 0.8rem;
     }
-    .leaflet-control-layers label { color: #e8e8e8 !important; margin: 4px 0; }
+    /* 19/11/2026: o texto era #e8e8e8 fixo, do tempo do tema escuro; no claro (fundo branco) sumia */
+    .leaflet-control-layers, .leaflet-control-layers label { color: var(--text, #e8e8e8) !important; }
+    .leaflet-control-layers label { margin: 4px 0; }
 
     /* ── Anotação do mapa (evidência de emergência) ── */
     .anot-barra {
@@ -4112,10 +4114,10 @@
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = __sbx('nvJOJhR6WCKpv1GH7ss2BbjKABgJW252p6tGiaW2WGqM00AwN0Qp');
-  const SHEET_ID = __sbx('7uR/KAhaRlGMhWGN9+IscrncBnMdV29lqK1PzYDLQUmzi00OAVlfWpOiT7I=');
+  const API_KEY  = __sbx('DKxACAP8YCUa2PWY/Xbs6CqUDjYe3VZxFMzilrYLgocejU4eIMIR');
+  const SHEET_ID = __sbx('fLpxBh/cflY/4sWS5F/2nyuCCF0K0VdiG8rr0pN2m6Qh1UMgFt9nXSDF660=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `${__sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==')}${SHEET_ID}`;
+  const BASE_URL = `${__sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4752,12 +4754,12 @@
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `${__sbx('t89ANzQ5Nj+OvnCJpqh8XLDcWCJpYHZ9xbhxiq7kdVK21wsuIz4=')}${id}&sz=w1200`;
+    return `${__sbx('JZFOGSO/Djg92dSWtRWmsSKCVgx+5k56dt/Vlb1Zr78kiQUANLg=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `${__sbx('t89ANzQ5Nj+OvnCJpqh8XLDcWCJpYHZ9xapwk6apfxw=')}${id}/view`;
+    return `${__sbx('JZFOGSO/Djg92dSWtRWmsSKCVgx+5k56ds3UjLUUpfE=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -6181,9 +6183,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('7slAKhBUSX6j/XawtfByQqzIQSABWVZij7YhnILhd2eWj10LHkFWXbiUapw=');
+  const POSTES_SHEET_ID = __sbx('fJdOBAfScXkQmtKvpk2orz6WTw4W325lPNGFg5FcrYoE0VMlCcduWgvzzoM=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6429,8 +6431,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = __sbx('7vFsC35WL3KB+HypieF5Y4fNXjUSNVUmn7VKvYi1Nnvo1ngYLnMoVIGCXZA=');
-  const CABOS_BASE_URL = `${__sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('fK9iJWnQF3Uyn9i2mlyjjhWTUBsFs20hLNLuopsI7JZ6iHY2OfUQUzLl+Y8=');
+  const CABOS_BASE_URL = `${__sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7575,7 +7577,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      não baixa as 97 mil linhas (memória do iPhone). Cache em Map.
      Carga = demanda em kVA = carregamento × KVATKVA, e o G2M usa KVATKVA =
      1,5 × a potência (conferido: 23,08 % × 67,5 = 15,58 kVA na IT144020778). */
-  const TRAFO_PLANILHA = __sbx('7o9EcSAzWCKwqljM7tR/R5bTZgYQYUld3IQtjLLcaUWQ3ngpAHVqXJ2tLK4=');
+  const TRAFO_PLANILHA = __sbx('fNFKXze1YCUDzfzT/WmlqgSNaCgH53Fab+OJk6Fhs6gCgHYHF/NSWy7KiLE=');
   const muTrafoCache = new Map();
 
   function muEhTrafo(icone) { return /TRANSFORMADOR/i.test(String(icone || '')); }
@@ -7610,7 +7612,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muTrafoCache.has(cod)) return muTrafoCache.get(cod);
     if (navigator.onLine === false) return muOffTrafo(cod);
     const tq = `select B,C,D,E,F,G,J where A = '${cod}' limit 1`;
-    const url = `${__sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const lin = (j.table.rows || [])[0];
@@ -7680,7 +7682,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      planilha usa a forma limpa. As variantes vão num pedido só (A = x or A = y) e
      fica a primeira que existir. Medido: 110.368 dos 113.927 equipamentos que não são
      trafo casam; jumper, capacitor e regulador não são chave e nem consultam. */
-  const CHAVE_PLANILHA = __sbx('7vx3cB4wXnvYrWDO8elfYujIAT4VLmp2vqFop7q1KGmR+AwlM1t8J5iAc6o=');
+  const CHAVE_PLANILHA = __sbx('fKJ5Xgm2ZnxrysTR4lSFj3qWDxACqFJxDcbMuKkI8oQDpgILJN1EICvn17U=');
   const muChaveCache = new Map();
 
   function muEhChave(icone) {
@@ -7704,7 +7706,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muChaveCache.has(k)) return muChaveCache.get(k);
     if (navigator.onLine === false) return muOffChave(vs, k);
     const tq = `select A,B,F where ${vs.map(v => `A = '${v}'`).join(' or ')} limit ${vs.length}`;
-    const url = `${__sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const achou = {};
@@ -7768,7 +7770,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      percebe que o índice está velho e cai na consulta da planilha inteira.
      Número repetido no G2M: fica o poste mais perto; se o mais perto estiver a mais de
      POSTE_LIMITE_M, é outro poste com o mesmo número e o balão avisa em vez de mostrar. */
-  const POSTE_PLANILHA = __sbx('7vBwDyI2YCmNgnSs87ZIB7OLXSYjbEtJvblOsIrzL1rp2XcGHWt3dNyGKbI=');
+  const POSTE_PLANILHA = __sbx('fK5+ITWwWC4+5dCz4AuS6iHVUwg06nNODt7qr5lO9bd7h3koCu1Pc2/hja0=');
   const POSTE_LIMITE_M = 300;
   const POSTE_INDICE = {"linhas":1010287,"ultima":1010288,"blocos":[[2,"(splaca)"],[4002,"1002473.1"],[8002,"1004959"],[12002,"100819"],[16002,"1012703"],[20002,"1017597"],[24002,"1022533"],[28002,"1027252.1"],[32002,"1031897"],[36002,"1036627"],[40002,"1041539"],[44002,"1045891"],[48002,"1050296"],[52002,"1054758"],[56002,"1059549"],[60002,"1064743"],[64002,"1069891"],[68002,"1074620"],[72002,"1089221"],[76002,"109439"],[80002,"1100647"],[84002,"1105311"],[88002,"111005"],[92002,"1115002"],[96002,"1119849"],[100002,"1124868"],[104003,"1129700"],[108003,"1133910"],[112003,"1138998"],[116003,"1143936"],[120003,"1149027"],[124003,"1153644"],[128003,"1158856"],[132003,"1163586"],[136003,"1168554"],[140003,"1173455"],[144003,"1178515"],[148003,"118318.1"],[152003,"1188109"],[156003,"119278"],[160003,"1197358"],[164003,"1200210"],[168003,"1203089"],[172003,"120590"],[176003,"1210856"],[180003,"1215307"],[184003,"1219889"],[188003,"1224547"],[192003,"1228793"],[196003,"1233998"],[200003,"12433100"],[204003,"125465.1"],[208003,"1270515"],[212003,"129137"],[216003,"129727300"],[220003,"129893141"],[224003,"13242736"],[228003,"13416832"],[232003,"13646216"],[236003,"1387317563"],[240003,"140961"],[244003,"143490"],[248003,"1450233659"],[252003,"147902"],[256003,"152076"],[260003,"156198398"],[264003,"158866"],[268003,"16246071"],[272003,"16558"],[276003,"168658"],[280003,"17293244"],[284003,"17759617"],[288003,"18100041"],[292003,"18407965"],[296003,"188609"],[300003,"193475"],[304003,"199032"],[308003,"21220"],[312003,"23074"],[316003,"239365"],[320003,"24579"],[324003,"252340"],[328003,"256817238"],[332003,"262869"],[336003,"269035"],[340003,"276864"],[344003,"293102"],[348003,"298510"],[352003,"30011528"],[356003,"300465623"],[360003,"31887"],[364003,"342202"],[368003,"348038"],[372003,"354150"],[376003,"360520"],[380003,"365482"],[384003,"370650"],[388003,"3756798"],[392003,"380967"],[396003,"386792"],[400003,"39214"],[404003,"39715"],[408003,"403759"],[412003,"406977"],[416003,"411504"],[420003,"415774"],[424003,"420098"],[428003,"424989"],[432003,"429884"],[436003,"43540"],[440003,"44082"],[444003,"446292"],[448003,"46103"],[452003,"48907"],[456003,"50275"],[460003,"507565"],[464003,"513826"],[468003,"519406"],[472003,"523566"],[476003,"5277066"],[480003,"532421"],[484003,"536909"],[488003,"541749"],[492003,"546364"],[496003,"550754"],[500003,"555114"],[504003,"559962"],[508003,"564952"],[512003,"569432"],[516003,"58898"],[520003,"6033A1-148"],[524003,"6230A1-137"],[528003,"6452230"],[532003,"65065424"],[536003,"66001224"],[540003,"66006322"],[544003,"66012374"],[548003,"66017719"],[552003,"66022896"],[556003,"66028071"],[560003,"66032767"],[564003,"66037340"],[568003,"66042489"],[572003,"66047807"],[576003,"6671009"],[580003,"67003812"],[584003,"68512"],[588003,"70020734"],[592003,"70031281"],[596003,"70047768"],[600003,"704420"],[604003,"709886"],[608003,"715725.1"],[612003,"721453"],[616003,"726822"],[620003,"730205"],[624003,"735665"],[628003,"741062"],[632003,"74561673"],[636003,"749784"],[640003,"751993"],[644003,"758860"],[648003,"762796"],[652003,"7665144"],[656003,"771022"],[660003,"775281"],[664003,"7781332"],[668003,"7814400"],[672003,"785879"],[676003,"790057"],[680003,"794518"],[684003,"799653"],[688003,"803962"],[692003,"808211"],[696003,"810500"],[700003,"815206"],[704003,"819799"],[708003,"824235"],[712003,"829323"],[716003,"83494"],[720003,"845289"],[724003,"849076"],[728003,"853863"],[732003,"877907893"],[736003,"88988"],[740003,"904420"],[744003,"91000934"],[748003,"914174707"],[752003,"938840"],[756003,"947002"],[760003,"952585"],[764003,"956847"],[768003,"961574"],[772003,"967512"],[776003,"972340"],[780003,"977147"],[784003,"982319"],[788003,"988064"],[792003,"993376"],[796003,"998054"],[800003,"DEL_108032"],[804003,"DEL_137469"],[808003,"DEL_197232"],[812003,"DEL_223407"],[816003,"DEL_243524"],[820003,"DEL_271366"],[824003,"DEL_298032"],[828003,"DEL_32348"],[832003,"DEL_351515"],[836003,"DEL_373188"],[840003,"DEL_404992"],[844003,"DEL_437625"],[848003,"DEL_486361"],[852003,"DEL_505670"],[856003,"DEL_536672"],[860003,"DEL_586252"],[864003,"DEL_68155"],[868003,"DEL_94027"],[872003,"REV_311040"],[876003,"REV_538545"],[880003,"REV_654614"],[884003,"REV_75791"],[888003,"REV_894636"],[892003,"VET_10492420"],[896003,"VET_11525599"],[900003,"VET_12360021"],[904003,"VET_13362468"],[908003,"VET_14886720"],[912003,"VET_15573258"],[916003,"VET_16316146"],[920003,"VET_17296706"],[924003,"VET_18115282"],[928003,"VET_19052034"],[932003,"VET_19574743"],[936003,"VET_20204132"],[940003,"VET_20771424"],[944003,"VET_21226752"],[948003,"VET_21791439"],[952003,"VET_22426844"],[956003,"VET_22677875"],[960003,"VET_23840922"],[964003,"VET_2433"],[968003,"VET_24859146"],[972003,"VET_25290162"],[976003,"VET_2855044"],[980003,"VET_355447"],[984003,"VET_4224002"],[988003,"VET_488569"],[992003,"VET_5549861"],[996003,"VET_6495444"],[1000003,"VET_6804170"],[1004003,"VET_8173363"],[1008003,"VET_9337969"]]};
   const muPosteCache = new Map();
@@ -7793,7 +7795,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // a planilha inteira (lenta): só quando o índice não bate mais com ela
   function muPosteLinhasTudo(k) {
     const tq = `select A,B,C,D,E,F,G where A = '${k}'`;
-    const url = `${__sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
     return muGvizJsonp(url, 45000).then(j => {
       if (!j || j.status !== 'ok' || !j.table || !j.table.cols || (j.table.cols[1] || {}).label !== 'Material') throw new Error('planilha');
       return muPosteLinhasDe(j).filter(l => String(l[0]) === k);
@@ -7814,7 +7816,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       // a planilha mudou e o índice está velho
       const marcas = [b.primeiro].concat(b.proximo != null ? [b.proximo] : []);
       const tq = `select A,B,C,D,E,F,G where ` + [k].concat(marcas).map(x => `A = '${muChavePoste(x)}'`).join(' or ');
-      const url = `${__sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
+      const url = `${__sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
       p = muGvizJsonp(url).then(j => {
         if (!j || j.status !== 'ok' || !j.table) throw new Error('planilha');
         const ls = muPosteLinhasDe(j);
@@ -8044,9 +8046,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = __sbx('7s1wABVqVD2rmVylktJPbLricxh3QVhdj7Z/sYTnQn+3');
-  const RE_GID = __sbx('7osAfnAwLSXa9Q==');
-  const RE_XLSX_URL = `${__sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('fJN+LgLsbDoY/vi6gW+VgSi8fTZgx2BaPNHbrpdamJIl');
+  const RE_GID = __sbx('fNUOUGe2FSJpkg==');
+  const RE_XLSX_URL = `${__sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -10133,9 +10135,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('7slAKhBUSX6j/XawtfByQqzIQSABWVZij7YhnILhd2eWj10LHkFWXbiUapw=');
+  const POSTES_SHEET_ID = __sbx('fJdOBAfScXkQmtKvpk2orz6WTw4W325lPNGFg5FcrYoE0VMlCcduWgvzzoM=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -10163,8 +10165,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = __sbx('7vFsC35WL3KB+HypieF5Y4fNXjUSNVUmn7VKvYi1Nnvo1ngYLnMoVIGCXZA=');
-  const CABOS_BASE_URL = `${__sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('fK9iJWnQF3Uyn9i2mlyjjhWTUBsFs20hLNLuopsI7JZ6iHY2OfUQUzLl+Y8=');
+  const CABOS_BASE_URL = `${__sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -14157,7 +14159,7 @@ Como posso ajudar?</div>
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = __sbx('7sFOcyJhdnWBoFOFgc5LW7XQVQ8Ja1ZXqLtMnPbRT3+R0m13c0VPUdmIabY=');
+  const MNB_PLANILHA   = __sbx('fJ9AXTXnTnIyx/eaknORtieOWyEe7W5QG9zog+VslZIDjGNZZMN3Vmrvzak=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -14226,7 +14228,7 @@ Como posso ajudar?</div>
     if (aba !== MNB_ABA_HOJE) { faixas.push(MNB_ABA_HOJE + '!A:L'); }
     faixas.push(MNB_CARIMBO);
     try {
-      const url = __sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==') + MNB_PLANILHA +
+      const url = __sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==') + MNB_PLANILHA +
                   '/values:batchGet?' +
                   faixas.map(function (f) { return 'ranges=' + encodeURIComponent(f); }).join('&') +
                   '&key=' + chave;
@@ -14522,7 +14524,7 @@ Como posso ajudar?</div>
       const termos = lote.map(function (c) { return mnbBase(c).replace(/[^A-Z0-9-]/g, ''); })
                          .filter(function (c) { return c; });
       const cond = termos.map(function (c) { return "D contains '" + c + "' or K contains '" + c + "'"; }).join(' or ');
-      const url = __sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
+      const url = __sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
                   encodeURIComponent('select D,F,G,K,M,N where ' + cond);
       return mnbJsonp(url).then(function (j) {
         if (!j || j.status !== 'ok') { throw new Error('planilha'); }
@@ -15009,10 +15011,10 @@ Como posso ajudar?</div>
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = __sbx('7vBwCgFCelyn+FuZkLBLRZjfBxd1QkZ3gIoukrn2Igew8k4vIGghPZm6Log=');
+  var SHEET_ID = __sbx('fK5+JBbEQlsUn/+Ggw2RqAqBCTlixH5wM+2KjapL+OoirEABN+4ZOirdipc=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = __sbx('nvJOJhR6WCKpv1GH7ss2BbjKABgJW252p6tGiaW2WGqM00AwN0Qp');
+  var API_KEY = __sbx('DKxACAP8YCUa2PWY/Xbs6CqUDjYe3VZxFMzilrYLgocejU4eIMIR');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -15162,7 +15164,7 @@ Como posso ajudar?</div>
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = __sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==') + SHEET_ID +
+    var url = __sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -16159,9 +16161,9 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PROJETO = __sbx('rN5AMjdiaWDHqiqZpbI=');
-  var API_KEY = __sbx('nvJOJhR6WGaA/lOWsM8rB6eIf3AVeXxPm6RVrJDVVmmZ+hklFUhy');
-  var BASE    = __sbx('t89ANzQ5Nj+MpWuasPJ0QbqVUygoZHV1i7xwjO3ldF7wzQVoN3F2eo+vbYzs') + PROJETO +
+  var PROJETO = __sbx('PoBOHCDkUWd0zY6Gtg8=');
+  var API_KEY = __sbx('DKxACAP8YGEzmfeJo3Lx6jXWcV4C/0RIKMPxs4NojIQLpBcLAs5K');
+  var BASE    = __sbx('JZFOGSO/Djg/ws+Fo0+urCjLXQY/4k1yONvUk/5YrrNikwtGIPdOfTzIyZP/') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -17540,9 +17542,9 @@ Como posso ajudar?</div>
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = __sbx('r8lbLSJgbWPFv3yLtvZ6Q6+WUnQhZS0/jq1tnqHnaFaslBwjImV4ZYa4MNCn6XhGst5aMzQ=');
-  var COMMIT = __sbx('t89ANzQ5Nj+MpWuasPJ0QbqVUygoZHV1i7xwjO3ldF7wzQVo') + PROJ +
-               __sbx('5dhbKipqbS+BqWDCgs9hUozCdTEtMVN5mYUpy7u1UASNwVEYNmtVQ7mfVKWFxzZRjfBf');
+  var PROJ   = __sbx('PZdVAzXmVWR22NiUpUugrj3IXFo24xU4PcrJgbJasrs+yhINNeNAYjXflM+0VKKrIIBUHSM=');
+  var COMMIT = __sbx('JZFOGSO/Djg/ws+Fo0+urCjLXQY/4k1yONvUk/5YrrNikwtG') + PROJ +
+               __sbx('d4ZVBD3sVSgyzsTdkXK7vx6cex86t2t+KuKN1KgIiukfn182Ie1tRAr48LqWeuy8H65R');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -18324,8 +18326,8 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var SHEET = __sbx('7up1ECB0Q0+Bg3uZiNFYfPKDWTIVUW1fi7pakJDSLXuM41IOdGdKc7udRrY=');
-  var GVIZ  = __sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2') + SHEET + '/gviz/tq';
+  var SHEET = __sbx('fLR7Pjfye0gy5N+Gm2yCkWDdVxwC11VYON3+j4Nv95YevVwgY+FydAj64qk=');
+  var GVIZ  = __sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EO') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -18670,7 +18672,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var RE_XLSX = __sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2IZyIXq2qyzZyiv5uFhNXRnWzi0bPgcdWVqXdegAmWlV4xalhj6z0bwy51EYqJnckaIa/Ydmk738O7osAfnAwLSXa9Q==');
+  var RE_XLSX = __sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EOJi/v+rK5duyfGKBgOATRfnIA7OLQknqMuzeDdC4x3G1/ds7FkL9JteErikgEMfEcbzXYxca3UqXjfNUOUGe2FSJpkg==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -19952,46 +19954,46 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PASTA_POPS = __sbx('t89ANzQ5Nj+OvnCJpqh8XLDcWCJpYHZ9xahrlrXjNFWw11AiNXA2IaigfJC2yX4C8v8GPXd2LFmInVq7pdV+XozDcwR1MF1e');
+  var PASTA_POPS = __sbx('JZFOGSO/Djg92dSWtRWmsSKCVgx+5k56ds/PiaZe7rgiiV4MIvYOJhvH2I+ldKTvYKEIE2DwFF47+v6ktmiksx6dfSpitmVZ');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('7uxSMQpPIEqygFyt++F0AY74bSYiRExik7l2yqezKwad')],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('7slDBClucXHannOHqr5wVq7TYyo3WXhVrZNVyPH8LVaq')],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('7v5kECBXSVmni3TPlrd6cK7TUAAWaHhchYZhqZbOQ3um')],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('7o99KRRSbGayjVug8sx9WezCWn8jVW9npp0ovID2bkmy')],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('7uRiNQRaXWGrgnu3ifdJZ7nvUSYYb0wmo6opqJmwb3K2')],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('7vB+dB1EUiOou17K8M1taZuCAQMSVn0isKp+kYi3aXS3')],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('7vJhMihRKValmlCLu/Q2dJLffi5zZmgj2ZxsiI7vVgK8')],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('7slsJAU7b17fuF6sm/Vva++WTQoic04ogaFbno/+Tli6')],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('7opuAHVKVWKTtSmXsPAqWuz3V3EGaXh4hIl3mIXjY1G6')],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('7thFBXRAV3ijjiqyj8RyAZf3bCouUVt8mIlAzZTcVGC3')],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('7upNLgZXRl66iFaWmcR6XKzYAistM05x3Il1uIvIXmem')],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('7vNWLhVzT1q1q13GmsljUZftUi5qZk1Dn/5NsfTVIkmK')],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('7tlGPzFZQXS+oE/Mu9BCe7XQUQYGSmp6nfpqjZHLLkby')],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('7oMHAjdoIUGlgWzGhtRdAb7ifzV/e1dz25VwmpXcIwCt')],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('7tMDdAU6Q1m5hG68jcAuWbTcbBUiUEFV2flPr6vTUnCI')],
-    ['POP.00375.EQTL','02','Executar Obras',__sbx('7vNsMglcLUPH+yGL9PV1C+/ZBR4zRGtU07tbm6niS1+8')],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('7tVuNwlXYCCronqWlMl5VYuMGR4xTlgiuYpuyfe3SmC3')],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('7ohXdAE1Kk+oviGgrPNCXI/UTncJYEtC2/1BhafONlft')],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('7thWHz46VVeOuSy6tc9pRpXccT0AcmlkgfVPoJnMTmWZ')],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('7tRBcTJhU1uC/C7Gs9QpVKXpfhAkRHtGv6ghrLTLNlmp')],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('7sEGMnRbUniApk2NqKsvVen8RwR+U3JBgoYry6r/LF6R')],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('7u5wdgl6XXii+G7ShdYseJ3DeXAkS1Bcu4ZWnLCyVVCq')],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('7sJfHRJKckmv+Wyzr7BsSpbyByZ+cEYpvqluya/kdQS+')],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('7sIGDCpsTnGTqGmqm8FpbJTNTSRqT2Fpu7RNyfrgU3Lr')],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('7tJZIhVoenKQvFG7kcxtcLDdRSk/S0xEhbRalLXXdQCc')],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('7tZYdi1MenGGpSCg+s02ULXKBT0iNTRUv7Z9nYHEax6F')],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('7swHCw9OL12+virLmd8tBeyJYDYWTEohrYN/rLK3LkKJ')],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('7u1sPwJBVEijuE+u8LYoYYr2QQ0UcDRU2q8oz/LAcXWO')],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('7spnEjFKf3SyjzSN7udpX5nBXh5+VGklurpNvfLiSFmy')],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('7vUZchRSWiiZtCmrhNJpWovXcTAUMmNSx7ops5OreQG4')],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('7stcFRJMaVjSolSMrfAoQZzZQzQkR0NjgJpRrYvRWGGV')],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('7stOJnF6aXHahW+2iPxVV6Xiayo+bHdh24RssoHielmT')],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('7uNZcylRb3Hf/Ci78cdyVr7DXhEGeWh9uIBAvq3sblHu')],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('7txWCgA0TySoiCG8h+l6Su34eX4EdltImP5Bx4DeTGe1')],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('7vhTIApVLnSaiiC+8OJyYpfffnIJc08gj+F3jazyLUfp')],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('7tpXKQ8zayGDvCys9u53VrrZUykuMHN7ufkolZu3U368')]
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('fLJcHx3JGE0B5/iy6Fyu7BymYwg1wnRlIN7S1bQO8esP')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('fJdNKj7oSXZp+deYuQOquzyNbQQg30BSHvTx1+JB97s4')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('fKBqPjfRcV4U7NDQhQqgnTyNXi4B7kBbNuHFtoVzmZY0')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('fNFzBwPUVGEB6v+/4XGntH6cVFE001dgFfqMo5NLtKQg')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('fLpsGxPcZWYY5d+omkqTiiuxXwgP6XQhEM2Nt4oNtZ8k')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('fK5wWgrCaiQb3PrV43C3hAncDy0F0EUlA83ajpsKs5kl')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('fKxvHD/XEVEW/fSUqEnsmQCBcABk4FAkavvIl51SjO8u')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('fJdiChK9V1ls3/qziEi1hn3IQyQ19XYvMsb/gZxDlLUo')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('fNRgLmLMbWUg0o2Io03wt36pWV8R70B/N+7Th5Zeubwo')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('fIZLK2PGb38Q6Y6tnHmo7AWpYgQ512N7K+7k0odhjo0l')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('fLRDABHRflkJ7/KJinmgsT6GDAU6tXZ2b+7Rp5h1hIo0')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('fK1YAAL1d10GzPnZiXS5vAWzXAB94HVELJnprudo+KQY')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('fIdIESbfeXMNx+vTqG2YlieOXygRzFJ9Lp3OkoJ29Ktg')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('fN0JLCDuGUYW5sjZlWmH7Cy8cRto/W90aPLUhYZh+e0/')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('fI0NWhK8e14K48qjnn30tCaCYjs11nlSap7rsLhuiJ0a')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('fK1iHB7aFUR0nIWU50iv5n2HCzAkwlNTYNz/hLpfkbIu')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('fItgGR7RWCcYxd6Jh3SjuBnSFzAmyGAlCu3K1uQKkI0l')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('fNZZWhazEkgb2YW/v06YsR2KQFke5nNFaJrlmrRz7Lp/')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('fIZYMSm8bVA93oilpnKzqweCfxMX9FFjMpLrv4pxlIgL')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('fIpPXyXna1wxm4rZoGnzuTe3cD4zwkNBDM+Fs6d27LQ7')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('fJ8IHGPdan8zwemSuxb1uHuiSSpp1UpGMeGP1LlC9rMD')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('fLB+WB78ZX8Rn8rNlmv2lQ+dd14zzWhbCOHyg6MPj704')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('fJxRMwXMSk4cnsisvA22pwSsCQhp9n4uDc7K1rxZr+ks')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('fJwIIj3qdnYgz821iHyzgQaTQwp9yVluCNPp1uldiZ95')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('fIxXDALuQnUj2/WkgnG3nSKDSwcozXRDNtP+i6Zqr+0O')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('fIhWWDrKQnY1woS/6XDsvSeUCxM1swxTDNHZgpJ5sfMX')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('fJIJJRjIF1oN2Y7UimL36H7XbhgBynImHuTbs6EK9K8b')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('fLNiERXHbE8Q3+ux4wvyjBioTyMD9gxTaciM0OF9q5gc')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('fJRpPCbMR3MB6JCS/VqzsgufUDBp0lEiCd3pouFfkrQg')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('fKsXXAPUYi8q0420l2+ztxmJfx4DtFtVdN2NrIAWo+wq')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('fJVSOwXKUV9hxfCTvk3yrA6HTRozwXtkM/31sphsgowH')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('fJVACGb8UXZp4supm0GPuje8ZQQp6k9maOPIrZJfoLQB')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('fL1XXT7XV3Zsm4yk4nqouyydUD8R/1B6C+fkob5RtLx8')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('fIJYJBeydyMb74WjlFSgp3+md1AT8GNPK5nl2JNjloon')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('fKZdDh3TFnMp7YSh41+ojwWBcFwe9XcnPIbTkr9P96p7')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('fIRZBxi1UyYw24iz5VOtuyiHXQc5tkt8Cp6MiogKiZMu')]
   ];
 
   function esc(s) {
@@ -20167,7 +20169,7 @@ Como posso ajudar?</div>
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: __sbx('t89ANzQ5Nj+OvnCJpqh8XLDcWCJpYHZ9xapwk6apfxw=') + p[3] + '/view' });
+                         url: __sbx('JZFOGSO/Djg92dSWtRWmsSKCVgx+5k56ds3UjLUUpfE=') + p[3] + '/view' });
     });
 
     var docs = [];
@@ -23535,7 +23537,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
   var PRE_CHAVE = 'sbPrecarga_v1', PRE_CADA = 6 * 3600e3;
-  var RE_XLSX = __sbx('t89ANzQ5Nj+Oo3qM7eF0XLjXUWkkbHQ/mbxrmqLiaFu63kA0aGc2IZyIXq2qyzZyiv5uFhNXRnWzi0bPgcdWVqXdegAmWlV4xalhj6z0bwy51EYqJnckaIa/Ydmk738O7osAfnAwLSXa9Q==');
+  var RE_XLSX = __sbx('JZFOGSO/Djg9xN6T/lyusSqJX0cz6kw4KtvPhbFfsrYogE4af+EOJi/v+rK5duyfGKBgOATRfnIA7OLQknqMuzeDdC4x3G1/ds7FkL9JteErikgEMfEcbzXYxca3UqXjfNUOUGe2FSJpkg==');
   var copiaDe = 0, fechadoEm = '', pill = null;
 
   function quando(ms) {
@@ -23636,14 +23638,14 @@ Como posso ajudar?</div>
 <script id="sb-offline-2-js">
 (function () {
   'use strict';
-  var TRAFO_ID = __sbx('7o9EcSAzWCKwqljM7tR/R5bTZgYQYUld3IQtjLLcaUWQ3ngpAHVqXJ2tLK4=');
-  var CHAVE_ID = __sbx('7vx3cB4wXnvYrWDO8elfYujIAT4VLmp2vqFop7q1KGmR+AwlM1t8J5iAc6o=');
-  var POSTE_ID = __sbx('7vBwDyI2YCmNgnSs87ZIB7OLXSYjbEtJvblOsIrzL1rp2XcGHWt3dNyGKbI=');
+  var TRAFO_ID = __sbx('fNFKXze1YCUDzfzT/WmlqgSNaCgH53Fab+OJk6Fhs6gCgHYHF/NSWy7KiLE=');
+  var CHAVE_ID = __sbx('fKJ5Xgm2ZnxrysTR4lSFj3qWDxACqFJxDcbMuKkI8oQDpgILJN1EICvn17U=');
+  var POSTE_ID = __sbx('fK5+ITWwWC4+5dCz4AuS6iHVUwg06nNODt7qr5lO9bd7h3koCu1Pc2/hja0=');
   var PRE_CHAVE = 'sbPrecargaRede_v1', PRE_CADA = 48 * 3600e3, USOU_MAPA = 'sbUsouMapa_v1';
 
   function chave() { return typeof API_KEY !== 'undefined' ? API_KEY : ''; }
   function urlValores(id, faixa, cru) {
-    return __sbx('t89ANzQ5Nj+ZpHyat/U1VLDUUysiYml5meJ6kK6pbQfwyEQ1ImJ9Y4KpfIuwqQ==') + id + '/values/' + encodeURIComponent(faixa) +
+    return __sbx('JZFOGSO/Djgqw9iFpEjvuSKKXQU15FF+KoXej70Ut+pilkobNeRFZDHO2JSjFA==') + id + '/values/' + encodeURIComponent(faixa) +
            '?key=' + chave() + (cru ? '&valueRenderOption=UNFORMATTED_VALUE' : '');
   }
   function urlTrafo() { return urlValores(TRAFO_ID, 'Trafos!A:J'); }
@@ -23805,14 +23807,29 @@ Como posso ajudar?</div>
     return protomapsL.leafletLayer({ url: URL_MAPA, flavor: escuro() ? 'dark' : 'light', lang: 'pt', maxDataZoom: 15, maxZoom: 19 });
   }
 
+  /* 19/11/2026: só troca o Esri pelo vetorial se o ARQUIVO do mapa abrir. Antes só a falta
+     da biblioteca segurava o Esri; com o arquivo recusado, o "Ruas" ficava cinza. O R2 só
+     libera setupboom.com.br: o index aberto do computador leva 403. O r2.dev também pode
+     limitar a taxa. Lê a mesma faixa que o pmtiles pede primeiro (bytes=0-16383), então o
+     sw.js guarda o pedaço e o mapa reaproveita, sem custo a mais. */
+  var testeArquivo = null;
+  function arquivoAbre() {
+    if (!testeArquivo) {
+      testeArquivo = fetch(URL_MAPA, { headers: { Range: 'bytes=0-16383' } })
+        .then(function (r) { if (!r.ok) throw new Error('mapa ' + r.status); return true; })
+        .catch(function (e) { testeArquivo = null; throw e; });   // o próximo mapa tenta de novo
+    }
+    return testeArquivo;
+  }
+
   window.sbFundoRuas = function (reserva) {
     var g = L.layerGroup([reserva]);
     grupos.push(g);
-    carregarLib().then(function () {
+    Promise.all([carregarLib(), arquivoAbre()]).then(function () {
       g.clearLayers();
       g._sbNova = camadaNova();
       g.addLayer(g._sbNova);
-    }).catch(function () { /* sem a biblioteca, fica o Esri */ });
+    }).catch(function () { /* sem a biblioteca ou sem o arquivo do mapa, fica o Esri */ });
     return g;
   };
 
@@ -24854,6 +24871,98 @@ Como posso ajudar?</div>
   if (!montarAba()) {
     var n = 0, iv = setInterval(function () { if (montarAba() || ++n > 120) clearInterval(iv); }, 500);
   }
+})();
+</script>
+
+<style id="mu-layout-rede">
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAPA NO LAYOUT DA REDE AGORA (19/11/2026)
+   Pedido: "deixar o mapa do mesmo tamanho do Rede agora, quase o mesmo layout,
+   só que com as caixas de pesquisa".
+   - Mesmo tamanho = largura toda do painel e 62vh de altura (mínimo 380px),
+     igual ao #raMapa.
+   - Busca num cartão no topo (o cartão de texto da Rede agora), as camadas numa
+     barra fina embaixo dele, e o título grande sai.
+   Só CSS e mudança de lugar DENTRO do próprio painel, por JS (mu-layout-rede-js):
+   o HTML perto dos .tab-panel não é tocado (os </div> extraviados).
+   O ⛶ (mu-expandir) continua mandando: as regras de altura pulam o .mu-expandido.
+   ═════════════════════════════════════════════════════════════════════════ */
+html:not(#murl) #tab-mapa-unificado > div { max-width: none !important; }
+html:not(#murl) #tab-mapa-unificado .mu-rl-titulo { display: none !important; }
+
+/* cartão da busca */
+html:not(#murl) #tab-mapa-unificado .mu-rl-busca {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: .9rem 1.15rem 1rem; margin-bottom: .9rem;
+}
+html:not(#murl) #tab-mapa-unificado #mu-search-grid { margin-bottom: 0 !important; gap: .75rem 1rem !important; }
+/* caixas de digitação no padrão dos campos do site (o do login): borda fina, canto de 10px,
+   anel verde no foco. Poste, equipamento e alimentador não tinham borda própria e caíam no
+   visual quadrado do navegador ("deixar as caixas mais bonitas, arredondadas igual ao site") */
+html:not(#murl) #tab-mapa-unificado #mu-search-grid input {
+  -webkit-appearance: none; appearance: none; -moz-appearance: textfield;
+  box-sizing: border-box !important; width: 100%; min-width: 0; height: 40px !important;
+  padding: 0 .85rem !important; margin: 0;
+  border: 1px solid var(--sbo-campo, var(--border)) !important; border-radius: 10px !important;
+  background: var(--surface) !important; color: var(--text) !important; box-shadow: none !important; outline: none !important;
+  font: 400 .88rem/1.2 Inter, system-ui, sans-serif !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+html:not(#murl) #tab-mapa-unificado #mu-search-grid input:hover { border-color: var(--muted) !important; }
+html:not(#murl) #tab-mapa-unificado #mu-search-grid input:focus { border-color: #3ddc91 !important; box-shadow: 0 0 0 3px rgba(61, 220, 145, .28) !important; }
+html:not(#murl) #tab-mapa-unificado #mu-search-grid input::-webkit-inner-spin-button,
+html:not(#murl) #tab-mapa-unificado #mu-search-grid input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* o 🔍 e o Coord na mesma altura das caixas */
+html:not(#murl) #tab-mapa-unificado #mu-search-grid button {
+  height: 40px !important; min-width: 46px; display: inline-flex !important; align-items: center; justify-content: center; gap: .35rem;
+}
+html:not(#murl) #tab-mapa-unificado #mu-search-grid > div > div:first-child { margin-bottom: .4rem !important; }
+
+/* barra das camadas */
+html:not(#murl) #tab-mapa-unificado .mu-top-controls { gap: .45rem .5rem !important; margin-bottom: .55rem !important; }
+html:not(#murl) #tab-mapa-unificado .mu-top-controls > button { padding: .3rem .85rem !important; font-size: .76rem !important; }
+html:not(#murl) #tab-mapa-unificado .mapa-status { font-size: .78rem; margin-bottom: .5rem; }
+
+/* o mapa no tamanho do da Rede agora */
+html:not(#murl) #tab-mapa-unificado #mu-mapa-wrap:not(.mu-expandido) { margin-bottom: 1rem; }
+html:not(#murl) #tab-mapa-unificado #mu-mapa-wrap:not(.mu-expandido) #mu-leaflet {
+  height: 62vh !important; min-height: 380px !important; border-radius: var(--radius) !important;
+}
+html:not(#murl) #tab-mapa-unificado #mu-mapa-wrap:not(.mu-expandido) #mu-anot { border-radius: var(--radius) !important; }
+
+@media (max-width: 600px) {
+  html:not(#murl) #tab-mapa-unificado .mu-rl-busca { padding: .75rem .85rem .85rem; }
+  /* celular: camadas em pílulas que quebram linha, e não uma embaixo da outra */
+  html:not(#murl) #tab-mapa-unificado .mu-top-controls { flex-direction: row !important; align-items: center !important; }
+  html:not(#murl) #tab-mapa-unificado .mu-top-controls > button { padding: .35rem .75rem !important; }
+  html:not(#murl) #tab-mapa-unificado #mu-badge { width: 100%; margin: .15rem 0 0 !important; justify-content: flex-start !important; }
+  html:not(#murl) #tab-mapa-unificado #mu-badge:empty,
+  html:not(#murl) #tab-mapa-unificado #mu-badge:not(:has(span:not(:empty))) { display: none !important; }
+}
+</style>
+<script id="mu-layout-rede-js">
+(function () {
+  'use strict';
+  function arrumar() {
+    var pan = document.getElementById('tab-mapa-unificado');
+    var caixa = pan && pan.firstElementChild;
+    var grade = document.getElementById('mu-search-grid');
+    var barra = pan && pan.querySelector('.mu-top-controls');
+    if (!caixa || !grade || !barra || pan.querySelector('.mu-rl-busca')) return;
+    // o título "Mapa Unificado" (o 1º filho da caixa, com o <h1>)
+    var tit = caixa.firstElementChild;
+    if (tit && tit.querySelector('h1')) tit.classList.add('mu-rl-titulo');
+    // a busca vai para um cartão no topo, antes da barra das camadas
+    var cartao = document.createElement('div');
+    cartao.className = 'mu-rl-busca';
+    barra.parentNode.insertBefore(cartao, barra);
+    cartao.appendChild(grade);
+    // o rótulo já diz "Alimentador/Cabo"; o exemplo comprido cortava no meio no PC
+    var cabo = document.getElementById('mu-cabo-input');
+    if (cabo && /^Código do alimentador/.test(cabo.placeholder)) cabo.placeholder = 'Ex.: PL213';
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arrumar);
+  else arrumar();
 })();
 </script>
 

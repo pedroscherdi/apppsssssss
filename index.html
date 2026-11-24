@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>(function(){var k=[110,130,137,17,70,59,242,209,24,245,207,99,246,74,49,113];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
+<script>(function(){var k=[105,71,108,62,97,74,187,241,232,216,162,185,153,164,33,193];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -113,12 +113,12 @@
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: __sbx('L8vzcBVCs6dyx4UKhQMBRRaxwiYUQZeOaZ2DMKUZfCsow6RzFHCZ'),
-      authDomain: __sbx('Hef9ZDZagqE1k/wFkH4fFwfw7HMnSJewaIXhAJkn'),
-      projectId: __sbx('Hef9ZDZagqE1k/wFkH4='),
-      storageBucket: __sbx('Hef9ZDZagqE1k/wFkH4fFwfw7HMnSJeibJq9ApEvHxAe8g=='),
-      messagingSenderId: __sbx('XLe8InACw+khwflV'),
-      appId: __sbx('X7i7JHMIxOgpzfZXwHwLBgvgs3J0X5bkKJP/BcB+A0RX4OsmIwnC5ys=')
+      apiKey: __sbx('KA4WXzIz+oeC6ujQ6u0R9RF0JwkzMN6umbDu6sr3bJsvBkFcMwHQ'),
+      authDomain: __sbx('GiIYSxEry4HFvpHf/5APpwA1CVwAOd6QmKiM2vbJ'),
+      projectId: __sbx('GiIYSxEry4HFvpHf/5A='),
+      storageBucket: __sbx('GiIYSxEry4HFvpHf/5APpwA1CVwAOd6CnLfQ2P7BD6AZNw=='),
+      messagingSenderId: __sbx('W3JZDVdzisnR7JSP'),
+      appId: __sbx('WH1eC1R5jcjZ4JuNr5IbtgwlVl1TLt/E2L6S36+QE/RQJQ4JBHiLx9s=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -156,7 +156,7 @@
        Não fica sessão salva: cada abertura pede usuário e senha (o navegador
        pode lembrar). Sessão antiga do Firebase Auth (login Google) é
        desconectada, senão a pessoa entrava sem usuário e senha. */
-    const FS_DOCS       = __sbx('Bvb9YTUB3f5+nL0GhT5eAwus7n4pXJ60eYWmENgpXhxB9Lg+Nkmdu32WuxDZ') + firebaseConfig.projectId + '/databases/(default)/documents';
+    const FS_DOCS       = __sbx('ATMYThJwlN6OsdDc6tBOswxpC1EOLdeUiajLyrfHTqxGMV0RETjUm4271sq2') + firebaseConfig.projectId + '/databases/(default)/documents';
     const WHATS_SUPORTE = '5553984742332';
     const $l = id => document.getElementById(id);
 
@@ -705,101 +705,6 @@
     @media (prefers-reduced-motion: reduce) {
       .cliente-placa { transition: none; }
       .cliente-placa:hover { transform: none; }
-    }
-
-    /* ── Câmera de campo ─────────────────────────────────────────────── */
-    .cam-palco {
-      position: relative;
-      width: 100%;
-      max-width: 720px;
-      aspect-ratio: 3 / 4;
-      background: #000;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 1rem;
-    }
-    @media (min-width: 760px) { .cam-palco { aspect-ratio: 4 / 3; } }
-
-    .cam-palco video,
-    .cam-palco canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-    }
-    .cam-palco.ao-vivo video { display: block; }
-    .cam-palco.congelado canvas { display: block; }
-
-    .cam-vazio {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.78rem;
-    }
-    .cam-vazio svg {
-      width: 42px; height: 42px;
-      fill: none; stroke: currentColor;
-      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-      opacity: 0.6;
-    }
-    .cam-palco.ao-vivo .cam-vazio,
-    .cam-palco.congelado .cam-vazio { display: none; }
-
-    /* Carimbo: alinhado à direita, branco com sombra dura — o mesmo desenho
-       é redesenhado no canvas ao capturar, então o preview não mente. */
-    .cam-carimbo {
-      position: absolute;
-      top: 3.5%;
-      right: 3.5%;
-      left: 8%;
-      text-align: right;
-      pointer-events: none;
-      display: none;
-      font-family: 'Manrope', system-ui, sans-serif;
-      line-height: 1.18;
-      color: #fff;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9);
-    }
-    .cam-palco.ao-vivo .cam-carimbo { display: block; }
-    .cam-linha {
-      font-size: clamp(0.85rem, 3.6vw, 1.45rem);
-      font-weight: 600;
-    }
-    .cam-linha:empty { display: none; }
-    .cam-linha--data { font-weight: 700; }
-
-    .cam-barra {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-bottom: 0.9rem;
-    }
-    .cam-status {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    .cam-aviso {
-      background: rgba(255,183,77,0.08);
-      border: 1px solid #ffb74d;
-      border-left: 4px solid #ffb74d;
-      border-radius: var(--radius);
-      padding: 0.9rem 1.1rem;
-      margin-bottom: 1rem;
-      font-family: var(--font-body);
-      font-size: 0.85rem;
-      color: var(--text);
-      line-height: 1.6;
     }
 
     /* ── Tempo nas bases ─────────────────────────────────────────────── */
@@ -3024,9 +2929,7 @@
     <button class="tab" data-tab="orcamento"><svg class="tab-icon" aria-hidden="true"><use href="#i-dinheiro"/></svg> Orçamento</button>
     <button class="tab" data-tab="normas-tecnicas"><svg class="tab-icon" aria-hidden="true"><use href="#i-livro"/></svg> Normas Técnicas</button>
     <button class="tab" data-tab="noticias"><svg class="tab-icon" aria-hidden="true"><use href="#i-noticias"/></svg> Notícias</button>
-    <button class="tab" data-tab="camera"><svg class="tab-icon" aria-hidden="true"><use href="#i-camera"/></svg> Câmera de Campo</button>
     <button class="tab" data-tab="quem-somos"><svg class="tab-icon" aria-hidden="true"><use href="#i-predio"/></svg> Quem Somos</button>
-    <button class="tab" data-tab="ia" style="margin-top:0.3rem;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:8px;"><svg class="tab-icon" aria-hidden="true"><use href="#i-ia"/></svg> IA</button>
   </div>
   <div class="sidebar-footer">
     <!-- Botao instalar PWA -->
@@ -4114,10 +4017,10 @@
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = __sbx('L8vzcBVCs+Nbhocb2wccRwnzvU4IY4W3VZKQFZB6cig96v1mNnzC');
-  const SHEET_ID = __sbx('X93CfglirZB+vLcRwi4GMAjluyUcb4SkWpSZUbUHawsCsvBYAGG0m2GbmS4=');
+  const API_KEY  = __sbx('KA4WXzIz+sOrq+rBtOkM9w42WGEvEsyXpb/9z/+UYpg6LxhJEQ2L');
+  const SHEET_ID = __sbx('WBgnUS4T5LCOkdrLrcAWgA8gXgo7Hs2Eqrn0i9rpe7sFdxV3JxD9u5G29PQ=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `${__sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==')}${SHEET_ID}`;
+  const BASE_URL = `${__sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4153,10 +4056,8 @@
     'equipamentos':'Equipamentos',
     'mapa-unificado': 'Mapa',
     'normas-tecnicas':'Normas Técnicas',
-    'camera':      'Câmera de Campo',
     'quem-somos':  'Quem Somos',
     'rebaixadores': 'Rebaixadores',
-    'ia':           'IA',
   };
 
   // Abre aba Início por padrão
@@ -4754,12 +4655,12 @@
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `${__sbx('Bvb9YTUB3f58h6YVk2RWHgHl5XRoWJ28N4GnFpsoXxAH7rZ4IgY=')}${id}&sz=w1200`;
+    return `${__sbx('ATMYThJwlN6MqsvP/IpGrgYgAFtPKdScx6zKzPTGT6AAK1NXBXc=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `${__sbx('Bvb9YTUB3f58h6YVk2RWHgHl5XRoWJ28N5OmD5NlVV4=')}${id}/view`;
+    return `${__sbx('ATMYThJwlN6MqsvP/IpGrgYgAFtPKdScx77L1fyLRe4=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -6183,9 +6084,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('X/D9fBFsor9RxKAsgDxYAB3x/HYAYb2jfY/3ALctXSUntuBdH3m9nEqtvAA=');
+  const POSTES_SHEET_ID = __sbx('WDUYUzYd65+h6c3279JIsBo0GVknEPSDjaKa2tjDTZUgcwVyOAj0vLqA0do=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6431,8 +6332,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = __sbx('X8jRXX9uxLNzwao1vC1TITb042MTDb7nbYycIb15HDlZ78VOL0vDlXO7iww=');
-  const CABOS_BASE_URL = `${__sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('WA00clgfjZOD7Mfv08NDkTExBkw0fPfHnaHx+9KXDIleKiBhCDqKtYOW5tY=');
+  const CABOS_BASE_URL = `${__sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7577,7 +7478,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      não baixa as 97 mil linhas (memória do iPhone). Cache em Map.
      Carga = demanda em kVA = carregamento × KVATKVA, e o G2M usa KVATKVA =
      1,5 × a potência (conferido: 23,08 % × 67,5 = 15,58 kVA na IT144020778). */
-  const TRAFO_PLANILHA = __sbx('X7b5JyELs+NCk45Q2xhVBSfq21ARWaKcLr37EIcQQwch58V/AU2BnW+U+jI=');
+  const TRAFO_PLANILHA = __sbx('WHMcCAZ6+sOyvuOKtPZFtSAvPn82KOu83pCWyuj+U7cmIiBQJjzIvZ+5l+g=');
   const muTrafoCache = new Map();
 
   function muEhTrafo(icone) { return /TRANSFORMADOR/i.test(String(icone || '')); }
@@ -7612,7 +7513,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muTrafoCache.has(cod)) return muTrafoCache.get(cod);
     if (navigator.onLine === false) return muOffTrafo(cod);
     const tq = `select B,C,D,E,F,G,J where A = '${cod}' limit 1`;
-    const url = `${__sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const lin = (j.table.rows || [])[0];
@@ -7682,7 +7583,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      planilha usa a forma limpa. As variantes vão num pedido só (A = x or A = y) e
      fica a primeira que existir. Medido: 110.368 dos 113.927 equipamentos que não são
      trafo casam; jumper, capacitor e regulador não são chave e nem consultam. */
-  const CHAVE_PLANILHA = __sbx('X8XKJh8ItboqlLZSxCV1IFnxvGgUFoG3TJi+O495AisgwbFzMmOX5mq5pTY=');
+  const CHAVE_PLANILHA = __sbx('WAAvCTh5/JrauduIq8tlkF40WUczZ8iXvLXT4eCXEpsnBFRcFRLexpqUyOw=');
   const muChaveCache = new Map();
 
   function muEhChave(icone) {
@@ -7706,7 +7607,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muChaveCache.has(k)) return muChaveCache.get(k);
     if (navigator.onLine === false) return muOffChave(vs, k);
     const tq = `select A,B,F where ${vs.map(v => `A = '${v}'`).join(' or ')} limit ${vs.length}`;
-    const url = `${__sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const achou = {};
@@ -7770,7 +7671,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      percebe que o índice está velho e cai na consulta da planilha inteira.
      Número repetido no G2M: fica o poste mais perto; se o mais perto estiver a mais de
      POSTE_LIMITE_M, é outro poste com o mesmo número e o balão avisa em vez de mostrar. */
-  const POSTE_PLANILHA = __sbx('X8nNWSMOi+h/u6IwxnpiRQKy4HAiVKCIT4CYLL8/BRhY4MpQHFOctS6//y4=');
+  const POSTE_PLANILHA = __sbx('WAwodgR/wsiPls/qqZRy9QV3BV8FJemov6319tDRFahfJS9/OyLVld6SkvQ=');
   const POSTE_LIMITE_M = 300;
   const POSTE_INDICE = {"linhas":1010287,"ultima":1010288,"blocos":[[2,"(splaca)"],[4002,"1002473.1"],[8002,"1004959"],[12002,"100819"],[16002,"1012703"],[20002,"1017597"],[24002,"1022533"],[28002,"1027252.1"],[32002,"1031897"],[36002,"1036627"],[40002,"1041539"],[44002,"1045891"],[48002,"1050296"],[52002,"1054758"],[56002,"1059549"],[60002,"1064743"],[64002,"1069891"],[68002,"1074620"],[72002,"1089221"],[76002,"109439"],[80002,"1100647"],[84002,"1105311"],[88002,"111005"],[92002,"1115002"],[96002,"1119849"],[100002,"1124868"],[104003,"1129700"],[108003,"1133910"],[112003,"1138998"],[116003,"1143936"],[120003,"1149027"],[124003,"1153644"],[128003,"1158856"],[132003,"1163586"],[136003,"1168554"],[140003,"1173455"],[144003,"1178515"],[148003,"118318.1"],[152003,"1188109"],[156003,"119278"],[160003,"1197358"],[164003,"1200210"],[168003,"1203089"],[172003,"120590"],[176003,"1210856"],[180003,"1215307"],[184003,"1219889"],[188003,"1224547"],[192003,"1228793"],[196003,"1233998"],[200003,"12433100"],[204003,"125465.1"],[208003,"1270515"],[212003,"129137"],[216003,"129727300"],[220003,"129893141"],[224003,"13242736"],[228003,"13416832"],[232003,"13646216"],[236003,"1387317563"],[240003,"140961"],[244003,"143490"],[248003,"1450233659"],[252003,"147902"],[256003,"152076"],[260003,"156198398"],[264003,"158866"],[268003,"16246071"],[272003,"16558"],[276003,"168658"],[280003,"17293244"],[284003,"17759617"],[288003,"18100041"],[292003,"18407965"],[296003,"188609"],[300003,"193475"],[304003,"199032"],[308003,"21220"],[312003,"23074"],[316003,"239365"],[320003,"24579"],[324003,"252340"],[328003,"256817238"],[332003,"262869"],[336003,"269035"],[340003,"276864"],[344003,"293102"],[348003,"298510"],[352003,"30011528"],[356003,"300465623"],[360003,"31887"],[364003,"342202"],[368003,"348038"],[372003,"354150"],[376003,"360520"],[380003,"365482"],[384003,"370650"],[388003,"3756798"],[392003,"380967"],[396003,"386792"],[400003,"39214"],[404003,"39715"],[408003,"403759"],[412003,"406977"],[416003,"411504"],[420003,"415774"],[424003,"420098"],[428003,"424989"],[432003,"429884"],[436003,"43540"],[440003,"44082"],[444003,"446292"],[448003,"46103"],[452003,"48907"],[456003,"50275"],[460003,"507565"],[464003,"513826"],[468003,"519406"],[472003,"523566"],[476003,"5277066"],[480003,"532421"],[484003,"536909"],[488003,"541749"],[492003,"546364"],[496003,"550754"],[500003,"555114"],[504003,"559962"],[508003,"564952"],[512003,"569432"],[516003,"58898"],[520003,"6033A1-148"],[524003,"6230A1-137"],[528003,"6452230"],[532003,"65065424"],[536003,"66001224"],[540003,"66006322"],[544003,"66012374"],[548003,"66017719"],[552003,"66022896"],[556003,"66028071"],[560003,"66032767"],[564003,"66037340"],[568003,"66042489"],[572003,"66047807"],[576003,"6671009"],[580003,"67003812"],[584003,"68512"],[588003,"70020734"],[592003,"70031281"],[596003,"70047768"],[600003,"704420"],[604003,"709886"],[608003,"715725.1"],[612003,"721453"],[616003,"726822"],[620003,"730205"],[624003,"735665"],[628003,"741062"],[632003,"74561673"],[636003,"749784"],[640003,"751993"],[644003,"758860"],[648003,"762796"],[652003,"7665144"],[656003,"771022"],[660003,"775281"],[664003,"7781332"],[668003,"7814400"],[672003,"785879"],[676003,"790057"],[680003,"794518"],[684003,"799653"],[688003,"803962"],[692003,"808211"],[696003,"810500"],[700003,"815206"],[704003,"819799"],[708003,"824235"],[712003,"829323"],[716003,"83494"],[720003,"845289"],[724003,"849076"],[728003,"853863"],[732003,"877907893"],[736003,"88988"],[740003,"904420"],[744003,"91000934"],[748003,"914174707"],[752003,"938840"],[756003,"947002"],[760003,"952585"],[764003,"956847"],[768003,"961574"],[772003,"967512"],[776003,"972340"],[780003,"977147"],[784003,"982319"],[788003,"988064"],[792003,"993376"],[796003,"998054"],[800003,"DEL_108032"],[804003,"DEL_137469"],[808003,"DEL_197232"],[812003,"DEL_223407"],[816003,"DEL_243524"],[820003,"DEL_271366"],[824003,"DEL_298032"],[828003,"DEL_32348"],[832003,"DEL_351515"],[836003,"DEL_373188"],[840003,"DEL_404992"],[844003,"DEL_437625"],[848003,"DEL_486361"],[852003,"DEL_505670"],[856003,"DEL_536672"],[860003,"DEL_586252"],[864003,"DEL_68155"],[868003,"DEL_94027"],[872003,"REV_311040"],[876003,"REV_538545"],[880003,"REV_654614"],[884003,"REV_75791"],[888003,"REV_894636"],[892003,"VET_10492420"],[896003,"VET_11525599"],[900003,"VET_12360021"],[904003,"VET_13362468"],[908003,"VET_14886720"],[912003,"VET_15573258"],[916003,"VET_16316146"],[920003,"VET_17296706"],[924003,"VET_18115282"],[928003,"VET_19052034"],[932003,"VET_19574743"],[936003,"VET_20204132"],[940003,"VET_20771424"],[944003,"VET_21226752"],[948003,"VET_21791439"],[952003,"VET_22426844"],[956003,"VET_22677875"],[960003,"VET_23840922"],[964003,"VET_2433"],[968003,"VET_24859146"],[972003,"VET_25290162"],[976003,"VET_2855044"],[980003,"VET_355447"],[984003,"VET_4224002"],[988003,"VET_488569"],[992003,"VET_5549861"],[996003,"VET_6495444"],[1000003,"VET_6804170"],[1004003,"VET_8173363"],[1008003,"VET_9337969"]]};
   const muPosteCache = new Map();
@@ -7795,7 +7696,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // a planilha inteira (lenta): só quando o índice não bate mais com ela
   function muPosteLinhasTudo(k) {
     const tq = `select A,B,C,D,E,F,G where A = '${k}'`;
-    const url = `${__sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
     return muGvizJsonp(url, 45000).then(j => {
       if (!j || j.status !== 'ok' || !j.table || !j.table.cols || (j.table.cols[1] || {}).label !== 'Material') throw new Error('planilha');
       return muPosteLinhasDe(j).filter(l => String(l[0]) === k);
@@ -7816,7 +7717,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       // a planilha mudou e o índice está velho
       const marcas = [b.primeiro].concat(b.proximo != null ? [b.proximo] : []);
       const tq = `select A,B,C,D,E,F,G where ` + [k].concat(marcas).map(x => `A = '${muChavePoste(x)}'`).join(' or ');
-      const url = `${__sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
+      const url = `${__sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
       p = muGvizJsonp(url).then(j => {
         if (!j || j.status !== 'ok' || !j.table) throw new Error('planilha');
         const ls = muPosteLinhasDe(j);
@@ -8046,9 +7947,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = __sbx('X/TNVhRSv/xZoIo5px5lLgvbzk52ebOcfY+pLbEraD0G');
-  const RE_GID = __sbx('X7K9KHEIxuQozA==');
-  const RE_XLSX_URL = `${__sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('WDEoeTMj9typjefjyPB1ngweK2FRCPq8jaLE997FeI0B');
+  const RE_GID = __sbx('WHdYB1Z5j8TY4Q==');
+  const RE_XLSX_URL = `${__sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -8970,391 +8871,6 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     </div>
   </div>
 </div>
-<div class="tab-panel" id="tab-camera">
-
-  <div style="margin-bottom:1.25rem;">
-    <h1 style="font-size:1.7rem;font-weight:800;letter-spacing:-0.03em;line-height:1;">
-      Câmera de <span style="color:var(--accent)">Campo</span>
-    </h1>
-    <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">
-      Foto com data, hora e endereço gravados na imagem
-    </p>
-  </div>
-
-  <div id="cam-aviso" class="cam-aviso" style="display:none;"></div>
-
-  <div class="cam-palco" id="cam-palco">
-    <video id="cam-video" playsinline muted autoplay></video>
-    <canvas id="cam-foto"></canvas>
-    <!-- Carimbo ao vivo: o que aparece aqui é exatamente o que é gravado na
-         imagem no momento da captura (o canvas redesenha as mesmas linhas). -->
-    <div class="cam-carimbo" id="cam-carimbo">
-      <div class="cam-linha cam-linha--data" id="cam-l-data">—</div>
-      <div class="cam-linha" id="cam-l-rua"></div>
-      <div class="cam-linha" id="cam-l-bairro"></div>
-      <div class="cam-linha" id="cam-l-cidade"></div>
-      <div class="cam-linha" id="cam-l-cep"></div>
-      <div class="cam-linha" id="cam-l-pais"></div>
-    </div>
-    <div class="cam-vazio" id="cam-vazio">
-      <svg aria-hidden="true"><use href="#i-camera"/></svg>
-      <span>Câmera desligada</span>
-    </div>
-  </div>
-
-  <div class="cam-barra">
-    <button class="btn" id="cam-btn-ligar" onclick="camLigar()">Ligar câmera</button>
-    <button class="btn-ghost" id="cam-btn-trocar" onclick="camTrocar()" disabled>Trocar câmera</button>
-    <button class="btn" id="cam-btn-tirar" onclick="camCapturar()" disabled>Tirar foto</button>
-    <button class="btn-ghost" id="cam-btn-nova" onclick="camNovaFoto()" style="display:none;">Nova foto</button>
-    <button class="btn" id="cam-btn-baixar" onclick="camBaixar()" style="display:none;">Baixar</button>
-    <button class="btn-ghost" id="cam-btn-enviar" onclick="camCompartilhar()" style="display:none;">Enviar</button>
-  </div>
-
-  <div class="cam-status" id="cam-status">Toque em "Ligar câmera" para começar.</div>
-
-</div>
-
-<script>
-(function () {
-  /* ══════════════════════════════════════════════════════════════════
-     CÂMERA DE CAMPO
-
-     Foto com data, hora e endereço gravados NA IMAGEM (não em metadado),
-     que é o que serve como comprovação de visita.
-
-     O carimbo que aparece sobre o vídeo e o que é gravado no arquivo saem
-     da mesma lista de linhas — o preview não pode mentir sobre o resultado.
-
-     Endereço: Nominatim (OpenStreetMap), gratuito e sem chave. Fica fora do
-     cache do service worker (exceção lá em cima), senão o endereço da
-     primeira foto grudaria em todas as seguintes.
-     ══════════════════════════════════════════════════════════════════ */
-
-  var video   = document.getElementById('cam-video');
-  var canvas  = document.getElementById('cam-foto');
-  var palco   = document.getElementById('cam-palco');
-  var statusEl= document.getElementById('cam-status');
-  var avisoEl = document.getElementById('cam-aviso');
-
-  var stream = null;
-  var camAtual = 'environment';       // traseira por padrão: é a útil em campo
-  var relogio = null;
-  var endereco = [];                  // linhas já prontas, sem a data
-  var blobFoto = null;
-  var coords = null;
-
-  function status(msg) { statusEl.textContent = msg; }
-
-  function aviso(msg) {
-    if (!msg) { avisoEl.style.display = 'none'; return; }
-    avisoEl.textContent = msg;
-    avisoEl.style.display = 'block';
-  }
-
-  /* Data no formato do app de campo: "22 de set. de 2026, 08:57:43" */
-  function agoraTexto() {
-    var d = new Date();
-    var data = d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
-    var hora = d.toLocaleTimeString('pt-BR', { hour12: false });
-    return data + ', ' + hora;
-  }
-
-  function linhasCarimbo() {
-    return [agoraTexto()].concat(endereco);
-  }
-
-  function pintarCarimbo() {
-    document.getElementById('cam-l-data').textContent = agoraTexto();
-    var ids = ['cam-l-rua','cam-l-bairro','cam-l-cidade','cam-l-cep','cam-l-pais'];
-    ids.forEach(function (id, i) {
-      document.getElementById(id).textContent = endereco[i] || '';
-    });
-  }
-
-  /* ── Câmera ── */
-
-  window.camLigar = async function () {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      aviso('Este navegador não expõe a câmera. Em celular, use Chrome ou Safari atualizados.');
-      return;
-    }
-    // getUserMedia exige contexto seguro: abrir o arquivo por file:// não funciona
-    if (!window.isSecureContext) {
-      aviso('A câmera só funciona em https:// (ou localhost). Abrindo o arquivo direto do computador, ' +
-            'o navegador bloqueia o acesso — use o endereço publicado do SetupBoom.');
-      return;
-    }
-    aviso('');
-    status('Pedindo acesso à câmera...');
-    try {
-      camParar();
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: camAtual, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        audio: false
-      });
-      video.srcObject = stream;
-      await video.play();
-      palco.classList.add('ao-vivo');
-      palco.classList.remove('congelado');
-      document.getElementById('cam-btn-tirar').disabled = false;
-      document.getElementById('cam-btn-trocar').disabled = false;
-      document.getElementById('cam-btn-ligar').textContent = 'Reiniciar câmera';
-
-      pintarCarimbo();
-      if (relogio) clearInterval(relogio);
-      relogio = setInterval(pintarCarimbo, 1000);
-
-      status('Câmera ligada. Buscando localização...');
-      localizar();
-    } catch (e) {
-      var msg = 'Não consegui abrir a câmera: ' + e.name;
-      if (e.name === 'NotAllowedError') msg = 'Permissão de câmera negada. Libere nas configurações do site e tente de novo.';
-      if (e.name === 'NotFoundError')  msg = 'Nenhuma câmera encontrada neste aparelho.';
-      aviso(msg);
-      status('Câmera não iniciada.');
-    }
-  };
-
-  window.camTrocar = function () {
-    camAtual = (camAtual === 'environment') ? 'user' : 'environment';
-    window.camLigar();
-  };
-
-  function camParar() {
-    if (stream) {
-      stream.getTracks().forEach(function (t) { t.stop(); });
-      stream = null;
-    }
-  }
-
-  /* ── Localização e endereço ── */
-
-  /* Localização real, com duas precauções que a leitura simples não tem:
-
-     1. maximumAge: 0 — sem isso o navegador pode devolver uma posição em
-        cache, tirada em outro lugar minutos antes. Numa foto que serve de
-        comprovação de visita, carimbar o endereço anterior é pior que não
-        carimbar nada.
-
-     2. watchPosition em vez de getCurrentPosition — a primeira leitura
-        costuma vir da rede/wi-fi, com erro de centenas de metros ou mais; o
-        GPS só converge alguns segundos depois. Ficamos ouvindo e trocamos o
-        endereço sempre que chega uma leitura mais precisa, até travar num
-        bom valor. */
-  var vigia = null;
-  var melhorPrecisao = Infinity;
-  var PRECISAO_BOA = 30;      // metros: a partir daqui é GPS de verdade
-  var PRECISAO_RUIM = 150;    // acima disso o endereço não é confiável
-
-  function pararVigia() {
-    if (vigia !== null) { navigator.geolocation.clearWatch(vigia); vigia = null; }
-  }
-
-  function localizar() {
-    if (!navigator.geolocation) { status('Câmera ligada. Sem GPS neste aparelho.'); return; }
-    pararVigia();
-    melhorPrecisao = Infinity;
-    status('Câmera ligada. Procurando sinal de GPS...');
-
-    vigia = navigator.geolocation.watchPosition(function (pos) {
-      var p = pos.coords.accuracy;
-      // só reage se a leitura for melhor que a que já temos
-      if (p >= melhorPrecisao) return;
-      melhorPrecisao = p;
-      coords = pos.coords;
-
-      var aviso = p > PRECISAO_RUIM
-        ? ' — precisão baixa (±' + Math.round(p) + ' m), ainda buscando GPS'
-        : ' (±' + Math.round(p) + ' m)';
-      status('Localização obtida' + aviso + '. Traduzindo em endereço...');
-      buscarEndereco(pos.coords.latitude, pos.coords.longitude, p);
-
-      // fix bom o bastante: para de ouvir para não gastar bateria
-      if (p <= PRECISAO_BOA) pararVigia();
-    }, function (err) {
-      pararVigia();
-      var m = err.code === 1
-        ? 'Permissão de localização negada — a foto sai só com data e hora.'
-        : 'GPS indisponível (' + err.message + ') — a foto sai só com data e hora.';
-      status(m);
-    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
-  }
-
-  async function buscarEndereco(lat, lon, precisao) {
-    try {
-      var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18' +
-                '&lat=' + lat + '&lon=' + lon + '&accept-language=pt-BR';
-      var r = await fetch(url, { cache: 'no-store' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      var j = await r.json();
-      var a = j.address || {};
-
-      // "Praça 20 de Setembro, 121"
-      var rua = a.road || a.pedestrian || a.footway || a.square || '';
-      if (rua && a.house_number) rua += ', ' + a.house_number;
-
-      var bairro = a.suburb || a.neighbourhood || a.city_district || a.quarter || '';
-
-      /* "Pelotas RS" — a sigla vem do ISO (BR-RS); o nome por extenso não cabe.
-         A ordem dos campos aqui NÃO é arbitrária. No Nominatim brasileiro o
-         campo "city" às vezes traz o distrito, não o município: em Pelotas ele
-         devolve "Sede", e a foto sairia carimbada como "Sede RS". Já
-         "municipality" traz "Pelotas" — mas vem vazio em Rio Grande, Bagé e
-         Camaquã, onde o certo está em city/town. Testado nas quatro bases:
-         municipality → city → town acerta todas. */
-      var cidade = a.municipality || a.city || a.town || a.village || '';
-      var uf = '';
-      var iso = a['ISO3166-2-lvl4'] || '';
-      if (iso.indexOf('-') > -1) uf = iso.split('-').pop();
-      var linhaCidade = [cidade, uf].filter(Boolean).join(' ');
-
-      endereco = [rua, bairro, linhaCidade, a.postcode || '', a.country || ''].filter(Boolean);
-
-      /* Com precisão ruim o endereço pode ser de outra quadra — nesse caso
-         some com a rua e o CEP (que é o que erra) e mantém só cidade/estado,
-         em vez de carimbar na foto um endereço que não é onde a pessoa está. */
-      if (precisao != null && precisao > PRECISAO_RUIM) {
-        endereco = [linhaCidade, a.country || ''].filter(Boolean);
-        status('Localização aproximada (±' + Math.round(precisao) + ' m). ' +
-               'Carimbando só cidade/estado até o GPS firmar.');
-      } else {
-        status('Pronto (±' + Math.round(precisao || 0) + ' m). ' + endereco.join(' · '));
-      }
-      pintarCarimbo();
-    } catch (e) {
-      console.warn('[SetupBoom] endereço falhou:', e);
-      // Sem endereço, ainda vale registrar onde foi: coordenadas servem de prova
-      if (coords) {
-        endereco = [coords.latitude.toFixed(6) + ', ' + coords.longitude.toFixed(6)];
-        pintarCarimbo();
-        status('Endereço indisponível — gravando as coordenadas na foto.');
-      } else {
-        status('Endereço indisponível. A foto sai só com data e hora.');
-      }
-    }
-  }
-
-  /* ── Captura ── */
-
-  window.camCapturar = function () {
-    if (!stream) return;
-    var w = video.videoWidth, h = video.videoHeight;
-    if (!w || !h) { status('A câmera ainda não entregou imagem. Tente de novo em um instante.'); return; }
-
-    canvas.width = w;
-    canvas.height = h;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, w, h);
-    desenharCarimbo(ctx, w, h);
-
-    palco.classList.remove('ao-vivo');
-    palco.classList.add('congelado');
-    if (relogio) { clearInterval(relogio); relogio = null; }
-
-    canvas.toBlob(function (b) {
-      blobFoto = b;
-      status('Foto capturada com o carimbo gravado na imagem.');
-    }, 'image/jpeg', 0.92);
-
-    document.getElementById('cam-btn-tirar').disabled = true;
-    document.getElementById('cam-btn-trocar').disabled = true;
-    ['cam-btn-nova','cam-btn-baixar','cam-btn-enviar'].forEach(function (id) {
-      document.getElementById(id).style.display = '';
-    });
-  };
-
-  /* Mesmo layout do carimbo em HTML, agora em pixels do arquivo final.
-     As medidas são proporcionais à largura para o resultado ficar igual em
-     qualquer resolução de câmera. */
-  function desenharCarimbo(ctx, w, h) {
-    var linhas = linhasCarimbo();
-    var tam = Math.round(w * 0.038);
-    var alturaLinha = Math.round(tam * 1.32);
-    var margem = Math.round(w * 0.035);
-    var x = w - margem;
-    var y = margem + tam;
-
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'alphabetic';
-    ctx.font = '700 ' + tam + "px Manrope, system-ui, sans-serif";
-    ctx.shadowColor = 'rgba(0,0,0,0.85)';
-    ctx.shadowBlur = Math.round(tam * 0.35);
-    ctx.shadowOffsetY = Math.round(tam * 0.08);
-
-    linhas.forEach(function (txt, i) {
-      if (!txt) return;
-      ctx.font = (i === 0 ? '700 ' : '600 ') + tam + "px Manrope, system-ui, sans-serif";
-      ctx.fillStyle = '#fff';
-      ctx.fillText(txt, x, y + i * alturaLinha);
-    });
-
-    ctx.shadowColor = 'transparent';
-  }
-
-  /* ── Depois da foto ── */
-
-  function nomeArquivo() {
-    var d = new Date();
-    var p = function (n) { return String(n).padStart(2, '0'); };
-    return 'campo-' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) +
-           '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.jpg';
-  }
-
-  window.camNovaFoto = function () {
-    ['cam-btn-nova','cam-btn-baixar','cam-btn-enviar'].forEach(function (id) {
-      document.getElementById(id).style.display = 'none';
-    });
-    blobFoto = null;
-    window.camLigar();
-  };
-
-  window.camBaixar = function () {
-    if (!blobFoto) return;
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blobFoto);
-    a.download = nomeArquivo();
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-  };
-
-  window.camCompartilhar = async function () {
-    if (!blobFoto) return;
-    var arq = new File([blobFoto], nomeArquivo(), { type: 'image/jpeg' });
-    // No celular isso abre a folha de compartilhamento, com WhatsApp incluso
-    if (navigator.canShare && navigator.canShare({ files: [arq] })) {
-      try {
-        await navigator.share({ files: [arq], title: 'Foto de campo' });
-        return;
-      } catch (e) { if (e.name === 'AbortError') return; }
-    }
-    status('Compartilhamento direto não disponível neste aparelho — use "Baixar" e anexe a foto.');
-  };
-
-  /* Desliga a câmera ao sair da aba: é um PWA de campo, manter a câmera
-     aberta em segundo plano gasta bateria e acende o LED sem motivo. */
-  document.querySelectorAll('.tab').forEach(function (t) {
-    t.addEventListener('click', function () {
-      if (t.dataset.tab !== 'camera') {
-        camParar();
-        pararVigia();
-        if (relogio) { clearInterval(relogio); relogio = null; }
-        palco.classList.remove('ao-vivo', 'congelado');
-        document.getElementById('cam-btn-tirar').disabled = true;
-        document.getElementById('cam-btn-trocar').disabled = true;
-        document.getElementById('cam-btn-ligar').textContent = 'Ligar câmera';
-        status('Câmera desligada ao sair da aba.');
-      }
-    });
-  });
-  document.addEventListener('visibilitychange', function () {
-    if (document.hidden && stream) { camParar(); palco.classList.remove('ao-vivo'); }
-  });
-})();
-</script>
-
 <div class="tab-panel" id="tab-quem-somos">
 
   <!-- Hero Banner -->
@@ -10135,9 +9651,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('X/D9fBFsor9RxKAsgDxYAB3x/HYAYb2jfY/3ALctXSUntuBdH3m9nEqtvAA=');
+  const POSTES_SHEET_ID = __sbx('WDUYUzYd65+h6c3279JIsBo0GVknEPSDjaKa2tjDTZUgcwVyOAj0vLqA0do=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -10165,8 +9681,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = __sbx('X8jRXX9uxLNzwao1vC1TITb042MTDb7nbYycIb15HDlZ78VOL0vDlXO7iww=');
-  const CABOS_BASE_URL = `${__sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('WA00clgfjZOD7Mfv08NDkTExBkw0fPfHnaHx+9KXDIleKiBhCDqKtYOW5tY=');
+  const CABOS_BASE_URL = `${__sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -11202,614 +10718,6 @@ document.querySelectorAll('.tab').forEach(btn => {
     </div>
   </div>
 </div>
-
-<!-- TAB: IA -->
-<!-- ══════════════════════════════════════════════════════ -->
-<div class="tab-panel" id="tab-ia">
-<style>
-  #tab-ia .ia-wrap {
-    max-width: 780px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 120px);
-    min-height: 500px;
-  }
-  #tab-ia .ia-header { margin-bottom: 1.2rem; }
-  #tab-ia .ia-msgs {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    padding: 0.5rem 0;
-    margin-bottom: 1rem;
-  }
-  #tab-ia .ia-msg {
-    display: flex;
-    gap: 0.7rem;
-    align-items: flex-start;
-    animation: iaMsgIn 0.22s cubic-bezier(0.4,0,0.2,1);
-  }
-  @keyframes iaMsgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  #tab-ia .ia-msg.user { flex-direction: row-reverse; }
-  #tab-ia .ia-avatar {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-  }
-  #tab-ia .ia-avatar.bot { background: rgba(0,230,118,0.15); border: 1px solid rgba(0,230,118,0.3); color: var(--accent); }
-  #tab-ia .ia-avatar.usr { background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--muted); }
-  #tab-ia .ia-bubble {
-    max-width: 82%;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
-    line-height: 1.65;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  #tab-ia .ia-bubble.bot {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-top-left-radius: 3px;
-  }
-  #tab-ia .ia-bubble.usr {
-    background: rgba(0,230,118,0.12);
-    border: 1px solid rgba(0,230,118,0.25);
-    color: var(--text);
-    border-top-right-radius: 3px;
-  }
-  #tab-ia .ia-bubble.thinking {
-    color: var(--muted);
-    font-style: italic;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  #tab-ia .ia-dots span {
-    display: inline-block;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--accent-vivo);
-    animation: iaDot 1.2s ease-in-out infinite;
-    opacity: 0.4;
-  }
-  #tab-ia .ia-dots span:nth-child(2) { animation-delay: 0.2s; }
-  #tab-ia .ia-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes iaDot { 0%,80%,100%{opacity:0.4;transform:scale(1)} 40%{opacity:1;transform:scale(1.3)} }
-  #tab-ia .ia-input-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: flex-end;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 0.6rem 0.75rem;
-    transition: border-color 0.2s;
-  }
-  #tab-ia .ia-input-row:focus-within { border-color: var(--accent); }
-  #tab-ia #ia-input {
-    flex: 1;
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.84rem;
-    resize: none;
-    max-height: 100px;
-    line-height: 1.5;
-    overflow-y: auto;
-  }
-  #tab-ia #ia-input::placeholder { color: var(--muted); }
-  #tab-ia #ia-send-btn {
-    background: var(--accent-vivo);
-    color: #060f0a;
-    border: none;
-    border-radius: 8px;
-    width: 34px; height: 34px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  #tab-ia #ia-send-btn:hover { opacity: 0.85; }
-  #tab-ia #ia-send-btn:active { transform: scale(0.94); }
-  #tab-ia #ia-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  #tab-ia .ia-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
-  }
-  #tab-ia .ia-chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 20px;
-    padding: 0.3rem 0.75rem;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-    white-space: nowrap;
-  }
-  #tab-ia .ia-chip:hover { border-color: var(--accent); color: var(--accent); }
-  #tab-ia .ia-stats-bar {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-  }
-  #tab-ia .ia-stat {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.3rem 0.7rem;
-    color: var(--muted);
-  }
-  #tab-ia .ia-stat span { color: var(--accent); font-weight: 600; }
-</style>
-
-<div class="ia-wrap">
-  <div class="ia-header">
-    <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.3rem;">
-      Assistente <span style="color:var(--accent)">IA</span>
-    </h1>
-    <p style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">
-      Pergunte sobre o banco de dados · Estruturas · Materiais · Itens
-    </p>
-  </div>
-
-  <div class="ia-stats-bar" id="ia-stats-bar">
-    <div class="ia-stat">Estruturas: <span id="ia-stat-estruturas">—</span></div>
-    <div class="ia-stat">Linhas: <span id="ia-stat-linhas">—</span></div>
-    <div class="ia-stat">Itens únicos: <span id="ia-stat-itens">—</span></div>
-  </div>
-
-  <div class="ia-chips" id="ia-chips">
-    <button class="ia-chip" onclick="iaSendChip('Quantas estruturas existem no banco?')">Quantas estruturas?</button>
-    <button class="ia-chip" onclick="iaSendChip('Quais são os itens mais utilizados?')">Itens mais usados</button>
-    <button class="ia-chip" onclick="iaSendChip('Liste todas as estruturas disponíveis')">Listar estruturas</button>
-    <button class="ia-chip" onclick="iaSendChip('Qual estrutura tem mais componentes?')">Maior estrutura</button>
-    <button class="ia-chip" onclick="iaSendChip('buscar cabo')">Buscar "cabo"</button>
-    <button class="ia-chip" onclick="iaSendChip('buscar isolador')">Buscar "isolador"</button>
-    <button class="ia-chip" onclick="iaSendChip('Resuma o banco de dados')">Resumo geral</button>
-    <button class="ia-chip" onclick="iaSendChip('Quem é o Pedro Scherdien?')">👨‍💻 Fundador</button>
-    <button class="ia-chip" onclick="iaSendChip('Quem é o melhor patrão?')">👑 Melhor patrão</button>
-    <button class="ia-chip" onclick="iaSendChip('Qual a diferença entre as classes de tensão?')">⚡ Classes de tensão</button>
-    <button class="ia-chip" onclick="iaSendChip('Conta uma piada elétrica')">😄 Piada</button>
-  </div>
-
-  <div class="ia-msgs" id="ia-msgs">
-    <div class="ia-msg">
-      <div class="ia-avatar bot">SB</div>
-      <div class="ia-bubble bot">Olá! Sou o assistente IA do SetupBoom. Posso responder perguntas sobre as <strong>estruturas</strong>, <strong>materiais</strong> e <strong>itens</strong> do banco de dados.
-
-Exemplos do que você pode me perguntar:
-• "buscar cabo 35mm" — busca por nome/descrição
-• "buscar isolador" — todos os itens com esse nome
-• "onde é usado cabo 35mm" — em quais estruturas aparece
-• "itens da estrutura AT-01" — componentes de uma estrutura
-• "liste todas as estruturas"
-• "quais itens mais usados"
-
-Como posso ajudar?</div>
-    </div>
-  </div>
-
-  <div class="ia-input-row">
-    <textarea id="ia-input" rows="1" placeholder="Pergunte sobre o banco de dados..." onkeydown="iaKeyDown(event)" oninput="iaAutoResize(this)"></textarea>
-    <button id="ia-send-btn" onclick="iaSend()" title="Enviar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-  </div>
-</div>
-
-<script>
-(function() {
-  // ── Histórico de mensagens ──
-  let iaHistory = [];
-  let iaBusy = false;
-
-  function iaAutoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-  }
-
-  window.iaKeyDown = function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); iaSend(); }
-  };
-
-  window.iaSendChip = function(text) {
-    document.getElementById('ia-input').value = text;
-    iaSend();
-  };
-
-  function iaAppendMsg(role, text, thinking) {
-    const msgs = document.getElementById('ia-msgs');
-    const div = document.createElement('div');
-    div.className = 'ia-msg' + (role === 'user' ? ' user' : '');
-    const avatar = document.createElement('div');
-    avatar.className = 'ia-avatar ' + (role === 'user' ? 'usr' : 'bot');
-    avatar.textContent = role === 'user' ? 'EU' : 'SB';
-    const bubble = document.createElement('div');
-    bubble.className = 'ia-bubble ' + (role === 'user' ? 'usr' : 'bot') + (thinking ? ' thinking' : '');
-    if (thinking) {
-      bubble.innerHTML = 'Consultando dados <span class="ia-dots"><span></span><span></span><span></span></span>';
-    } else {
-      bubble.textContent = text;
-    }
-    div.appendChild(avatar);
-    div.appendChild(bubble);
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-    return bubble;
-  }
-
-  function iaUpdateStats() {
-    try {
-      const estrut = typeof allCodes !== 'undefined' ? allCodes.length : 0;
-      const linhas = typeof allData !== 'undefined' ? allData.length : 0;
-      const itensSet = typeof allData !== 'undefined'
-        ? new Set(allData.map(r => String(r[columnMap && columnMap.item] || '').trim()).filter(Boolean)).size
-        : 0;
-      document.getElementById('ia-stat-estruturas').textContent = estrut || '—';
-      document.getElementById('ia-stat-linhas').textContent = linhas || '—';
-      document.getElementById('ia-stat-itens').textContent = itensSet || '—';
-    } catch(e) {}
-  }
-
-  // Atualiza stats quando a aba IA é aberta
-  document.querySelector('[data-tab="ia"]').addEventListener('click', iaUpdateStats);
-
-  // ── Motor de consulta local (sem API externa) ──────────────────────
-  function norm(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
-
-  function iaQueryLocal(pergunta) {
-    if (!allData || !allData.length) {
-      return '⚠️ Dados ainda não carregados. Acesse a aba "Consultar" primeiro para carregar a planilha.';
-    }
-
-    const q = norm(pergunta);
-    const totalLinhas    = allData.length;
-    const totalEstruturas = allCodes ? allCodes.length : 0;
-    const itensSet = new Set(allData.map(r => String(r[columnMap.item]||'').trim()).filter(Boolean));
-    const totalItens = itensSet.size;
-
-    // ════════════════════════════════════════════
-    // ── PAPO FURADO & CONVERSAS ──────────────────
-    // ════════════════════════════════════════════
-
-    // ── SAUDAÇÕES ──
-    if (/^(oi|ola|ola!|oi!|e ai|eai|bom dia|boa tarde|boa noite|hey|hello|salve|fala|tudo bem|tudo bom|como vai|td bem|tdm|blz|beleza)[\s!?]*$/.test(q)) {
-      const hora = new Date().getHours();
-      const saud = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
-      const respostas = [
-        `${saud}! 😄 Tudo certo por aqui! Sou o assistente do SetupBoom, pronto pra te ajudar com o banco de materiais. O que você precisa?`,
-        `${saud}! 👋 Que bom te ver por aqui! Pode perguntar sobre estruturas, itens, cabos... tô aqui pra isso!`,
-        `${saud}! 😊 Aqui é o SetupBoom respondendo! Precisando de algo no banco de dados, é só falar.`,
-      ];
-      return respostas[Math.floor(Math.random()*respostas.length)];
-    }
-
-    // ── TUDO BEM? ──
-    if (/tudo bem|tudo bom|como vai|como esta|como vc ta|como voce ta|td bem|blz|beleza|firmeza/.test(q)) {
-      return `Tudo ótimo, valeu por perguntar! 😄 Aqui é código, estrutura e material o dia todo — vida boa! E você, tá bem? Se precisar de algo no banco de dados, só chamar! 💪`;
-    }
-
-    // ── QUEM É O PEDRO / FUNDADOR ──
-    if (/pedro|scherdien|fundador|criador|quem.*criou|quem.*fez|quem.*desenvolveu|quem.*fundo|desenvolvedor/.test(q)) {
-      return `👨‍💻 Pedro Scherdien é o fundador e desenvolvedor do SetupBoom!\n\nTécnico PCP 2 do Grupo Setup, ele criou o sistema do zero pra facilitar a gestão de materiais e estruturas de redes elétricas.\n\nUm cara visionário que transformou planilhas em um app completo. 🚀\n\n📱 Contato: (53) 98474-2332`;
-    }
-
-    // ── QUEM É O LEANDRO / MELHOR PATRÃO ──
-    if (/leandro|patrao|patrão|chefe|melhor.*patrao|melhor.*patrão|chefe.*top|quem.*manda/.test(q)) {
-      return `👑 O Leandro é simplesmente o MELHOR patrão do Grupo Setup!\n\nLiderança de respeito, visão de negócio afiada e ainda apoia o time com tudo. Difícil achar patrão melhor no setor elétrico — ou em qualquer setor, honestamente. 😄🏆\n\nEquipe que tem o Leandro na frente tá em boas mãos!`;
-    }
-
-    // ── CLASSES DE TENSÃO ──
-    if (/classe.*tensao|tensao.*classe|classe de tensao|alta tensao|media tensao|baixa tensao|diferenca.*tensao|tensao.*diferenca|at |mt |bt |138kv|69kv|13.8kv/.test(q)) {
-      return `⚡ Diferença entre as Classes de Tensão:\n\n🔴 Alta Tensão (AT)\n   Acima de 69 kV — transmissão de grandes distâncias\n   Ex: 69 kV, 138 kV, 230 kV, 500 kV\n   Linhas de transmissão entre subestações\n\n🟡 Média Tensão (MT)\n   De 1 kV a 69 kV — distribuição primária\n   Ex: 13,8 kV, 34,5 kV\n   Redes de distribuição urbana e rural\n\n🟢 Baixa Tensão (BT)\n   Até 1.000 V — distribuição para o consumidor final\n   Ex: 127 V, 220 V, 380 V\n   Ligações residenciais e comerciais\n\n💡 No contexto do Grupo Setup, as estruturas são majoritariamente de Média Tensão (MT) para redes de distribuição.`;
-    }
-
-    // ── O QUE É O SETUPBOOM ──
-    if (/o que.*setupboom|setupboom.*o que|pra que.*serve|como funciona|o que e isso|o que voce e|quem e voce|quem sao voces/.test(q)) {
-      return `⚡ SetupBoom é o sistema de gestão de materiais do Grupo Setup!\n\nFoi criado pelo Pedro Scherdien para facilitar:\n• 📋 Consulta de estruturas e BOM (lista de materiais)\n• 🔍 Busca de itens por código ou descrição\n• 📌 Rastreamento de onde cada item é usado\n• 🗺️ Mapa de postes\n• 📊 Kanban de obras\n• ⚙️ Consulta de equipamentos\n• E muito mais!\n\nTudo num app leve, rápido e que funciona offline. 🚀`;
-    }
-
-    // ── PIADA / HUMOR ──
-    if (/piada|conta.*piada|me diverte|me faz rir|humor|engraçado|engracado/.test(q)) {
-      const piadas = [
-        `Por que o eletricista foi ao médico?\nPorque estava com corrente alternada no estômago! ⚡😄`,
-        `Como chama um cabo elétrico que virou cantor?\nUm cabo de áudio! 🎤⚡`,
-        `Por que o transformador foi ao psicólogo?\nPorque não conseguia lidar com suas tensões! 😂⚡`,
-        `O que o eletricista disse pra namorada?\nVocê me dá um choque toda vez que te vejo! ⚡❤️`,
-      ];
-      return piadas[Math.floor(Math.random()*piadas.length)];
-    }
-
-    // ── OBRIGADO / AGRADECIMENTO ──
-    if (/^(obrigad|valeu|vlw|obg|thanks|thank you|grato|agradec)/.test(q)) {
-      const respostas = [
-        `Disponha! 😊 É pra isso que tô aqui. Qualquer outra dúvida, só chamar!`,
-        `De nada! 👍 Qualquer coisa é só perguntar, tô sempre aqui no SetupBoom!`,
-        `Imagina! 🤝 Foi um prazer ajudar. Precisando de mais alguma coisa, é só falar!`,
-      ];
-      return respostas[Math.floor(Math.random()*respostas.length)];
-    }
-
-    // ── PALAVRÃO / XINGAMENTO (resposta educada) ──
-    if (/merda|porra|caralh|foda|inferno|raio|droga|caramba/.test(q)) {
-      return `Ei, calma! 😅 Entendo a frustração, mas vamos manter o clima bom por aqui. Posso te ajudar a resolver o que tiver te aborrecendo! O que você precisa?`;
-    }
-
-    // ── TCHAU / DESPEDIDA ──
-    if (/^(tchau|ate|flw|falou|xau|bye|ate mais|ate logo|fui|saindo)[\s!?]*$/.test(q)) {
-      return `Até mais! 👋 Foi um prazer ajudar. Qualquer dúvida sobre o banco de dados, é só voltar. Bom trabalho! ⚡`;
-    }
-
-    // ── QUAL O MELHOR SISTEMA ──
-    if (/melhor.*sistema|melhor.*app|melhor.*software/.test(q)) {
-      return `Sem dúvida nenhuma: SetupBoom! 😄🏆\n\nCriado com muito carinho pelo Pedro Scherdien especialmente pra atender as necessidades do Grupo Setup. Rápido, intuitivo e ainda tem IA agora. 🤖⚡`;
-    }
-
-    // ── QUEM É O GRUPO SETUP ──
-    if (/grupo setup|empresa|setup.*empresa|quem.*setup/.test(q)) {
-      return `🏢 O Grupo Setup é uma empresa especializada em:\n\n⚡ Distribuição de Energia — instalação e manutenção de redes MT e BT\n🏗️ Infraestrutura elétrica — para concessionárias e grandes clientes\n📋 Planejamento & PCP — controle de materiais e gestão de projetos\n\nCom atuação em redes de média e baixa tensão, é referência no setor elétrico regional. 💪`;
-    }
-
-    // ════════════════════════════════════════════
-    // ── CONSULTAS TÉCNICAS DO BANCO ───────────────
-    // ════════════════════════════════════════════
-
-    // ── RESUMO GERAL ──
-    if (/resum|visao geral|overview|geral|quantas estrut|total.*estrut|estrut.*total/.test(q)) {
-      const topEstrut = allCodes.slice(0,5).join(', ');
-      const itensArr = [...itensSet];
-      // Item mais usado
-      const freq = {};
-      allData.forEach(r => { const it = String(r[columnMap.item]||'').trim(); if(it) freq[it]=(freq[it]||0)+1; });
-      const topItem = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${k} (${v}x)`).join(', ');
-      return `📊 Resumo do Banco de Dados SetupBoom\n\n• Total de linhas: ${totalLinhas}\n• Estruturas cadastradas: ${totalEstruturas}\n• Itens únicos: ${totalItens}\n• Primeiras estruturas: ${topEstrut}...\n• Itens mais frequentes: ${topItem}\n\nUse perguntas como:\n  "Liste todas as estruturas"\n  "Itens da estrutura X"\n  "Onde é usado o item Y"`;
-    }
-
-    // ── LISTAR ESTRUTURAS ──
-    if (/list.*estrut|estrut.*list|todas.*estrut|mostrar.*estrut|quais.*estrut|estrut.*exist/.test(q)) {
-      if (!allCodes || !allCodes.length) return 'Nenhuma estrutura encontrada.';
-      const linhas = allCodes.map((c,i) => `${String(i+1).padStart(3,'0')}. ${c}  (${(structures[c]||[]).length} itens)`);
-      const bloco = linhas.join('\n');
-      return `📋 ${totalEstruturas} estrutura(s) cadastrada(s):\n\n${bloco}`;
-    }
-
-    // ── ITENS MAIS USADOS / RECORRENTES ──
-    if (/mais.*us|recorr|frequen|aparec.*mais|top.*item|item.*top/.test(q)) {
-      const freq = {};
-      const descMap = {};
-      allData.forEach(r => {
-        const it = String(r[columnMap.item]||'').trim();
-        const desc = String(r[columnMap.desc]||'').trim();
-        if(it){ freq[it]=(freq[it]||0)+1; if(desc && !descMap[it]) descMap[it]=desc; }
-      });
-      const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,15);
-      const linhas = top.map(([k,v],i)=>`${String(i+1).padStart(2,'0')}. ${k}  — ${descMap[k]||''}  (${v} estrutura(s))`);
-      return `🏆 Top 15 itens mais utilizados:\n\n${linhas.join('\n')}`;
-    }
-
-    // ── ESTRUTURA COM MAIS COMPONENTES ──
-    if (/maior.*estrut|estrut.*maior|mais.*component|mais.*item|estrut.*mais/.test(q)) {
-      if(!allCodes||!allCodes.length) return 'Nenhuma estrutura encontrada.';
-      const sorted = allCodes.map(c=>({c,n:(structures[c]||[]).length})).sort((a,b)=>b.n-a.n).slice(0,10);
-      const linhas = sorted.map((x,i)=>`${i+1}. ${x.c}  — ${x.n} componente(s)`);
-      return `📐 Estruturas com mais componentes:\n\n${linhas.join('\n')}`;
-    }
-
-    // ── ITENS QUE APARECEM EM MAIS DE N ESTRUTURAS ──
-    const maisDeMatch = q.match(/mais de (\d+)|acima de (\d+)|(\d+) ou mais/);
-    if (maisDeMatch && /estrut/.test(q)) {
-      const n = parseInt(maisDeMatch[1]||maisDeMatch[2]||maisDeMatch[3]);
-      const freq = {};
-      const descMap = {};
-      allData.forEach(r => {
-        const estrut = String(r[columnMap.structure]||'').trim();
-        const it = String(r[columnMap.item]||'').trim();
-        const desc = String(r[columnMap.desc]||'').trim();
-        if(it && estrut){ if(!freq[it]) freq[it]=new Set(); freq[it].add(estrut); if(desc && !descMap[it]) descMap[it]=desc; }
-      });
-      const filtrados = Object.entries(freq).filter(([,s])=>s.size>n).sort((a,b)=>b[1].size-a[1].size);
-      if(!filtrados.length) return `Nenhum item aparece em mais de ${n} estruturas.`;
-      const linhas = filtrados.map(([k,s],i)=>`${i+1}. ${k}  — ${descMap[k]||''}  (${s.size} estruturas)`);
-      return `🔁 Itens em mais de ${n} estruturas (${filtrados.length} encontrados):\n\n${linhas.join('\n')}`;
-    }
-
-    // ── ITENS DE UMA ESTRUTURA ESPECÍFICA ──
-    // tenta capturar código da estrutura mencionado na pergunta
-    const estrutMatch = (() => {
-      // busca por código exato entre aspas ou após palavras-chave
-      const quoted = pergunta.match(/[""']([^""']+)[""']/);
-      if (quoted) return quoted[1].trim();
-      // remove palavras comuns e tenta casar com allCodes
-      const cleaned = pergunta.replace(/itens|componentes|da|do|de|na|no|estrutura|compoe|compõe|compõem|composicao|composição|mostrar|listar|quais|ver|contem|contém/gi,'').trim();
-      const candidate = norm(cleaned);
-      if (!candidate) return null;
-      // busca exata
-      const exact = allCodes.find(c => norm(c) === candidate);
-      if (exact) return exact;
-      // busca parcial
-      const partial = allCodes.find(c => norm(c).includes(candidate) || candidate.includes(norm(c)));
-      return partial || null;
-    })();
-
-    if (estrutMatch && /item|componen|compoe|compõe|composic|lista|ver|mostrar|quais|contem|contém/.test(q)) {
-      const rows = structures[estrutMatch] || [];
-      if (!rows.length) return `Estrutura "${estrutMatch}" não encontrada ou sem itens.`;
-      const linhas = rows.map((r,i)=>{
-        const it   = String(r[columnMap.item]||'').trim();
-        const desc = String(r[columnMap.desc]||'').trim();
-        const qty  = String(r[columnMap.qty] ||'').trim();
-        const unit = String(r[columnMap.unit]||'').trim();
-        return `${String(i+1).padStart(2,'0')}. ${it}  ${desc}  — ${qty} ${unit}`;
-      });
-      return `🔩 Estrutura: ${estrutMatch}  (${rows.length} componente(s))\n\n${linhas.join('\n')}`;
-    }
-
-    // ── ONDE É USADO UM ITEM (código ou descrição) ──
-    if (/onde.*usado|onde.*usa|em quais.*estrut|estrut.*contem|where.*used/.test(q)) {
-      const rawItem = pergunta.replace(/onde|e|é|usado|usa|em quais|estruturas?|item|the|is|used/gi,'').trim();
-      const qItem = norm(rawItem);
-      if (!qItem) return 'Informe o código ou a descrição do item que deseja buscar. Ex: "onde é usado cabo 35mm"';
-      const encontrados = allData.filter(r => {
-        const it   = norm(r[columnMap.item]);
-        const desc = norm(r[columnMap.desc]);
-        return it === qItem || it.includes(qItem) || qItem.includes(it) || desc.includes(qItem);
-      });
-      if (!encontrados.length) return naoEncontrado(rawItem, totalEstruturas, totalItens);
-      const estruts = [...new Set(encontrados.map(r=>String(r[columnMap.structure]||'').trim()))].filter(Boolean).sort();
-      const itCode = String(encontrados[0][columnMap.item]||rawItem).trim();
-      const itDesc = String(encontrados[0][columnMap.desc]||'').trim();
-      const linhas = estruts.map((e,i)=>`${i+1}. ${e}`);
-      return `📌 Item: ${itCode}${itDesc?' — '+itDesc:''}\n\nEncontrado em ${estruts.length} estrutura(s):\n\n${linhas.join('\n')}`;
-    }
-
-    // ── BUSCA POR DESCRIÇÃO DO ITEM ──
-    // detecta frases como "buscar cabo", "procurar parafuso", "tem isolador?", "existe conector?"
-    if (/buscar?|procurar?|pesquisar?|encontrar?|tem |existe |mostrar? item|listar? item/.test(q)) {
-      const rawTermo = pergunta
-        .replace(/buscar?|procurar?|pesquisar?|encontrar?|mostrar? itens?|listar? itens?|tem |existe |itens? com|itens? de|itens?|que|o |a /gi,'')
-        .trim();
-      const qTermo = norm(rawTermo);
-      if (qTermo.length < 2) return 'Informe o nome ou parte da descrição do item. Ex: "buscar cabo 35mm"';
-      return buscaDescricao(qTermo, rawTermo, totalEstruturas, totalItens);
-    }
-
-    // ── BUSCA LIVRE POR ITEM OU ESTRUTURA ──
-    const termosBusca = norm(pergunta).split(/\s+/).filter(t => t.length >= 3);
-
-    // 1) tenta estrutura
-    for (const termo of termosBusca) {
-      const estrutFound = allCodes.find(c => norm(c).includes(termo));
-      if (estrutFound) {
-        const rows = structures[estrutFound] || [];
-        const linhas = rows.map((r,i)=>{
-          const it   = String(r[columnMap.item]||'').trim();
-          const desc = String(r[columnMap.desc]||'').trim();
-          const qty  = String(r[columnMap.qty] ||'').trim();
-          const unit = String(r[columnMap.unit]||'').trim();
-          return `${String(i+1).padStart(2,'0')}. ${it}  ${desc}  — ${qty} ${unit}`;
-        });
-        return `🔍 Estrutura encontrada: "${estrutFound}" (${rows.length} componente(s)):\n\n${linhas.join('\n')}\n\n💡 Para ver onde um item é usado: "onde é usado [descrição ou código]"`;
-      }
-    }
-
-    // 2) tenta item por código exato ou parcial
-    for (const termo of termosBusca) {
-      const porCodigo = allData.filter(r => norm(r[columnMap.item]).includes(termo));
-      if (porCodigo.length) {
-        const it = String(porCodigo[0][columnMap.item]||'').trim();
-        const desc = String(porCodigo[0][columnMap.desc]||'').trim();
-        const estruts = [...new Set(porCodigo.map(r=>String(r[columnMap.structure]||'').trim()))].filter(Boolean);
-        return `🔍 Item encontrado pelo código: ${it}${desc?' — '+desc:''}\n\nUsado em ${estruts.length} estrutura(s):\n${estruts.slice(0,20).map((e,i)=>`${i+1}. ${e}`).join('\n')}${estruts.length>20?`\n... e mais ${estruts.length-20}`:''}`;
-      }
-    }
-
-    // 3) tenta descrição com todos os termos juntos
-    const qCompleto = norm(pergunta);
-    const porDesc = allData.filter(r => norm(r[columnMap.desc]).includes(qCompleto));
-    if (porDesc.length) {
-      return buscaDescricao(qCompleto, pergunta, totalEstruturas, totalItens);
-    }
-
-    // 4) tenta descrição com qualquer um dos termos (>=3 letras)
-    for (const termo of termosBusca) {
-      const porDescParcial = allData.filter(r => norm(r[columnMap.desc]).includes(termo));
-      if (porDescParcial.length) {
-        return buscaDescricao(termo, termo, totalEstruturas, totalItens);
-      }
-    }
-
-    // ── RESPOSTA NÃO ENCONTRADO ──
-    return naoEncontrado(pergunta, totalEstruturas, totalItens);
-  }
-
-  // ── Busca por descrição com agrupamento por item único ──
-  function buscaDescricao(qTermo, rawTermo, totalEstruturas, totalItens) {
-    const encontrados = allData.filter(r => norm(r[columnMap.desc]).includes(qTermo));
-    if (!encontrados.length) return naoEncontrado(rawTermo, totalEstruturas, totalItens);
-
-    // Agrupa por código de item
-    const agrupado = {};
-    encontrados.forEach(r => {
-      const it   = String(r[columnMap.item]||'').trim();
-      const desc = String(r[columnMap.desc]||'').trim();
-      const estrut = String(r[columnMap.structure]||'').trim();
-      if (!it) return;
-      if (!agrupado[it]) agrupado[it] = { desc, estruts: new Set() };
-      if (estrut) agrupado[it].estruts.add(estrut);
-    });
-
-    const itensUnicos = Object.entries(agrupado).sort((a,b) => b[1].estruts.size - a[1].estruts.size);
-    const linhas = itensUnicos.slice(0,20).map(([cod,info],i) =>
-      `${String(i+1).padStart(2,'0')}. ${cod}  — ${info.desc}  (${info.estruts.size} estrutura(s))`
-    );
-    const extra = itensUnicos.length > 20 ? `\n... e mais ${itensUnicos.length-20} item(ns)` : '';
-    return `🔎 ${itensUnicos.length} item(ns) encontrado(s) com "${rawTermo}":\n\n${linhas.join('\n')}${extra}\n\n💡 Para ver onde um item é usado: "onde é usado [código]"`;
-  }
-
-  // ── Resposta amigável para não encontrado ──
-  function naoEncontrado(termo, totalEstruturas, totalItens) {
-    const sugestoes = [
-      'Hmm, não encontrei nada com esse termo. 🤔',
-      'Procurei bem, mas esse item não aparece no banco. 😅',
-      'Nada por aqui com esse nome! Talvez um sinônimo? 🔎',
-    ];
-    const msg = sugestoes[Math.floor(Math.random()*sugestoes.length)];
-    return `${msg}\n\nNão encontrei resultados para "${termo}" nas descrições, códigos ou estruturas.\n\nAlgumas sugestões:\n• Tente palavras mais curtas: "cabo" em vez de "cabo de alumínio"\n• Verifique a ortografia\n• Use o código do item diretamente\n• Digite "listar estruturas" para ver o que há no banco\n\n📦 Banco atual: ${totalEstruturas} estruturas · ${totalItens} itens únicos`;
-  }
-
-  window.iaSend = async function() {
-    if (iaBusy) return;
-    const input = document.getElementById('ia-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    iaAppendMsg('user', text);
-    iaHistory.push({ role: 'user', content: text });
-    input.value = '';
-    input.style.height = 'auto';
-
-    const thinkBubble = iaAppendMsg('bot', '', true);
-    iaBusy = true;
-    document.getElementById('ia-send-btn').disabled = true;
-
-    // Simula delay para parecer que está "pensando"
-    await new Promise(r => setTimeout(r, 320));
-
-    try {
-      const answer = iaQueryLocal(text);
-      thinkBubble.className = 'ia-bubble bot';
-      thinkBubble.textContent = answer;
-      const msgs = document.getElementById('ia-msgs');
-      msgs.scrollTop = msgs.scrollHeight;
-      iaHistory.push({ role: 'assistant', content: answer });
-    } catch(e) {
-      thinkBubble.className = 'ia-bubble bot';
-      thinkBubble.textContent = 'Erro interno: ' + e.message;
-    } finally {
-      iaBusy = false;
-      document.getElementById('ia-send-btn').disabled = false;
-      document.getElementById('ia-input').focus();
-    }
-  };
-})();
-</script>
-</div><!-- /tab-ia -->
 
 <script>
 (function() {
@@ -14159,7 +13067,7 @@ Como posso ajudar?</div>
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = __sbx('X/jzJSNZnbRzmYUZtAJhGQTp6FkIU72WWoKaAMMdZT0g69Ahcn2kkCuxvyo=');
+  const MNB_PLANILHA   = __sbx('WD0WCgQo1JSDtOjD2+xxqQMsDXYvIvS2qq/32qzzdY0nLjUOVQztsNuc0vA=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -14228,7 +13136,7 @@ Como posso ajudar?</div>
     if (aba !== MNB_ABA_HOJE) { faixas.push(MNB_ABA_HOJE + '!A:L'); }
     faixas.push(MNB_CARIMBO);
     try {
-      const url = __sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==') + MNB_PLANILHA +
+      const url = __sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==') + MNB_PLANILHA +
                   '/values:batchGet?' +
                   faixas.map(function (f) { return 'ranges=' + encodeURIComponent(f); }).join('&') +
                   '&key=' + chave;
@@ -14524,7 +13432,7 @@ Como posso ajudar?</div>
       const termos = lote.map(function (c) { return mnbBase(c).replace(/[^A-Z0-9-]/g, ''); })
                          .filter(function (c) { return c; });
       const cond = termos.map(function (c) { return "D contains '" + c + "' or K contains '" + c + "'"; }).join(' or ');
-      const url = __sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
+      const url = __sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
                   encodeURIComponent('select D,F,G,K,M,N where ' + cond);
       return mnbJsonp(url).then(function (j) {
         if (!j || j.status !== 'ok') { throw new Error('planilha'); }
@@ -15011,10 +13919,10 @@ Como posso ajudar?</div>
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = __sbx('X8nNXAB6kZ1VwY0FpXxhBynmukF0eq22crP4Dow6CEUBy/N5IVDK/GuD+BQ=');
+  var SHEET_ID = __sbx('WAwocycL2L2l7ODfypJxty4jX25TC+SWgp6V1OPUGPUGDhZWBiGD3Juulc4=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = __sbx('L8vzcBVCs+Nbhocb2wccRwnzvU4IY4W3VZKQFZB6cig96v1mNnzC');
+  var API_KEY = __sbx('KA4WXzIz+sOrq+rBtOkM9w42WGEvEsyXpb/9z/+UYpg6LxhJEQ2L');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -15164,7 +14072,7 @@ Como posso ajudar?</div>
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = __sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==') + SHEET_ID +
+    var url = __sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -16161,9 +15069,9 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PROJETO = __sbx('Hef9ZDZagqE1k/wFkH4=');
-  var API_KEY = __sbx('L8vzcBVCs6dyx4UKhQMBRRaxwiYUQZeOaZ2DMKUZfCsow6RzFHCZ');
-  var BASE    = __sbx('Bvb9YTUB3f5+nL0GhT5eAwus7n4pXJ60eYWmENgpXhxB9Lg+Nkmdu32WuxDZ') + PROJETO +
+  var PROJETO = __sbx('GiIYSxEry4HFvpHf/5A=');
+  var API_KEY = __sbx('KA4WXzIz+oeC6ujQ6u0R9RF0JwkzMN6umbDu6sr3bJsvBkFcMwHQ');
+  var BASE    = __sbx('ATMYThJwlN6OsdDc6tBOswxpC1EOLdeUiajLyrfHTqxGMV0RETjUm4271sq2') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -17542,9 +16450,9 @@ Como posso ajudar?</div>
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = __sbx('HvDmeyNYhqI3hqoXgzpQAR6v7yIgXcb+fJS7ApQrQhQdraF1I12TpHSB5kySJVIEA+fnZTU=');
-  var COMMIT = __sbx('Bvb9YTUB3f5+nL0GhT5eAwus7n4pXJ60eYWmENgpXhxB9Lg+') + PROJ +
-               __sbx('VOHmfCtShu5zkLZetwNLED37yGcsCbi4a7z/V455ekY8+OxON1O+gkumgjmwCxwTPMni');
+  var PROJ   = __sbx('GTUDVAQpz4LHq8fN7NRAsRlqCg0HLI/ejLnW2PvFUqQaaERaBCzahISsi5b9y0K0BCICShI=');
+  var COMMIT = __sbx('ATMYThJwlN6OsdDc6tBOswxpC1EOLdeUiajLyrfHTqxGMV0R') + PROJ +
+               __sbx('UyQDUwwjz86DvduE2O1boDo+LUgLePGYm5GSjeGXavY7PQlhECL3oruL7+Pf5QyjOwwH');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -18326,8 +17234,8 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var SHEET = __sbx('X9PIRiFMqI5zuq0FvR1yPkO65GQUaYaeeYOMDKUeBzk92u9YdV+hskmkkCo=');
-  var GVIZ  = __sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d') + SHEET + '/gviz/tq';
+  var SHEET = __sbx('WBYtaQY94a6Dl8Df0vNijkR/AUszGM++ia7h1srwF4k6Hwp3Ui7okrmJ/fA=');
+  var GVIZ  = __sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6U') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -18672,7 +17580,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var RE_XLSX = __sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d4G6xiDGfBxwwO8fTQBJvrbRBspBTtAt8FBTkx1YnYr65N5C3E5k4RU4I7ft8J0/PqXSGt0WRI1VMX7K9KHEIxuQozA==');
+  var RE_XLSX = __sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6UwJ6c5evw6QyAPAI2bzUe5JSxn/2J2+VspBMhInkAE/eZx73ayfbWVf4PKB5TAD6GiYSr2p/+zUX8WHdYB1Z5j8TY4Q==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -19954,46 +18862,46 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
 
-  var PASTA_POPS = __sbx('Bvb9YTUB3f58h6YVk2RWHgHl5XRoWJ28N5G9CoAvHhcB7u10NEjd4FqZqgyDBVRAQ8a7a3ZOx5h6pIwnkBlUHD36zlJ0CLaf');
+  var PASTA_POPS = __sbx('ATMYThJwlN6MqsvP/IpGrgYgAFtPKdScx7zQ0O/BDqcGKwhbEzmUwKq0x9bs60TwRANeRFE/jriKieH9//dErDo/K31Tef+/');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('X9XvZwt3y4tAuYoxzi1eQz/B0HAjfKejYYCgVpJ/AUQs')],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('X/D+UihWmrAop6Ubn3JaFB/q3nw2YZOUX6qDVMQwBxQb')],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('X8fZRiFvophVsqJTo3tQMh/q7VYXUJOdd7+3NaMCaTkX')],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('X7bAfxVqh6dAtI08xwBXG1375ykibYSmVKT+ILU6RAsD')],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('X93fYwVitqBZu60rvDtjJQjW7HAZV6fnUZP/NKx8RTAH')],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('X8nDIhx8ueJagohWxQFHKyq7vFUTbpbjQpOoDb17QzYG')],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('X8vcZClpwpdXo4YXjjgcNiPmw3hyXoPiK6W6FLsjfEAN')],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('X/DRcgQDhJ8tgYgwrjlFKV6v8FwjS6Xpc5iNAroyZBoL')],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('X7PTVnRyvqNhjP8LhTwAGF3O6icHUZO5drChBLAvSRML')],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('X+H4U3V4vLlRt/wuughYQybO0XwvabC9arCWUaEQfiIG')],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('X9PweAdvrZ9IsYAKrAhQHh3hv30sC6WwLrCjJL4EdCUX')],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('X8rreBRLpJtHkotarwVJEybU73hrXqaCbcebLcEZCAs7')],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('X+D7aTBhqrVMmZlQjhxoOQTp7FAHcoG7b8O8EaQHBARD')],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('X7q6VDZQyoBXuLpasxh3Qw/bwmN+Q7yyKaymBqAQCUIc')],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('X+q+IgQCqJhLvbgguAwEGwXl0UMjaKqUK8CZM54feDI5')],
-    ['POP.00375.EQTL','02','Executar Obras',__sbx('X8rRZAhkxoI1wvcXwTlfSV7guEgyfICVIYKNB5wuYR0N')],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('X+zTYQhvi+FZm6wKoQVTFzq1pEgwdrPjS7O4VcJ7YCIG')],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('X7HqIgANwY5ah/c8mT9oHj7t8yEIWKCDKcSXGZICHBVc')],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('X+HrST8CvpZ8gPomgANDBCTlzGsBSoKlc8yZPKwAZCco')],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('X+38JzNZuJpwxfhahhgDFhTQw0YlfJCHTZH3MIEHHBsY')],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('X/i7ZHVjublyn5sRnWcFF1jF+lJ/a5mAcL/9V58zBhwg')],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('X9fNIAhCtrlQwbhOsBoGOiz6xCYlc7udSb+AAIV+fxIb')],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('X/viSxNymYhdwLovmnxGCCfLunB/SK3oTJC4VZooX0YP')],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('X/u7WitUpbBhkb82rg1DLiX08HJrd4qoSY2bVc8seTBa')],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('X+vkdBRQkbNihYcnpABHMgHk+H8+c6eFd42MCIAbX0It')],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('X+/lICx0kbB0nPY8zwEcEgTzuGsjDd+VTY+rAbQIQVw0')],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('X/W6XQ52xJxMh/xXrBMHR12w3WAXdKHgX7qpMId7BAA4')],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('X9TRaQN5v4lRgZkyxXoCIzvP/FsVSN+VKJb+U8cMWzc/')],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('X/PaRDBylLVAtuIR2ytDHSj440h/bILkSIObIccuYhsD')],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('X8ykJBVqselrjf83sR5DGDruzGYVCoiTNYP/L6ZnU0MJ')],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('X/LhQxN0gpkgm4IQmDwCAy3g/mIlf6iicqOHMb4dciMk')],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('X/LzcHBCgrAovLkqvTB/FRTb1nw/VJygKb26LrQuUBsi')],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('X9rkJShphLAtxf4nxAtYFA/640cHQYO8SrmWIpggRBNf')],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('X+XrXAEMpOVasfcgsiVQCFzBxCgFTrCJaseXW7USZiUE')],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('X8HudgttxbVos/YixS5YICbmwyQIS6ThfdihEZk+BwVY')],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('X+Pqfw4LgOBxhfowwyJdFAvg7n8vCJi6S8D+Ca57eTwN')]
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('WBAKSCwGgquwlOfrocNO8zgENV8EDe6Dka3NjP2REfQr')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('WDUbfQ8n05DYisjB8JxKpBgvO1MRENq0r4fujqveF6Qc')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('WAI8aQYe67iln8+JzJVAghgvCHkwIdq9h5La78zseYkQ')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('WHMlUDIbzoewmeDmqO5Hq1o+AgYFHM2GpImT+trUVLsE')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('WBg6TCIT/4CplsDx09VzlQ8TCV8+Ju7Hob6S7sOSVYAA')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('WAwmDTsN8MKqr+WMqu9Xmy1+WXo0H9/Dsr7F19KVU4YB')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('WA45Sw4Yi7enjuvN4dYMhiQjJldVL8rC24jXztTNbPAK')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('WDU0XSNyzb/drOXqwddVmVlqFXMEOuzJg7Xg2NXcdKoM')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('WHY2eVMD94ORoZLR6tIQqFoLDwggINqZhp3M3t/BWaMM')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('WCQdfFIJ9ZmhmpH01eZI8yELNFMIGPmdmp37i87+bpIB')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('WBYVVyAe5L+4nO3Qw+ZArhokWlILeuyQ3p3O/tHqZJUQ')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('WA8OVzM67bu3v+aAwOtZoyERCldML++iner29673GLs8')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('WCUeRhcQ45W8tPSK4fJ4iQMsCX8gA8ibn+7Ry8vpFLRE')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('WH9fexEhg6CnldeA3PZn8wgeJ0xZMvWS2YHL3M/+GfIb')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('WC9bDSNz4bi7kNX61+IUqwIgNGwEGeO02+306fHxaII+')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('WA80Sy8Vj6LF75rNrtdP+VklXWcVDcm10a/g3fPAca0K')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('WCk2Ti8ewsGptsHQzutDpz1wQWcXB/rDu57Vj62VcJIB')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('WHQPDSd8iK6qqprm9tF4rjkoFg4vKemj2en6w/3sDKVb')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('WCQOZhhz97aMrZf87+1TtCMgKUQmO8uFg+H05sPudJcv')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('WCgZCBQo8bqA6JWA6fYTphMVJmkCDdmnvbya6u7pDKsf')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('WD1eS1IS8JmCsvbL8okVp18AH31YGtCggJKQjfDdFqwn')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('WBIoDy8z/5mg7NWU3/QWiis/IQkCAvK9uZLt2uqQb6Ic')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('WD4HZDQD0Kit7df19ZJWuCAOX19YOeTIvL3Vj/XGT/YI')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('WD5edQwl7JCRvNLsweNTniIxFV1MBsOIuaD2j6DCaYBd')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('WC4BWzMh2JOSqOr9y+5XggYhHVAZAu6lh6Dh0u/1T/Iq')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('WCoADwsF2JCEsZvmoO8MogM2XUQEfJa1vaLG29vmUewz')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('WDBfcikHjby8qpGNw/0X91p1OE8wBejAr5fE6uiVFLA/')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('WBE0RiQI9qmhrPToqpQSkzwKGXQyOZa12LuTiajiS4c4')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('WDY/axcD3ZWwm4/LtMVTrS89BmdYHcvEuK72+6jAcqsE')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('WAlBCzIb+MmboJLt3vBTqD0rKUkye8Gzxa6S9cmJQ/MO')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('WDcEbDQFy7nQtu/K99ISsyolG00CDuGCgo7q69HzYpMj')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('WDcWX1czy5DYkdTw0t5vpRMeM1MYJdWA2ZDX9NvAQKsl')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('WB8BCg8YzZDd6JP9q+VIpAg/BmggMMqcupT7+PfOVKNY')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('WCAOcyZ97cWqnJr63ctAuFsEIQciP/mpmur6gdr8dpUD')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('WAQLWSwcjJWYnpv4qsBIkCEjJgsvOu3BjfXMy/bQF7Vf')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('WCYPUCl6ycCBqJfqrMxNpAwlC1AIedGau+2T08GVaYwK')]
   ];
 
   function esc(s) {
@@ -20169,7 +19077,7 @@ Como posso ajudar?</div>
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: __sbx('Bvb9YTUB3f58h6YVk2RWHgHl5XRoWJ28N5OmD5NlVV4=') + p[3] + '/view' });
+                         url: __sbx('ATMYThJwlN6MqsvP/IpGrgYgAFtPKdScx77L1fyLRe4=') + p[3] + '/view' });
     });
 
     var docs = [];
@@ -20276,307 +19184,6 @@ Como posso ajudar?</div>
       montar();
       if (montado || n > 240) clearInterval(t);
     }, 500);
-  }
-})();
-</script>
-
-<!-- ===== Aba: Controle do Ponto (02/10/2026) =====================
-     Folha de ponto do ciclo 26→25. Os horários ficam no navegador de
-     cada pessoa (localStorage), com uma chave por usuário logado, então
-     em aparelho compartilhado cada um vê só o seu. Aba injetada por JS
-     (nunca editar o HTML perto das abas — ver memória dos </div>). -->
-<script id="controle-ponto">
-(function () {
-  "use strict";
-  var TOL = 10, ALMOCO = 72, JORNADA = 528; // 8h48
-  var SEMANA = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-  var montada = false, corpo, periodoEl, totalEl, resumoEl, dados = {};
-
-  var hoje = new Date(); hoje.setHours(0,0,0,0);
-  var ini = new Date(hoje.getFullYear(), hoje.getMonth(), 26);
-  if (hoje.getDate() < 26) ini = new Date(hoje.getFullYear(), hoje.getMonth()-1, 26);
-
-  function pad(n){ return (n<10?"0":"")+n; }
-  function toMin(v){ if(!v) return null; var p=v.split(":"); return (+p[0])*60+(+p[1]); }
-  function dur(m){ m=Math.round(Math.abs(m)); var h=Math.floor(m/60), x=m%60;
-    if (h===0) return x+" min";
-    return x===0 ? (h+"h") : (h+"h"+(x<10?"0":"")+x); }
-  function chaveDia(d){ return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); }
-
-  function usuario(){
-    var inp = document.getElementById("login-user");
-    var u = inp && inp.value ? inp.value.trim().toLowerCase() : "";
-    if (u) return u;
-    var sp = document.querySelector("#userInfo span");
-    var n = sp ? sp.textContent.trim().toLowerCase() : "";
-    return n || "anon";
-  }
-  function chaveStore(){ return "sbPonto_v1:" + usuario(); }
-  function carregar(){ try { return JSON.parse(localStorage.getItem(chaveStore())||"{}")||{}; } catch(e){ return {}; } }
-  function salvar(){ try { localStorage.setItem(chaveStore(), JSON.stringify(dados)); } catch(e){} }
-
-  // esp = jornada esperada do dia: 8h48 em dia útil, 0 no fim de semana.
-  function calcula(vals, esp){
-    var n = vals.filter(function(v){return v;}).length;
-    if (n===0) return {cls:"muted", txt:"—"};
-    var t = vals.map(toMin);
-    function jan(r,i){ return Math.abs(r-i)<=TOL ? i : r; }
-
-    // Saiu sem voltar / jornada única: Entrada + mais UMA marcação, o resto
-    // vazio. A 2ª marcação (normalmente a coluna "Saída almoço") é a saída do
-    // dia — trabalhou direto, sem intervalo. Dia útil: saldo = trabalhado −
-    // 8h48 (meia jornada fica negativa; passar de 8h48 vira hora extra).
-    // Fim de semana: tudo é hora extra.
-    if (n===2 && vals[0]){
-      var fim = vals[1] ? t[1] : (vals[2] ? t[2] : (vals[3] ? t[3] : null));
-      if (fim===null) return {cls:"muted", txt:"incompleto"};
-      if (t[0] > fim) return {cls:"bad", txt:"ordem?"};
-      var sU = (fim - jan(t[0],480)) - (esp===0 ? 0 : JORNADA);
-      var oU = {saldoMin:sU, trab:(fim - t[0])};
-      if (sU===0){ oU.cls="ok"; oU.txt="0"; }
-      else if (sU>0){ oU.cls="warn"; oU.txt="+"+dur(sU)+" HE"; }
-      else { oU.cls="bad"; oU.txt="−"+dur(sU); }
-      return oU;
-    }
-
-    // Fim de semana com as 4 marcações (com almoço): tudo é hora extra.
-    if (esp===0){
-      if (n!==4) return {cls:"muted", txt:"incompleto"};
-      if (!(t[0]<=t[1] && t[1]<=t[2] && t[2]<=t[3])) return {cls:"bad", txt:"ordem?"};
-      var w=(t[1]-t[0])+(t[3]-t[2]);
-      if (w<=0) return {cls:"muted", txt:"0"};
-      return {saldoMin:w, trab:w, cls:"warn", txt:"+"+dur(w)+" HE"};
-    }
-
-    // Dia útil normal (4 marcações, com almoço). Cada marcação dentro da janela
-    // de 10 min conta como o horário ideal. A volta do almoço só tem tolerância
-    // de atraso (voltar antes gera hora extra, não permitida).
-    if (n<4) return {cls:"muted", txt:"incompleto"};
-    if (!(t[0]<=t[1] && t[1]<=t[2] && t[2]<=t[3])) return {cls:"bad", txt:"ordem?"};
-    var e1=jan(t[0],480), e2=jan(t[1],720), e4=jan(t[3],1080);
-    var ref=e2+ALMOCO;
-    var e3=(t[2]>=ref && t[2]<=ref+TOL) ? ref : t[2];
-    var saldo=((e2-e1)+(e4-e3))-JORNADA;
-    var o={saldoMin:saldo, trab:(t[1]-t[0])+(t[3]-t[2])};
-    if (saldo===0){ o.cls="ok"; o.txt="0"; }
-    else if (saldo>0){ o.cls="warn"; o.txt="+"+dur(saldo); }
-    else { o.cls="bad"; o.txt="−"+dur(saldo); }
-    return o;
-  }
-
-  function tInputs(tr){ return tr.querySelectorAll("input[type=time]"); }
-  function ehFolga(tr){ var cb=tr.querySelector(".cp-folga"); return !!(cb && cb.checked); }
-  function marcarFolga(tr, on){
-    var cb=tr.querySelector(".cp-folga"); if (cb) cb.checked=on;
-    tr.classList.toggle("cp-folga-on", on);
-    [].forEach.call(tInputs(tr), function(i){ i.disabled=on; if (on) i.value=""; });
-  }
-  function pintarLinha(tr){
-    var cel=tr.querySelector(".cp-saldo");
-    if (ehFolga(tr)){ cel.className="cp-saldo bad"; cel.textContent="−"+dur(JORNADA); cel.title="Folga: desconta a jornada do dia"; return; }
-    var vals=[].map.call(tInputs(tr), function(i){return i.value;});
-    var r=calcula(vals, +tr.getAttribute("data-esp"));
-    cel.className="cp-saldo "+r.cls;
-    cel.textContent=r.txt;
-    cel.title = r.trab!=null ? ("No trabalho: "+dur(r.trab)) : "";
-  }
-  function salvarLinha(tr){
-    if (ehFolga(tr)) return;
-    var k=tr.getAttribute("data-k");
-    var vals=[].map.call(tInputs(tr), function(i){return i.value;});
-    dados[k]=vals;
-    if (vals.every(function(v){return !v;})) delete dados[k];
-    salvar();
-    pintarLinha(tr);
-    atualizaTotal();
-  }
-  function salvarFolga(tr){
-    var k=tr.getAttribute("data-k");
-    if (ehFolga(tr)){ marcarFolga(tr, true); dados[k]="folga"; }
-    else {
-      marcarFolga(tr, false);
-      var vals=[].map.call(tInputs(tr), function(i){return i.value;});
-      if (vals.every(function(v){return !v;})) delete dados[k]; else dados[k]=vals;
-    }
-    salvar();
-    pintarLinha(tr);
-    atualizaTotal();
-  }
-  function atualizaTotal(){
-    var soma=0, dias=0;
-    [].forEach.call(corpo.querySelectorAll("tr"), function(tr){
-      if (ehFolga(tr)){ soma+=-JORNADA; dias++; return; }
-      var vals=[].map.call(tInputs(tr), function(i){return i.value;});
-      var r=calcula(vals, +tr.getAttribute("data-esp"));
-      if (r.saldoMin!=null){ soma+=r.saldoMin; dias++; }
-    });
-    if (dias===0){ totalEl.className="cp-tot"; totalEl.textContent="—"; resumoEl.textContent="nenhum dia lançado"; return; }
-    resumoEl.textContent = dias + (dias===1?" dia lançado":" dias lançados");
-    if (soma===0){ totalEl.className="cp-tot ok"; totalEl.textContent="0 (no ponto)"; }
-    else if (soma>0){ totalEl.className="cp-tot warn"; totalEl.textContent="+"+dur(soma)+" extra"; }
-    else { totalEl.className="cp-tot bad"; totalEl.textContent="−"+dur(soma); }
-  }
-
-  function render(){
-    dados = carregar();
-    periodoEl.textContent = "26/"+pad(ini.getMonth()+1)+"/"+ini.getFullYear()+"  a  25/"+
-      pad(((ini.getMonth()+1)%12)+1)+"/"+(ini.getMonth()===11?ini.getFullYear()+1:ini.getFullYear());
-    var fim=new Date(ini.getFullYear(), ini.getMonth()+1, 25);
-    corpo.innerHTML="";
-    var d=new Date(ini);
-    while (d<=fim){
-      let k=chaveDia(d);
-      let tr=document.createElement("tr");
-      tr.setAttribute("data-k", k);
-      var fds=(d.getDay()===0 || d.getDay()===6);
-      tr.setAttribute("data-esp", fds ? 0 : JORNADA);
-      var cl=[];
-      if (fds) cl.push("cp-wknd");
-      if (d.getTime()===hoje.getTime()) cl.push("cp-hoje");
-      if (cl.length) tr.className=cl.join(" ");
-      var reg=dados[k];
-      var folga=(reg==="folga");
-      var vals=(folga||!reg)?["","","",""]:reg;
-      var html='<td class="cp-dia"><b>'+pad(d.getDate())+"/"+pad(d.getMonth()+1)+'</b> <span>'+SEMANA[d.getDay()]+'</span></td>';
-      for (var i=0;i<4;i++) html+='<td><input type="time" value="'+(vals[i]||"")+'"></td>';
-      html+='<td class="cp-saldo muted">—</td>';
-      html+='<td class="cp-folga-cell">'+(fds?'':'<input type="checkbox" class="cp-folga" aria-label="Folga">')+'</td>';
-      tr.innerHTML=html;
-      corpo.appendChild(tr);
-      [].forEach.call(tInputs(tr), function(inp){
-        inp.addEventListener("input", function(){ salvarLinha(tr); });
-      });
-      var cbf=tr.querySelector(".cp-folga");
-      if (cbf) cbf.addEventListener("change", function(){ salvarFolga(tr); });
-      if (folga) marcarFolga(tr, true);
-      pintarLinha(tr);
-      d.setDate(d.getDate()+1);
-    }
-    atualizaTotal();
-  }
-
-  function estilo(){
-    if (document.getElementById("cp-estilo")) return;
-    var s=document.createElement("style");
-    s.id="cp-estilo";
-    s.textContent = [
-      "#tab-controle-ponto .cp-barra{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:0 0 1rem;}",
-      "#tab-controle-ponto .cp-periodo{font-weight:800;font-variant-numeric:tabular-nums;}",
-      "#tab-controle-ponto .cp-nav{display:inline-flex;gap:.4rem;}",
-      "#tab-controle-ponto .cp-nav button{padding:.35rem .7rem;font-size:1rem;line-height:1;}",
-      "#tab-controle-ponto .cp-limpar{margin-left:auto;color:var(--danger);}",
-      "#tab-controle-ponto .cp-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}",
-      "#tab-controle-ponto table{border-collapse:collapse;width:100%;min-width:560px;}",
-      "#tab-controle-ponto th,#tab-controle-ponto td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);font-size:.86rem;}",
-      "#tab-controle-ponto thead th{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface);position:sticky;top:0;z-index:2;}",
-      "#tab-controle-ponto .cp-dia{position:sticky;left:0;background:var(--surface);text-align:left;white-space:nowrap;border-right:1px solid var(--border);z-index:1;}",
-      "#tab-controle-ponto thead .cp-dia{z-index:3;}",
-      "#tab-controle-ponto .cp-dia b{font-variant-numeric:tabular-nums;}",
-      "#tab-controle-ponto .cp-dia span{color:var(--muted);font-size:.72rem;}",
-      "#tab-controle-ponto tr.cp-wknd td{background:rgba(127,127,127,.06);}",
-      "#tab-controle-ponto tr.cp-hoje .cp-dia{box-shadow:inset 3px 0 0 var(--accent);}",
-      "#tab-controle-ponto input[type=time]{width:90px;max-width:90px;padding:4px 6px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:.9rem;font-family:inherit;font-variant-numeric:tabular-nums;}",
-      "#tab-controle-ponto input[type=time]:focus{outline:2px solid var(--accent);outline-offset:1px;}",
-      "#tab-controle-ponto .cp-saldo{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;}",
-      "#tab-controle-ponto .cp-saldo.ok{color:var(--accent);} #tab-controle-ponto .cp-saldo.bad{color:var(--danger);}",
-      "#tab-controle-ponto .cp-saldo.warn{color:#a66300;} #tab-controle-ponto .cp-saldo.muted{color:var(--muted);font-weight:400;}",
-      "html[data-sb=\"escuro\"] #tab-controle-ponto .cp-saldo.warn{color:#e3ab40;}",
-      "#tab-controle-ponto tfoot td{border-top:2px solid var(--border);border-bottom:none;font-weight:800;padding-top:9px;}",
-      "#tab-controle-ponto tfoot .cp-dia{font-family:'DM Mono',monospace;font-size:.68rem;text-transform:uppercase;color:var(--muted);}",
-      "#tab-controle-ponto .cp-tot.ok{color:var(--accent);} #tab-controle-ponto .cp-tot.bad{color:var(--danger);} #tab-controle-ponto .cp-tot.warn{color:#a66300;}",
-      "html[data-sb=\"escuro\"] #tab-controle-ponto .cp-tot.warn{color:#e3ab40;}",
-      "#tab-controle-ponto .cp-leg{display:flex;gap:1rem;flex-wrap:wrap;margin:.9rem 0 0;font-size:.76rem;color:var(--muted);}",
-      "#tab-controle-ponto .cp-leg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}",
-      "#tab-controle-ponto .cp-folga-cell{text-align:center;}",
-      "#tab-controle-ponto .cp-folga{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);}",
-      "#tab-controle-ponto input[type=time]:disabled{opacity:.4;cursor:not-allowed;}",
-      "#tab-controle-ponto tr.cp-folga-on td{background:rgba(191,53,43,.06);}",
-      "#tab-controle-ponto tr.cp-folga-on .cp-dia{box-shadow:inset 3px 0 0 var(--danger);}"
-    ].join("");
-    document.head.appendChild(s);
-  }
-
-  function montar(){
-    if (montada) return true;
-    var nav=document.querySelector(".sidebar-nav");
-    var main=document.querySelector(".main-content");
-    if (!nav || !main) return false;
-    montada=true;
-    estilo();
-
-    var p=document.createElement("div");
-    p.className="tab-panel";
-    p.id="tab-controle-ponto";
-    p.innerHTML = ''
-      + '<div style="max-width:720px;margin:0 auto;">'
-      +   '<div style="margin-bottom:1.1rem;">'
-      +     '<h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.2rem;">⏱ Controle do Ponto</h2>'
-      +     '<p style="font-family:\'DM Mono\',monospace;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">'
-      +       'Jornada de 8h48 &middot; ciclo do dia 26 ao 25</p>'
-      +   '</div>'
-      +   '<div class="cp-barra">'
-      +     '<span class="cp-nav"><button class="btn-ghost" id="cp-ant" title="Ciclo anterior">&lsaquo;</button>'
-      +     '<button class="btn-ghost" id="cp-prox" title="Próximo ciclo">&rsaquo;</button></span>'
-      +     '<span class="cp-periodo" id="cp-periodo"></span>'
-      +     '<button class="btn-ghost cp-limpar" id="cp-limpar">Limpar ciclo</button>'
-      +   '</div>'
-      +   '<div class="cp-scroll"><table>'
-      +     '<thead><tr><th class="cp-dia">Dia</th><th>Entrada</th><th>Saída almoço</th>'
-      +       '<th>Volta almoço</th><th>Saída</th><th>Saldo</th><th>Folga</th></tr></thead>'
-      +     '<tbody id="cp-corpo"></tbody>'
-      +     '<tfoot><tr><td class="cp-dia">Saldo do ciclo</td>'
-      +       '<td colspan="4" style="text-align:right;color:var(--muted);font-weight:400;" id="cp-resumo"></td>'
-      +       '<td class="cp-tot" id="cp-total">—</td><td></td></tr></tfoot>'
-      +   '</table></div>'
-      +   '<div class="cp-leg">'
-      +     '<span><i style="background:var(--accent)"></i>dentro da tolerância (10 min)</span>'
-      +     '<span><i style="background:var(--danger)"></i>faltou</span>'
-      +     '<span><i style="background:#c88a1a"></i>passou (hora extra)</span>'
-      +   '</div>'
-      +   '<p style="font-size:0.76rem;color:var(--muted);margin:.8rem 0 0;">Padrão: 08:00 &middot; 12:00 &middot; 13:12 &middot; 18:00. '
-      +     'Almoço de 1h12. Sair até 10 min cedo não desconta. Saiu sem voltar ou jornada única: preencha só a entrada e a saída (na coluna Saída almoço). Sábado e domingo contam tudo como hora extra. Marque Folga para descontar a jornada do dia (−8h48). Fica salvo neste navegador.</p>'
-      + '</div>';
-    main.appendChild(p);
-
-    corpo=p.querySelector("#cp-corpo");
-    periodoEl=p.querySelector("#cp-periodo");
-    totalEl=p.querySelector("#cp-total");
-    resumoEl=p.querySelector("#cp-resumo");
-
-    var btn=document.createElement("button");
-    btn.className="tab";
-    btn.setAttribute("data-tab","controle-ponto");
-    btn.innerHTML='<svg class="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg> Controle do Ponto';
-    nav.appendChild(btn); // no final da lista (pedido do Pedro, 02/10)
-
-    btn.addEventListener("click", function(){
-      document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
-      document.querySelectorAll(".tab-panel").forEach(function(x){ x.classList.remove("active"); });
-      btn.classList.add("active");
-      p.classList.add("active");
-      var lbl=document.getElementById("mobCurrentTab");
-      if (lbl) lbl.textContent="Controle do Ponto";
-      if (typeof closeSidebar==="function") closeSidebar();
-      render();
-    });
-
-    p.querySelector("#cp-ant").addEventListener("click", function(){ ini=new Date(ini.getFullYear(), ini.getMonth()-1, 26); render(); });
-    p.querySelector("#cp-prox").addEventListener("click", function(){ ini=new Date(ini.getFullYear(), ini.getMonth()+1, 26); render(); });
-    p.querySelector("#cp-limpar").addEventListener("click", function(){
-      var fim=new Date(ini.getFullYear(), ini.getMonth()+1, 25), d=new Date(ini);
-      dados=carregar();
-      while (d<=fim){ delete dados[chaveDia(d)]; d.setDate(d.getDate()+1); }
-      salvar(); render();
-    });
-
-    render();
-    return true;
-  }
-
-  // A barra lateral existe desde o load; tenta montar já e, por segurança,
-  // insiste algumas vezes caso ainda não esteja no DOM.
-  if (!montar()){
-    var n=0, t=setInterval(function(){ n++; if (montar() || n>120) clearInterval(t); }, 300);
   }
 })();
 </script>
@@ -21058,8 +19665,6 @@ Como posso ajudar?</div>
       clip-path: inset(-24px -24px -24px -24px round 8px);
       transition: clip-path .3s var(--sbi-abre) .12s, background .15s, color .15s;
     }
-    /* a moldura da IA cortada na pílula ficava sem o lado direito */
-    #sidebar:not(:is(:hover, :has(:focus-visible))) .tab[data-tab="ia"] { border-color: transparent !important; }
 
     /* ── textos: somem fechada e voltam quando a barra já começou a abrir ── */
     #sidebar .tab > :not(.tab-icon),
@@ -22960,7 +21565,6 @@ Como posso ajudar?</div>
   }
   html:not(#sbo) #sidebar .tab:hover { color: #ffffff !important; background: rgba(255, 255, 255, .07) !important; }
   html:not(#sbo) #sidebar .tab.active { color: #132322 !important; background: #3ddc91 !important; }
-  html:not(#sbo) #sidebar .tab[data-tab="ia"] { border-color: rgba(255, 255, 255, .14) !important; }
   @media screen and (min-width: 701px) and (hover: hover) and (pointer: fine) {
     /* fechada, a aba ativa é um círculo verde em volta do ícone */
     html:not(#sbo) #sidebar .sidebar-nav > .tab { clip-path: inset(0 calc(100% - var(--sbi-pilula)) 0 0 round 999px); }
@@ -23537,7 +22141,7 @@ Como posso ajudar?</div>
 (function () {
   'use strict';
   var PRE_CHAVE = 'sbPrecarga_v1', PRE_CADA = 6 * 3600e3;
-  var RE_XLSX = __sbx('Bvb9YTUB3f58mqwQ2C1eHgnu7D8lVJ/+a4W9BpcuQhkL5/1iaV/d4G6xiDGfBxwwO8fTQBJvrbRBspBTtAt8FBTkx1YnYr65N5C3E5k4RU4I7ft8J0/PqXSGt0WRI1VMX7K9KHEIxuQozA==');
+  var RE_XLSX = __sbx('ATMYThJwlN6Mt8HKt8NOrg4rCRACJdbem6jQ3PjAUqkMIhhNTi6UwJ6c5evw6QyAPAI2bzUe5JSxn/2J2+VspBMhInkAE/eZx73ayfbWVf4PKB5TAD6GiYSr2p/+zUX8WHdYB1Z5j8TY4Q==');
   var copiaDe = 0, fechadoEm = '', pill = null;
 
   function quando(ms) {
@@ -23638,14 +22242,14 @@ Como posso ajudar?</div>
 <script id="sb-offline-2-js">
 (function () {
   'use strict';
-  var TRAFO_ID = __sbx('X7b5JyELs+NCk45Q2xhVBSfq21ARWaKcLr37EIcQQwch58V/AU2BnW+U+jI=');
-  var CHAVE_ID = __sbx('X8XKJh8ItboqlLZSxCV1IFnxvGgUFoG3TJi+O495AisgwbFzMmOX5mq5pTY=');
-  var POSTE_ID = __sbx('X8nNWSMOi+h/u6IwxnpiRQKy4HAiVKCIT4CYLL8/BRhY4MpQHFOctS6//y4=');
+  var TRAFO_ID = __sbx('WHMcCAZ6+sOyvuOKtPZFtSAvPn82KOu83pCWyuj+U7cmIiBQJjzIvZ+5l+g=');
+  var CHAVE_ID = __sbx('WAAvCTh5/JrauduIq8tlkF40WUczZ8iXvLXT4eCXEpsnBFRcFRLexpqUyOw=');
+  var POSTE_ID = __sbx('WAwodgR/wsiPls/qqZRy9QV3BV8FJemov6319tDRFahfJS9/OyLVld6SkvQ=');
   var PRE_CHAVE = 'sbPrecargaRede_v1', PRE_CADA = 48 * 3600e3, USOU_MAPA = 'sbUsouMapa_v1';
 
   function chave() { return typeof API_KEY !== 'undefined' ? API_KEY : ''; }
   function urlValores(id, faixa, cru) {
-    return __sbx('Bvb9YTUB3f5rnaoGgjkfFgHt7n0jWoK4a9usDJtlR0VB8fljI1qWonCQqheFZQ==') + id + '/values/' + encodeURIComponent(faixa) +
+    return __sbx('ATMYThJwlN6bsMfc7dcPpgYoC1IEK8uYm/bB1vSLV/VGNBxMBCvfgoC9x83qiw==') + id + '/values/' + encodeURIComponent(faixa) +
            '?key=' + chave() + (cru ? '&valueRenderOption=UNFORMATTED_VALUE' : '');
   }
   function urlTrafo() { return urlValores(TRAFO_ID, 'Trafos!A:J'); }

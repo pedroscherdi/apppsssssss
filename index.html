@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>(function(){var k=[46,74,160,233,56,120,119,1,249,117,102,109,41,209,177,72];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
+<script>(function(){var k=[133,97,124,109,247,133,126,126,125,68,18,72,171,104,149,22];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -113,12 +113,12 @@
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: __sbx('bwPaiGsBNneTRywEWpiBfFZ5695qAhJeiB0qPnqC/BJoC42LajMc'),
-      authDomain: __sbx('XS/UnEgZB3HUE1ULT+WfLkc4xYtZCxJgiQVIDka8'),
-      projectId: __sbx('XS/UnEgZB3HUE1ULT+U='),
-      storageBucket: __sbx('XS/UnEgZB3HUE1ULT+WfLkc4xYtZCxJyjRoUDE60nyleOg=='),
-      messagingSenderId: __sbx('HH+V2g5BRjnAQVBb'),
-      appId: __sbx('H3CS3A1LQTjITV9ZH+eLP0somooKHBM0yRNWCx/lg30XKMLeXUpHN8o=')
+      apiKey: __sbx('xCgGDKT8PwgXdlgh2CGlIv1SN1ql/xshDCxeG/g72EzDIFEPpc4V'),
+      authDomain: __sbx('9gQIGIfkDg5QIiEuzVy7cOwTGQ+W9hsfDTQ8K8QF'),
+      projectId: __sbx('9gQIGIfkDg5QIiEuzVw='),
+      storageBucket: __sbx('9gQIGIfkDg5QIiEuzVy7cOwTGQ+W9hsNCStgKcwNu3f1EQ=='),
+      messagingSenderId: __sbx('t1RJXsG8T0ZEcCR+'),
+      appId: __sbx('tFtOWMK2SEdMfCt8nV6vYeADRg7F4RpLTSIiLp1cpyO8Ax5akrdOSE4=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -156,7 +156,7 @@
        Não fica sessão salva: cada abertura pede usuário e senha (o navegador
        pode lembrar). Sessão antiga do Firebase Auth (login Google) é
        desconectada, senão a pessoa entrava sem usuário e senha. */
-    const FS_DOCS       = __sbx('Rj7UmUtCWC6fHBQIWqXeOktkx4ZXHxtkmAUPHgey3iUBPJHGSAoYa5wWEh4G') + firebaseConfig.projectId + '/databases/(default)/documents';
+    const FS_DOCS       = __sbx('7RUIHYS/UVEbLWAt2Bz6ZOBPGwKY4hIbHDR7O4UL+nuqF01Ch/cRFBgnZjuE') + firebaseConfig.projectId + '/databases/(default)/documents';
     const WHATS_SUPORTE = '5553984742332';
     const $l = id => document.getElementById(id);
 
@@ -3790,6 +3790,20 @@
         </div>
         <button class="btn" onclick="calcularTracao()" style="white-space:nowrap;padding:0.5rem 1.4rem;">▶ Calcular</button>
       </div>
+      <div id="trc_rdc_box" style="display:none;max-width:calc(100vw - 2rem);box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem 1rem;">
+        <div class="map-field" style="max-width:340px;">
+          <label>Rede compacta: condição</label>
+          <select id="trc_rdc" onchange="calcularTracao()">
+            <option value="sv">Urbana, sem vento</option>
+            <option value="v60" selected>Urbana, vento 60 km/h</option>
+            <option value="v90">Rural, vento 90 km/h</option>
+          </select>
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;margin-top:0.6rem;">
+          Tração de projeto do conjunto (mensageiro + fases), Tabela 1 da NT.00018 rev08. Vale o N° como quantidade de circuitos. O vão médio acima não entra na compacta, só nos cabos nus.
+        </div>
+        <div id="trc_rdc_aviso" style="display:none;font-size:0.78rem;color:var(--warn,#f59e0b);line-height:1.6;margin-top:0.5rem;"></div>
+      </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;">
         <div style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;">Diagrama Vetorial</div>
         <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
@@ -4017,10 +4031,10 @@
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = __sbx('bwPaiGsBNjO6Bi4VBJycfkk7lLZ2IABntBI5G0/h8hF9ItSeSD9H');
-  const SHEET_ID = __sbx('HxXrhnchKECfPB4fHbWGCUgtkt1iLAF0uxQwX2qc6zJCetmgfiIxS4AbMCA=');
+  const API_KEY  = __sbx('xCgGDKT8P0w+N1owhiW4IOIQSDK53QkYMCNNPs1Y1k/WCQgah8JO');
+  const SHEET_ID = __sbx('tD43ArjcIT8bDWo6nwyiV+MGTlmt0QgLPyVEeuglz2zpUQUksd84NAQqRAU=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `${__sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==')}${SHEET_ID}`;
+  const BASE_URL = `${__sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4655,12 +4669,12 @@
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `${__sbx('Rj7UmUtCWC6dBw8bTP/WJ0EtzIwWGxhs1gEOGESz3ylHJp+AXEU=')}${id}&sz=w1200`;
+    return `${__sbx('7RUIHYS/UVEZNns+zkbyeeoGEAjZ5hETUjB6PcYK+3fsDUMEk7g=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `${__sbx('Rj7UmUtCWC6dBw8bTP/WJ0EtzIwWGxhs1hMPAUz+1Wc=')}${id}/view`;
+    return `${__sbx('7RUIHYS/UVEZNns+zkbyeeoGEAjZ5hETUiJ7JM5H8Tk=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -5234,7 +5248,48 @@
   const TRC_CONDUTORES_OPTS=['','6CC','4CC','2CC','1/0CC','2/0CC','3/0CC','4/0CC','4CA','2CA','1/0CA','2/0CA','3/0CA','4/0CA','336.4CA','6CAA','4CAA','2CAA','1/0CAA','2/0CAA','3/0CAA','4/0CAA','336.4CAA','397.5CAA','XLPE-336.4','XLPE-1/0'];
   const POSTE_CONC_CLASSES=[6,8,10,15,20,30,50]; const POSTE_MAD_CLASSES=[5,10]; const POSTE_FER_CLASSES=[2,4,6,10];
   const ESTAI_TABLE=[{nome:'Nenhum',maxMom:2.0},{nome:'Esc. Subsolo',maxMom:4.0},{nome:'Esc.Sub.Dupla',maxMom:7.0},{nome:'Esc. 10 kN',maxMom:10.0},{nome:'Estai1 - 6,35mm²',maxMom:14.0},{nome:'Estai2 - 7,94mm²',maxMom:22.0},{nome:'Estai3 - 9,53mm²',maxMom:35.0},{nome:'Base Concret.',maxMom:Infinity}];
-  function trcCondOpts(selected){return TRC_CONDUTORES_OPTS.map(v=>`<option value="${v}" ${v===selected?'selected':''}>${v===''?'— vazio —':v}</option>`).join('');}
+  /* 25/11/2026 - Rede compacta (RDC): Tabela 1 da NT.00018.EQTL rev08 (homologada 29/12/2025), "Trações de Projeto (daN)".
+     A tração é do CONJUNTO (mensageiro + fases), não por condutor: N° = quantidade de circuitos. Não usa as classes
+     de vão dos cabos nus (45/70/140 m), e sim a condição: Urbana sem vento / Urbana 60 km/h / Rural 90 km/h.
+     Item 5.7.9: as estruturas são dimensionadas por essa tração. Mensageiro (Tab. 6): 6,4 mm até 50 mm², 9,5 mm de 70 em diante.
+     Monofásico: a norma só dá Rural 60 e 90 km/h a 0 °C, sem vento fica "-". Fica fora do TRC_DATA de propósito:
+     a aba Flecha e Travessia lê o TRC_DATA por condutor, e isto é por conjunto. */
+  const TRC_RDC={
+    'RDC 13,8 3x35':{m:'6,4',sv:280,v60:372,v90:691},  'RDC 13,8 3x50':{m:'6,4',sv:298,v60:419,v90:756},
+    'RDC 13,8 3x70':{m:'9,5',sv:329,v60:555,v90:1080}, 'RDC 13,8 3x150':{m:'9,5',sv:491,v60:766,v90:1326},
+    'RDC 13,8 3x185':{m:'9,5',sv:570,v60:864,v90:1444},
+    'RDC 23,1 3x50':{m:'6,4',sv:315,v60:482,v90:767},  'RDC 23,1 3x70':{m:'9,5',sv:442,v60:638,v90:1085},
+    'RDC 23,1 3x150':{m:'9,5',sv:540,v60:884,v90:1473}, 'RDC 23,1 3x185':{m:'9,5',sv:600,v60:982,v90:1478},
+    'RDC 34,5 3x70':{m:'9,5',sv:501,v60:746,v90:1134}, 'RDC 34,5 3x150':{m:'9,5',sv:697,v60:1031,v90:1498},
+    'RDC 34,5 3x185':{m:'9,5',sv:791,v60:1154,v90:1719},
+    'RDC 13,8 1x35':{m:'6,4',sv:null,v60:248,v90:495}, 'RDC 13,8 1x50':{m:'6,4',sv:null,v60:266,v90:525},
+    'RDC 23,1 1x50':{m:'6,4',sv:null,v60:272,v90:530}, 'RDC 34,5 1x70':{m:'9,5',sv:null,v60:427,v90:750}
+  };
+  function trcTracao(c,vao){
+    if(!c)return 0;
+    if(TRC_RDC[c]){const cond=document.getElementById('trc_rdc')?.value||'v60'; return TRC_RDC[c][cond]||0;}
+    return TRC_DATA[c]?.[vao]||0;
+  }
+  // mostra a escolha da condição só quando tem compacta, e avisa o que a norma não cobre
+  function trcRdcAviso(linhas){
+    const box=document.getElementById('trc_rdc_box'); if(!box)return;
+    const usados=[]; linhas.forEach(l=>{if(TRC_RDC[l.c1])usados.push([l.c1,l.n1]); if(TRC_RDC[l.c2])usados.push([l.c2,l.n2]);});
+    box.style.display=usados.length?'block':'none';
+    const cond=document.getElementById('trc_rdc')?.value||'v60'; const av=[];
+    const semValor=[...new Set(usados.filter(u=>!TRC_RDC[u[0]][cond]).map(u=>u[0]))];
+    if(semValor.length)av.push(`<b>${semValor.join(', ')}</b>: a NT.00018 não dá tração sem vento para monofásico. Esse lado ficou em 0: escolha vento 60 ou 90 km/h.`);
+    if(usados.some(u=>u[1]>1))av.push('N° maior que 1 na compacta conta circuitos inteiros (cada um com seu mensageiro).');
+    const avEl=document.getElementById('trc_rdc_aviso'); if(avEl){avEl.innerHTML=av.join('<br>'); avEl.style.display=av.length?'block':'none';}
+  }
+  function trcCondOpts(selected){
+    const op=v=>`<option value="${v}" ${v===selected?'selected':''}>${v===''?'— vazio —':v}</option>`;
+    return TRC_CONDUTORES_OPTS.map(op).join('')+'<optgroup label="Rede compacta · NT.00018 (conjunto)">'+Object.keys(TRC_RDC).map(op).join('')+'</optgroup>';
+  }
+  // escolheu compacta numa linha: o N° daquele lado vira 1 (a tração da norma já é do conjunto)
+  document.addEventListener('change',e=>{
+    const m=/^trc_c([12])_(\d)$/.exec(e.target&&e.target.id||''); if(!m||!TRC_RDC[e.target.value])return;
+    const n=document.getElementById(`trc_n${m[1]}_${m[2]}`); if(n&&n.value!=='1'){n.value='1'; calcularTracao();}
+  });
   function trcNOpts(selected){return[1,2,3,4].map(n=>`<option value="${n}" ${n==selected?'selected':''}>${n}</option>`).join('');}
   function trcTmrOpts(selected){const opts=[{v:'1',l:'Sem TMR'},{v:'0.6667',l:'TMR 2/3'},{v:'0.3333',l:'TMR 1/3'}]; return opts.map(o=>`<option value="${o.v}" ${o.v===selected?'selected':''}>${o.l}</option>`).join('');}
   const TRC_DEFAULTS=[{n1:3,c1:'1/0CA',n2:3,c2:'1/0CA',dist:0.2,ang:180,tmr:'1'},{n1:3,c1:'',n2:1,c2:'',dist:2.3,ang:0,tmr:'1'},{n1:1,c1:'4CA',n2:3,c2:'',dist:2.3,ang:0,tmr:'1'},{n1:3,c1:'2CA',n2:3,c2:'',dist:2.8,ang:0,tmr:'1'}];
@@ -5250,7 +5305,8 @@
   function calcularTracao(){
     const vao=document.getElementById('trc_vao')?.value; const hPoste=parseFloat(document.getElementById('trc_altPoste')?.value||11);
     const linhas=[];
-    for(let i=0;i<4;i++){const c1=document.getElementById(`trc_c1_${i}`)?.value||''; const c2=document.getElementById(`trc_c2_${i}`)?.value||''; const n1=parseInt(document.getElementById(`trc_n1_${i}`)?.value||1); const n2=parseInt(document.getElementById(`trc_n2_${i}`)?.value||1); const dist=parseFloat(document.getElementById(`trc_dist_${i}`)?.value||0); const ang=parseFloat(document.getElementById(`trc_ang_${i}`)?.value||0); const tmr=parseFloat(document.getElementById(`trc_tmr_${i}`)?.value||1); let T1=0; if(c1&&TRC_DATA[c1]?.[vao])T1=TRC_DATA[c1][vao]*n1*tmr; let T2=0; if(c2&&TRC_DATA[c2]?.[vao])T2=TRC_DATA[c2][vao]*n2*tmr; linhas.push({c1,c2,n1,n2,dist,ang,tmr,T1,T2});}
+    for(let i=0;i<4;i++){const c1=document.getElementById(`trc_c1_${i}`)?.value||''; const c2=document.getElementById(`trc_c2_${i}`)?.value||''; const n1=parseInt(document.getElementById(`trc_n1_${i}`)?.value||1); const n2=parseInt(document.getElementById(`trc_n2_${i}`)?.value||1); const dist=parseFloat(document.getElementById(`trc_dist_${i}`)?.value||0); const ang=parseFloat(document.getElementById(`trc_ang_${i}`)?.value||0); const tmr=parseFloat(document.getElementById(`trc_tmr_${i}`)?.value||1); let T1=trcTracao(c1,vao)*n1*tmr; let T2=trcTracao(c2,vao)*n2*tmr; linhas.push({c1,c2,n1,n2,dist,ang,tmr,T1,T2});}
+    trcRdcAviso(linhas);
     let sumFx=0,sumFy=0;
     linhas.forEach(l=>{const angRad1=(l.ang*Math.PI)/180; const angRad2=((l.ang+180)*Math.PI)/180; const fx1=(l.T1/100)*Math.cos(angRad1); const fy1=(l.T1/100)*Math.sin(angRad1); const fx2=(l.T2/100)*Math.cos(angRad2); const fy2=(l.T2/100)*Math.sin(angRad2); sumFx+=fx1+fx2; sumFy+=fy1+fy2;});
     const resultanteF=Math.sqrt(sumFx*sumFx+sumFy*sumFy); const momResultante=resultanteF*hPoste;
@@ -6084,9 +6140,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('HzjUhG8vJ2+wRAkiX6fYOV051Y5+IjhznA9eDmi23RxnfsmlYTo4TKstFQ4=');
+  const POSTES_SHEET_ID = __sbx('tBMIAKDSLhA0dX0H3R78Z/YSCQqx3zEMGD4qK+oP+ULMVRUhrscxMy8cYSs=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6332,8 +6388,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = __sbx('HwD4pQEtQWOSQQM7Y7bTGHY8ypttTjs3jAw1L2LinAAZJ+y2UQhGRZI7IgI=');
-  const CABOS_BASE_URL = `${__sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('tCskIc7QSBwWcHce4Q/3Rt0XFh+iszJICD1BCuBbuF6yDDAynvVPOhYKVic=');
+  const CABOS_BASE_URL = `${__sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7478,7 +7534,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      não baixa as 97 mil linhas (memória do iPhone). Cache em Map.
      Carga = demanda em kVA = carregamento × KVATKVA, e o G2M usa KVATKVA =
      1,5 × a potência (conferido: 23,08 % × 67,5 = 15,58 kVA na IT144020778). */
-  const TRAFO_PLANILHA = __sbx('H37Q319INjOjEydeBIPVPGci8qhvGidMzz1SHliLwz5hL+yHfw4ETY4UUzw=');
+  const TRAFO_PLANILHA = __sbx('tFUMW5C1P0wnIlN7hjrxYswJLiyg5y4zSwwmO9oy52DKBDADsPMNMgolJxk=');
   const muTrafoCache = new Map();
 
   function muEhTrafo(icone) { return /TRANSFORMADOR/i.test(String(icone || '')); }
@@ -7513,7 +7569,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muTrafoCache.has(cod)) return muTrafoCache.get(cod);
     if (navigator.onLine === false) return muOffTrafo(cod);
     const tq = `select B,C,D,E,F,G,J where A = '${cod}' limit 1`;
-    const url = `${__sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const lin = (j.table.rows || [])[0];
@@ -7583,7 +7639,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      planilha usa a forma limpa. As variantes vão num pedido só (A = x or A = y) e
      fica a primeira que existir. Medido: 110.368 dos 113.927 equipamentos que não são
      trafo casam; jumper, capacitor e regulador não são chave e nem consultam. */
-  const CHAVE_PLANILHA = __sbx('Hw3j3mFLMGrLFB9cG771GRk5lZBqVQRnrRgXNVDighJgCZiLTCASNos5DDg=');
+  const CHAVE_PLANILHA = __sbx('tCY/Wq62ORVPJWt5mQfRR7ISSRSlqA0YKSljENJbpkzLIkQPg90bSQ8IeB0=');
   const muChaveCache = new Map();
 
   function muEhChave(icone) {
@@ -7607,7 +7663,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muChaveCache.has(k)) return muChaveCache.get(k);
     if (navigator.onLine === false) return muOffChave(vs, k);
     const tq = `select A,B,F where ${vs.map(v => `A = '${v}'`).join(' or ')} limit ${vs.length}`;
-    const url = `${__sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const achou = {};
@@ -7671,7 +7727,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      percebe que o índice está velho e cai na consulta da planilha inteira.
      Número repetido no G2M: fica o poste mais perto; se o mais perto estiver a mais de
      POSTE_LIMITE_M, é outro poste com o mesmo número e o balão avisa em vez de mostrar. */
-  const POSTE_PLANILHA = __sbx('HwHkoV1NDjieOws+GeHifEJ6yYhcFyVYrgAxImCkhSEYKOOoYhAZZc8/ViA=');
+  const POSTE_PLANILHA = __sbx('tCo4JZKwB0caCn8bm1jGIulRFQyT6iwnKjFFB+IdoX+zAz8sre0QGksOIgU=');
   const POSTE_LIMITE_M = 300;
   const POSTE_INDICE = {"linhas":1010287,"ultima":1010288,"blocos":[[2,"(splaca)"],[4002,"1002473.1"],[8002,"1004959"],[12002,"100819"],[16002,"1012703"],[20002,"1017597"],[24002,"1022533"],[28002,"1027252.1"],[32002,"1031897"],[36002,"1036627"],[40002,"1041539"],[44002,"1045891"],[48002,"1050296"],[52002,"1054758"],[56002,"1059549"],[60002,"1064743"],[64002,"1069891"],[68002,"1074620"],[72002,"1089221"],[76002,"109439"],[80002,"1100647"],[84002,"1105311"],[88002,"111005"],[92002,"1115002"],[96002,"1119849"],[100002,"1124868"],[104003,"1129700"],[108003,"1133910"],[112003,"1138998"],[116003,"1143936"],[120003,"1149027"],[124003,"1153644"],[128003,"1158856"],[132003,"1163586"],[136003,"1168554"],[140003,"1173455"],[144003,"1178515"],[148003,"118318.1"],[152003,"1188109"],[156003,"119278"],[160003,"1197358"],[164003,"1200210"],[168003,"1203089"],[172003,"120590"],[176003,"1210856"],[180003,"1215307"],[184003,"1219889"],[188003,"1224547"],[192003,"1228793"],[196003,"1233998"],[200003,"12433100"],[204003,"125465.1"],[208003,"1270515"],[212003,"129137"],[216003,"129727300"],[220003,"129893141"],[224003,"13242736"],[228003,"13416832"],[232003,"13646216"],[236003,"1387317563"],[240003,"140961"],[244003,"143490"],[248003,"1450233659"],[252003,"147902"],[256003,"152076"],[260003,"156198398"],[264003,"158866"],[268003,"16246071"],[272003,"16558"],[276003,"168658"],[280003,"17293244"],[284003,"17759617"],[288003,"18100041"],[292003,"18407965"],[296003,"188609"],[300003,"193475"],[304003,"199032"],[308003,"21220"],[312003,"23074"],[316003,"239365"],[320003,"24579"],[324003,"252340"],[328003,"256817238"],[332003,"262869"],[336003,"269035"],[340003,"276864"],[344003,"293102"],[348003,"298510"],[352003,"30011528"],[356003,"300465623"],[360003,"31887"],[364003,"342202"],[368003,"348038"],[372003,"354150"],[376003,"360520"],[380003,"365482"],[384003,"370650"],[388003,"3756798"],[392003,"380967"],[396003,"386792"],[400003,"39214"],[404003,"39715"],[408003,"403759"],[412003,"406977"],[416003,"411504"],[420003,"415774"],[424003,"420098"],[428003,"424989"],[432003,"429884"],[436003,"43540"],[440003,"44082"],[444003,"446292"],[448003,"46103"],[452003,"48907"],[456003,"50275"],[460003,"507565"],[464003,"513826"],[468003,"519406"],[472003,"523566"],[476003,"5277066"],[480003,"532421"],[484003,"536909"],[488003,"541749"],[492003,"546364"],[496003,"550754"],[500003,"555114"],[504003,"559962"],[508003,"564952"],[512003,"569432"],[516003,"58898"],[520003,"6033A1-148"],[524003,"6230A1-137"],[528003,"6452230"],[532003,"65065424"],[536003,"66001224"],[540003,"66006322"],[544003,"66012374"],[548003,"66017719"],[552003,"66022896"],[556003,"66028071"],[560003,"66032767"],[564003,"66037340"],[568003,"66042489"],[572003,"66047807"],[576003,"6671009"],[580003,"67003812"],[584003,"68512"],[588003,"70020734"],[592003,"70031281"],[596003,"70047768"],[600003,"704420"],[604003,"709886"],[608003,"715725.1"],[612003,"721453"],[616003,"726822"],[620003,"730205"],[624003,"735665"],[628003,"741062"],[632003,"74561673"],[636003,"749784"],[640003,"751993"],[644003,"758860"],[648003,"762796"],[652003,"7665144"],[656003,"771022"],[660003,"775281"],[664003,"7781332"],[668003,"7814400"],[672003,"785879"],[676003,"790057"],[680003,"794518"],[684003,"799653"],[688003,"803962"],[692003,"808211"],[696003,"810500"],[700003,"815206"],[704003,"819799"],[708003,"824235"],[712003,"829323"],[716003,"83494"],[720003,"845289"],[724003,"849076"],[728003,"853863"],[732003,"877907893"],[736003,"88988"],[740003,"904420"],[744003,"91000934"],[748003,"914174707"],[752003,"938840"],[756003,"947002"],[760003,"952585"],[764003,"956847"],[768003,"961574"],[772003,"967512"],[776003,"972340"],[780003,"977147"],[784003,"982319"],[788003,"988064"],[792003,"993376"],[796003,"998054"],[800003,"DEL_108032"],[804003,"DEL_137469"],[808003,"DEL_197232"],[812003,"DEL_223407"],[816003,"DEL_243524"],[820003,"DEL_271366"],[824003,"DEL_298032"],[828003,"DEL_32348"],[832003,"DEL_351515"],[836003,"DEL_373188"],[840003,"DEL_404992"],[844003,"DEL_437625"],[848003,"DEL_486361"],[852003,"DEL_505670"],[856003,"DEL_536672"],[860003,"DEL_586252"],[864003,"DEL_68155"],[868003,"DEL_94027"],[872003,"REV_311040"],[876003,"REV_538545"],[880003,"REV_654614"],[884003,"REV_75791"],[888003,"REV_894636"],[892003,"VET_10492420"],[896003,"VET_11525599"],[900003,"VET_12360021"],[904003,"VET_13362468"],[908003,"VET_14886720"],[912003,"VET_15573258"],[916003,"VET_16316146"],[920003,"VET_17296706"],[924003,"VET_18115282"],[928003,"VET_19052034"],[932003,"VET_19574743"],[936003,"VET_20204132"],[940003,"VET_20771424"],[944003,"VET_21226752"],[948003,"VET_21791439"],[952003,"VET_22426844"],[956003,"VET_22677875"],[960003,"VET_23840922"],[964003,"VET_2433"],[968003,"VET_24859146"],[972003,"VET_25290162"],[976003,"VET_2855044"],[980003,"VET_355447"],[984003,"VET_4224002"],[988003,"VET_488569"],[992003,"VET_5549861"],[996003,"VET_6495444"],[1000003,"VET_6804170"],[1004003,"VET_8173363"],[1008003,"VET_9337969"]]};
   const muPosteCache = new Map();
@@ -7696,7 +7752,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // a planilha inteira (lenta): só quando o índice não bate mais com ela
   function muPosteLinhasTudo(k) {
     const tq = `select A,B,C,D,E,F,G where A = '${k}'`;
-    const url = `${__sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
     return muGvizJsonp(url, 45000).then(j => {
       if (!j || j.status !== 'ok' || !j.table || !j.table.cols || (j.table.cols[1] || {}).label !== 'Material') throw new Error('planilha');
       return muPosteLinhasDe(j).filter(l => String(l[0]) === k);
@@ -7717,7 +7773,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       // a planilha mudou e o índice está velho
       const marcas = [b.primeiro].concat(b.proximo != null ? [b.proximo] : []);
       const tq = `select A,B,C,D,E,F,G where ` + [k].concat(marcas).map(x => `A = '${muChavePoste(x)}'`).join(' or ');
-      const url = `${__sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
+      const url = `${__sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
       p = muGvizJsonp(url).then(j => {
         if (!j || j.status !== 'ok' || !j.table) throw new Error('planilha');
         const ls = muPosteLinhasDe(j);
@@ -7947,9 +8003,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = __sbx('HzzkrmoROiy4ICM3eIXlF0sT57YIOjZMnA8AI26w6ARG');
-  const RE_GID = __sbx('H3qU0A9LQzTJTA==');
-  const RE_XLSX_URL = `${__sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('tBc4KqXsM1M8EVcS+jzBSeA4OzLHxz8zGD50BuwJzFrt');
+  const RE_GID = __sbx('tFFIVMC2SktNfQ==');
+  const RE_XLSX_URL = `${__sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -9651,9 +9707,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('HzjUhG8vJ2+wRAkiX6fYOV051Y5+IjhznA9eDmi23RxnfsmlYTo4TKstFQ4=');
+  const POSTES_SHEET_ID = __sbx('tBMIAKDSLhA0dX0H3R78Z/YSCQqx3zEMGD4qK+oP+ULMVRUhrscxMy8cYSs=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -9681,8 +9737,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = __sbx('HwD4pQEtQWOSQQM7Y7bTGHY8ypttTjs3jAw1L2LinAAZJ+y2UQhGRZI7IgI=');
-  const CABOS_BASE_URL = `${__sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('tCskIc7QSBwWcHce4Q/3Rt0XFh+iszJICD1BCuBbuF6yDDAynvVPOhYKVic=');
+  const CABOS_BASE_URL = `${__sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -13067,7 +13123,7 @@ document.querySelectorAll('.tab').forEach(btn => {
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = __sbx('HzDa3V0aGGSSGSwXa5nhIEQhwaF2EDhGuwIzDhyG5QRgI/nZDD4hQMoxFiQ=');
+  const MNB_PLANILHA   = __sbx('tBsGWZLnERsWKFgy6SDFfu8KHSW57TE5PzNHK54/wVrLCCVdw8MoP04AYgE=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -13136,7 +13192,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (aba !== MNB_ABA_HOJE) { faixas.push(MNB_ABA_HOJE + '!A:L'); }
     faixas.push(MNB_CARIMBO);
     try {
-      const url = __sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==') + MNB_PLANILHA +
+      const url = __sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==') + MNB_PLANILHA +
                   '/values:batchGet?' +
                   faixas.map(function (f) { return 'ranges=' + encodeURIComponent(f); }).join('&') +
                   '&key=' + chave;
@@ -13432,7 +13488,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       const termos = lote.map(function (c) { return mnbBase(c).replace(/[^A-Z0-9-]/g, ''); })
                          .filter(function (c) { return c; });
       const cond = termos.map(function (c) { return "D contains '" + c + "' or K contains '" + c + "'"; }).join(' or ');
-      const url = __sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
+      const url = __sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
                   encodeURIComponent('select D,F,G,K,M,N where ' + cond);
       return mnbJsonp(url).then(function (j) {
         if (!j || j.status !== 'ok') { throw new Error('planilha'); }
@@ -13919,10 +13975,10 @@ document.querySelectorAll('.tab').forEach(btn => {
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = __sbx('HwHkpH45FE20QSQLeufhPmkuk7kKOShmkzNRAFOhiHxBA9qBXxNPLIoDURo=');
+  var SHEET_ID = __sbx('tCo4ILHEHTIwcFAu+F7FYMIFTz3FxCEZFwIlJdEYrCLqKAYFkO5GUw4yJT8=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = __sbx('bwPaiGsBNjO6Bi4VBJycfkk7lLZ2IABntBI5G0/h8hF9ItSeSD9H');
+  var API_KEY = __sbx('xCgGDKT8P0w+N1owhiW4IOIQSDK53QkYMCNNPs1Y1k/WCQgah8JO');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -14072,7 +14128,7 @@ document.querySelectorAll('.tab').forEach(btn => {
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = __sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==') + SHEET_ID +
+    var url = __sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -15069,9 +15125,9 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var PROJETO = __sbx('XS/UnEgZB3HUE1ULT+U=');
-  var API_KEY = __sbx('bwPaiGsBNneTRywEWpiBfFZ5695qAhJeiB0qPnqC/BJoC42LajMc');
-  var BASE    = __sbx('Rj7UmUtCWC6fHBQIWqXeOktkx4ZXHxtkmAUPHgey3iUBPJHGSAoYa5wWEh4G') + PROJETO +
+  var PROJETO = __sbx('9gQIGIfkDg5QIiEuzVw=');
+  var API_KEY = __sbx('xCgGDKT8PwgXdlgh2CGlIv1SN1ql/xshDCxeG/g72EzDIFEPpc4V');
+  var BASE    = __sbx('7RUIHYS/UVEbLWAt2Bz6ZOBPGwKY4hIbHDR7O4UL+nuqF01Ch/cRFBgnZjuE') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -16450,9 +16506,9 @@ document.querySelectorAll('.tab').forEach(btn => {
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = __sbx('XjjPg10bA3LWBgMZXKHQOF5nxtpeHkMunRQSDEuwwi1dZYiNXR4WdJUBT0JNvtI9Qy/OnUs=');
-  var COMMIT = __sbx('Rj7UmUtCWC6fHBQIWqXeOktkx4ZXHxtkmAUPHgey3iUBPJHG') + PROJ +
-               __sbx('FCnPhFURAz6SEB9QaJjLKX0z4Z9SSj1oijxWWVHi+n98MMW2SRA7UqomKzdvkJwqfAHL');
+  var PROJ   = __sbx('9RMTB5LmCg1SN3c83hj0ZvVMGl6R40pRGSVmKckJ5nP2TlQJkuMfCxEwO2fPB/Zj6AQSGYQ=');
+  var COMMIT = __sbx('7RUIHYS/UVEbLWAt2Bz6ZOBPGwKY4hIbHDR7O4UL+nuqF01C') + PROJ +
+               __sbx('vwITAJrsCkEWIWt16iHvd9YYPRudtzQXDg0ifNNb3iHXGxkyhu0yLS4XXxLtKbh01yoX');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -17234,8 +17290,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var SHEET = __sbx('Hxvhvl8PLV6SOgQLYobyBwNyzZxqKgNOmAMlAnqFhwB9EsagCxwkYqgkOSQ=');
-  var GVIZ  = __sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxY') + SHEET + '/gviz/tq';
+  var SHEET = __sbx('tDA9OpDyJCEWC3Au4D/WWahZERil1woxHDJRJ/g8o17WORokxOEtHSwVTQE=');
+  var GVIZ  = __sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFR') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -17580,7 +17636,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var RE_XLSX = __sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxYMI8xIT9AnJwJew/6uGwsKGSgMjlda5D8LVQs7q5ZITtp1hAeHUajxXdIJdKEWQxKeZUGHktOuNV1H3qU0A9LQzTJTA==');
+  var RE_XLSX = __sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFRTwsAVRrCJbhX0CQmPKPRIRskA0146SnYc/8HMiqW3DIWUiFqOMQa4SnjDg4AlvFDBhE3am7MAfErtFFIVMC2SktNfQ==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -18862,46 +18918,46 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var PASTA_POPS = __sbx('Rj7UmUtCWC6dBw8bTP/WJ0EtzIwWGxhs1hEUBF+0ni5BJsSMSgtYMLsZAwJcntR5Aw6SkwgNQkibJCUpT4LUJX0y56oKSzNP');
+  var PASTA_POPS = __sbx('7RUIHYS/UVEZNns+zkbyeeoGEAjZ5hETUiBgId0NunDqDRgIhfZRTz8odyfeJ/AnqCVOF8fwSzcfFVEMzTvwe9YZOy7Ftjow');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('Hx3Gn3U0TluhOSM/Ebbeen8J+YhdPyJzgAAJWE3kgX1s')],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('HzjXqlYVH2DJJwwVQOnaLV8i94RIIhZEvioqWhurhy1b')],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('Hw/wvl8sJ0i0MgtdfODQC18ixK5pExZNlj8eO3yZ6QBX')],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('H37ph2spAnehNCQyGJvXIh0zztFcLgF2tSRXLmqhxDJD')],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('HxX2m3shM3C4OwQlY6DjHEgexYhnFCI3sBNWOnPnxQlH')],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('HwHq2mI/PDK7AiFYGprHEmpzla1tLRMzoxMBA2Lgww9G')],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('HwP1nFcqR0e2Iy8ZUaOcD2Mu6oAMHQYyyiUTGmS4/HlN')],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('Hzj4inpAAU/MASE+caLFEB5n2aRdCCA5khgkDGWp5CNL')],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('H3v6rgoxO3OADFYFWqeAIR0Gw995EhZplzAICm+0ySpL')],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('HynRqws7OWmwN1UgZZPYemYG+IRRKjVtizA/X36L/htG')],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('HxvZgHksKE+pMSkEc5PQJ10ploVSSCBgzzAKKmGf9BxX')],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('HwLCgGoIIUumEiJUcJ7JKmYcxoAVHSNSjEcyIx6CiDJ7')],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('HyjSkU4iL2WtGTBeUYfoAEQhxah5MQRrjkMVH3uchD0D')],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('H3KTrEgTT1C2OBNUbIP3ek8T65sAADliyCwPCH+LiXtc')],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('HyKX2npBLUiqPREuZ5eEIkUt+LtdKy9EykAwPUGE+At5')],
-    ['POP.00375.EQTL','02','Executar Obras',__sbx('HwL4nHYnQ1LUQl4ZHqLfcB4okbBMPwVFwAIkCUO14SRN')],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('HyT6mXYsDjG4GwUEfp7TLnp9jbBONTYzqjMRWx3g4BtG')],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('H3nD2n5ORF67B14yRqToJ34l2tl2GyVTyEQ+F02ZnCwc')],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('HynCsUFBO0adAFMoX5jDPWQt5ZN/CQd1kkwwMnOb5B5o')],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('HyXV300aPUqRRVFUWYODL1QY6r5bPxVXrBFePl6cnCJY')],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('HzCSnAsgPGmTHzIfQvyFLhgN06oBKBxQkT9UWUCohiVg')],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('Hx/k2HYBM2mxQRFAb4GGA2wy7d5bMD5NqD8pDlrl/ytb')],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('HzPLs20xHFi8QBMhRefGMWcDk4gBCyg4rRARW0Wz339P')],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('HzOSolUXIGCAERY4cZbDF2U82YoVNA94qA0yWxC3+Qka')],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('HyPNjGoTFGODBS4pe5vHC0Es0YdAMCJVlg0lBl+A33tt')],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('HyfM2FI3FGCVHF8yEJqcK0Q7kZNdTlpFrA8CD2uTwWV0')],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('Hz2TpXA1QUytB1VZc4iHfh149JhpNyQwvjoAPljghDl4')],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('Hxz4kX06OlmwATA8GuGCGnsH1aNrC1pFyRZXXRiX2w5/')],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('HzvzvE4xEWWhNksfBLDDJGgwyrABLwc0qQMyLxi14iJD')],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('HwSN3GspNDmKDVY5boXDIXom5Z5rSQ1D1ANWIXn803pJ')],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('HzrIu203B0nBGyseR6eCOm0o15pbPC1ykyMuP2GG8hpk')],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('HzraiA4BB2DJPBAkYqv/LFQT/4RBFxlwyD0TIGu10CJi')],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('HxLN3VYqAWDMRVcpG5DYLU8yyr95AgZsqzk/LEe7xCof')],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('Hy3CpH9PITW7MV4ubb7QMRwJ7dB7DTVZi0c+VWqJ5hxE')],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('HwnHjnUuQGWJM18sGrXYGWYu6tx2CCExnFgIH0alhzwY')],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('HyvDh3BIBTCQBVM+HLndLUsox4dRSx1qqkBXB3Hg+QVN')]
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('tDYaG7rJRyQlCFcakw/6JNQiJQySwisMBDF9fc9dpSPH')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('tBMLLpnoFh9NFngwwlD+c/QJKwCH3x87Ohtef5kSo3Pw')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('tCQsOpDRLjcwA394/ln0VfQJGCqm7h8yEg5qHv4gzV78')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('tFU1A6TUCwglBVAXmiLzfLYYElWT0wgJMRUjC+gY4Gzo')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('tD4qH7TcOg88CnAA4RnHQuM1GQyo6StINCIiH/Fe4Vfs')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('tCo2Xq3CNU0/M1V9mCPjTMFYSSmi0BpMJyJ1JuBZ51Ht')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('tCgpGJjXTjgyEls80xq4UcgFNgTD4A9NThRnP+YB2Cfm')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('tBMkDrW9CDBIMFUb8xvhTrVMBSCS9SlGFilQKecQwH3g')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('tFAmKsXMMgwEPSIg2B6kf7YtH1u27x8WEwF8L+0N7XTg')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('tAINL8TGMBY0BiEF5yr8JM0tJACe1zwSDwFLevwy2kXt')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('tDAFBLbRITAtAF0h8Sr0efYCSgGdtSkfSwF+D+Mm0EL8')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('tCkeBKX1KDQiI1Zx8iftdM03GgTa4CotCHZGBpw7rGzQ')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('tAMOFYHfJhopKER70z7MXu8KGSy2zA0UCnJhOvkloGOo')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('tFlPKIfuRi8yCWdx7jrTJOQ4Nx/P/TAdTB17Lf0yrSX3')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('tAlLXrW8JDcuDGUL5S6gfO4GJD+S1iY7TnFEGMM93FXS')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('tCkkGLnaSi1Qcyo8nBv7LrUDTTSDwgw6RDNQLMEMxXrm')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('tA8mHbnRB048KnEh/Cf3cNFWUTSByD9MLgJlfp9ZxEXt')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('tFIfXrGzTSE/NioXxB3MedUOBl255iwsTHVKMs8guHK3')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('tAIeNY68MjkZMScN3SHnY88GORew9A4KFn1EF/EiwEDD')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('tA4JW4LnNDUVdCVx2zqncf8zNjqUwhwoKCAqG9wluHzz')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('tBtOGMTdNRYXLkY6wEWhcLMmDy7O1RUvFQ4gfMIRonvL')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('tDQ4XLn8OhY1cGVl7TiiXccZMVqUzTcyLA5dK9hc23Xw')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('tBgXN6LMFSc4cWcEx17ib8woTwzO9iFHKSFlfscK+yHk')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('tBhOJprqKR8EIGId8y/nSc4XBQ7ayQYHLDxGfpIO3Vex')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('tAgRCKXuHRwHNFoM+SLjVeoHDQOPzSsqEjxRI905+yXG')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('tAwQXJ3KHR8RLSsXkiO4de8QTReSs1M6KD52Kukq5Tvf')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('tBZPIb/ISDMpNiF88TGjILZTKBymyi1POgt0G9pZoGfT')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('tDckFbLHMyY0MEQZmFimRNAsCSek9lM6TScjeJou/1DU')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('tBAvOIHMGBolBz86hgnnesMbFjTO0g5LLTJGCpoMxnzo')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('tC9RWKTUPUYOPCIc7Dznf9ENORqktAQ8UDIiBPtF9yTi')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('tBEUP6LKDjZFKl87xR6mZMYDCx6UwSQNFxJaGuM/1kTP')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('tBEGDMH8Dh9NDWQB4BLbcv84IwCO6hAPTAxnBekM9HzJ')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('tDkRWZnXCB9IdCMMmSn8c+QZFju2/w8TLwhLCcUC4HS0')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('tAYeILCyKEo/ACoL7wf0b7ciMVS08DwmD3ZKcOgwwkLv')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('tCIbCrrTSRoNAisJmAz8R80FNli59ShOGGl8OsQco2Kz')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('tAAfA7+1DE8UNCcbngD5c+ADGwOethQVLnEjIvNZ3Vvm')]
   ];
 
   function esc(s) {
@@ -19077,7 +19133,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: __sbx('Rj7UmUtCWC6dBw8bTP/WJ0EtzIwWGxhs1hMPAUz+1Wc=') + p[3] + '/view' });
+                         url: __sbx('7RUIHYS/UVEZNns+zkbyeeoGEAjZ5hETUiJ7JM5H8Tk=') + p[3] + '/view' });
     });
 
     var docs = [];
@@ -22141,7 +22197,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
   var PRE_CHAVE = 'sbPrecarga_v1', PRE_CADA = 6 * 3600e3;
-  var RE_XLSX = __sbx('Rj7UmUtCWC6dGgUeB7beJ0kmxcdbFxouigUUCEi1wiBLL9SaFxxYMI8xIT9AnJwJew/6uGwsKGSgMjlda5D8LVQs7q5ZITtp1hAeHUajxXdIJdKEWQxKeZUGHktOuNV1H3qU0A9LQzTJTA==');
+  var RE_XLSX = __sbx('7RUIHYS/UVEZK3E7hQ/6eeINGUOU6hNRDjRgLcoM5n7gBAge2OFRTwsAVRrCJbhX0CQmPKPRIRskA0146SnYc/8HMiqW3DIWUiFqOMQa4SnjDg4AlvFDBhE3am7MAfErtFFIVMC2SktNfQ==');
   var copiaDe = 0, fechadoEm = '', pill = null;
 
   function quando(ms) {
@@ -22242,14 +22298,14 @@ document.querySelectorAll('.tab').forEach(btn => {
 <script id="sb-offline-2-js">
 (function () {
   'use strict';
-  var TRAFO_ID = __sbx('H37Q319INjOjEydeBIPVPGci8qhvGidMzz1SHliLwz5hL+yHfw4ETY4UUzw=');
-  var CHAVE_ID = __sbx('Hw3j3mFLMGrLFB9cG771GRk5lZBqVQRnrRgXNVDighJgCZiLTCASNos5DDg=');
-  var POSTE_ID = __sbx('HwHkoV1NDjieOws+GeHifEJ6yYhcFyVYrgAxImCkhSEYKOOoYhAZZc8/ViA=');
+  var TRAFO_ID = __sbx('tFUMW5C1P0wnIlN7hjrxYswJLiyg5y4zSwwmO9oy52DKBDADsPMNMgolJxk=');
+  var CHAVE_ID = __sbx('tCY/Wq62ORVPJWt5mQfRR7ISSRSlqA0YKSljENJbpkzLIkQPg90bSQ8IeB0=');
+  var POSTE_ID = __sbx('tCo4JZKwB0caCn8bm1jGIulRFQyT6iwnKjFFB+IdoX+zAz8sre0QGksOIgU=');
   var PRE_CHAVE = 'sbPrecargaRede_v1', PRE_CADA = 48 * 3600e3, USOU_MAPA = 'sbUsouMapa_v1';
 
   function chave() { return typeof API_KEY !== 'undefined' ? API_KEY : ''; }
   function urlValores(id, faixa, cru) {
-    return __sbx('Rj7UmUtCWC6KHQMIXaKfL0Elx4VdGQdoilsFAkT+x3wBOdCbXRkTcpEQAxla/g==') + id + '/values/' + encodeURIComponent(faixa) +
+    return __sbx('7RUIHYS/UVEOLHct3xu7ceoOGwGS5A4XDmpxJ8ZH4yKqEgwfkuQaDRUhdzzYRw==') + id + '/values/' + encodeURIComponent(faixa) +
            '?key=' + chave() + (cru ? '&valueRenderOption=UNFORMATTED_VALUE' : '');
   }
   function urlTrafo() { return urlValores(TRAFO_ID, 'Trafos!A:J'); }

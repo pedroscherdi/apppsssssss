@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script>(function(){var k=[125,60,6,71,22,168,193,241,56,234,117,7,183,80,0,194];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
+<script>(function(){var k=[13,90,187,124,217,241,114,13,142,103,172,136,187,101,126,125];window.__sbx=function(s){var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i)^k[i%k.length];return new TextDecoder().decode(o);};})();</script>
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VSWS7G3YST"></script>
   <script>
@@ -113,12 +113,12 @@
     import { getFirestore, collection, doc, getDoc, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: __sbx('PHV8JkXRgIdS2D9uxBkw9gUPTXBE0qSuSYI5VOQDTZg7fSslROOq'),
-      authDomain: __sbx('DllyMmbJsYEVjEZh0WQupBROYyV326SQSJpbZNg9'),
-      projectId: __sbx('DllyMmbJsYEVjEZh0WQ='),
-      storageBucket: __sbx('DllyMmbJsYEVjEZh0WQupBROYyV326SCTIUHZtA1LqMNTA=='),
-      messagingSenderId: __sbx('TwkzdCCR8MkB3kMx'),
-      appId: __sbx('TAY0ciOb98gJ0kwzgWY6tRhePCQkzKXECIxFYYFkMvdEXmRwc5rxxws=')
+      apiKey: __sbx('TBPBHYqIM3vkVebhyCxOSXVp8EuLixdS/w/g2+g2MydLG5Yei7oZ'),
+      authDomain: __sbx('fj/PCamQAn2jAZ/u3VFQG2Qo3h64ghds/heC69QI'),
+      projectId: __sbx('fj/PCamQAn2jAZ/u3VE='),
+      storageBucket: __sbx('fj/PCamQAn2jAZ/u3VFQG2Qo3h64ghd++gje6dwAUBx9Kg=='),
+      messagingSenderId: __sbx('P2+OT+/IQzW3U5q+'),
+      appId: __sbx('PGCJSezCRDS/X5W8jVNECmg4gR/rlRY4vgGc7o1RTEg0ONlLvMNCO70=')
     };
 
     const app      = initializeApp(firebaseConfig);
@@ -156,7 +156,7 @@
        Não fica sessão salva: cada abertura pede usuário e senha (o navegador
        pode lembrar). Sessão antiga do Firebase Auth (login Google) é
        desconectada, senão a pessoa entrava sem usuário e senha. */
-    const FS_DOCS       = __sbx('FUhyN2WS7t5egwdixCRvsBgSYSh5z62UWZocdJkzb69SSjdoZtqum12JAXSY') + firebaseConfig.projectId + '/databases/(default)/documents';
+    const FS_DOCS       = __sbx('ZS7PDKrLXSLoDt7tyBERD2h03BO2lh5o7xfF+5UGERAiLIpTqYMdZ+sE2PuU') + firebaseConfig.projectId + '/databases/(default)/documents';
     const WHATS_SUPORTE = '5553984742332';
     const $l = id => document.getElementById(id);
 
@@ -1768,12 +1768,6 @@
         font-size: 0.95rem;
         padding: 0.85rem 1rem;
       }
-
-      /* Links de acesso rápido: coluna única no mobile */
-      .acesso-rapido-grid { grid-template-columns: 1fr !important; }
-
-      /* Cards Grupo Setup: coluna única */
-      .grupo-setup-grid { grid-template-columns: 1fr !important; }
 
       /* Resultados: esconde badge em telas pequenas */
       .results-header .badge { display: none; }
@@ -3405,75 +3399,6 @@
 
   <div id="estrutura-img-wrap" style="display:none;"></div>
 
-  <!-- ── ACESSO RÁPIDO ── -->
-  <div style="margin-top:2.5rem;border-top:1px solid var(--border);padding-top:2rem;">
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1rem;">🔗 Acesso Rápido — Sistemas Grupo Setup</div>
-    <div class="acesso-rapido-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.5rem;">
-
-      <!-- Senior -->
-      <a href="https://platform.senior.com.br/login/?redirectTo=https%3A%2F%2Fplatform.senior.com.br%2Fsenior-x%2F&tenant=gruposetup.com"
-         target="_blank" rel="noopener"
-         style="text-decoration:none;display:flex;align-items:center;gap:1rem;
-                background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-                padding:1.1rem 1.25rem;transition:border-color 0.2s,background 0.2s;cursor:pointer;"
-         onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.04)'"
-         onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="width:40px;height:40px;border-radius:8px;background:rgba(0,120,212,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" fill="#0078d4"/><rect x="13" y="3" width="8" height="8" rx="2" fill="#0078d4" opacity=".6"/><rect x="3" y="13" width="8" height="8" rx="2" fill="#0078d4" opacity=".6"/><rect x="13" y="13" width="8" height="8" rx="2" fill="#0078d4" opacity=".3"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);">Senior HCM</div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-top:2px;">platform.senior.com.br</div>
-        </div>
-        <div style="margin-left:auto;color:var(--muted);font-size:1rem;">↗</div>
-      </a>
-
-      <!-- Nexti -->
-      <a href="https://gruposetup.nexti.com/#/login"
-         target="_blank" rel="noopener"
-         style="text-decoration:none;display:flex;align-items:center;gap:1rem;
-                background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-                padding:1.1rem 1.25rem;transition:border-color 0.2s,background 0.2s;cursor:pointer;"
-         onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(0,230,118,0.04)'"
-         onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
-        <div style="width:40px;height:40px;border-radius:8px;background:rgba(0,200,120,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#00c878" stroke-width="2"/><path d="M8 12l3 3 5-5" stroke="#00c878" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);">Nexti — Ponto e RH</div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-top:2px;">gruposetup.nexti.com</div>
-        </div>
-        <div style="margin-left:auto;color:var(--muted);font-size:1rem;">↗</div>
-      </a>
-
-    </div>
-
-    <!-- ── QUEM SOMOS (resumo) ── -->
-    <div style="font-family:'DM Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1rem;">🏢 Grupo Setup</div>
-    <div class="grupo-setup-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1rem;">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;">
-        <div style="font-size:1.6rem;margin-bottom:0.5rem;">⚡</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);margin-bottom:0.3rem;">Distribuição de Energia</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);line-height:1.6;">Instalação e manutenção de redes de distribuição de energia elétrica em média e baixa tensão.</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;">
-        <div style="font-size:1.6rem;margin-bottom:0.5rem;">🏗️</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);margin-bottom:0.3rem;">Infraestrutura</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);line-height:1.6;">Projetos e obras de infraestrutura elétrica para concessionárias e grandes clientes industriais.</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;">
-        <div style="font-size:1.6rem;margin-bottom:0.5rem;">📋</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);margin-bottom:0.3rem;">Planejamento & PCP</div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);line-height:1.6;">Controle de materiais, estrutura de BOM e gestão de projetos com foco em eficiência operacional.</div>
-      </div>
-    </div>
-    <div style="text-align:right;">
-      <button class="btn-ghost" style="font-size:0.78rem;padding:0.4rem 1rem;" onclick="document.querySelector('[data-tab=quem-somos]').click()">
-        Ver mais sobre o Grupo Setup →
-      </button>
-    </div>
-  </div>
-
 </div>
 
 <!-- TAB: BUSCAR ITEM -->
@@ -4031,10 +3956,10 @@
 <!-- TODOS OS SCRIPTS ORIGINAIS MANTIDOS INTEGRALMENTE ABAIXO    -->
 <!-- ============================================================ -->
 <script>
-  const API_KEY  = __sbx('PHV8JkXRgMN7mT1/mh0t9BpNMhhY8LaXdY0qcdFgQ5suVHIwZu/x');
-  const SHEET_ID = __sbx('TGNNKFnxnrBeow11gzQ3gxtbNHNM/LeEeosjNfQdWrgRDH8OUPKHu0GEI0o=');
+  const API_KEY  = __sbx('TBPBHYqIMz/NFOTwlihTS2orjyOXqQVrwwDz/t1VPSReMs8LqbZC');
+  const SHEET_ID = __sbx('PAXwE5aoLUzoLtT6jwFJPGs9iUiDpQR4zAb6uvgoJAdhasI1n6s0R/cJ+sU=');
   const SHEET_NAME = 'Dados';
-  const BASE_URL = `${__sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==')}${SHEET_ID}`;
+  const BASE_URL = `${__sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==')}${SHEET_ID}`;
 
   let allData = [], structures = {}, allCodes = [], columnMap = {}, rawRows = [];
   function getAlimColor(name) {
@@ -4669,12 +4594,12 @@
   function toThumbUrl(val) {
     const id = extractDriveId(val);
     if (!id) return '';
-    return `${__sbx('FUhyN2WS7t5cmBxx0n5nrRJbaiI4y66cF54dctoybqMUUDkucpU=')}${id}&sz=w1200`;
+    return `${__sbx('ZS7PDKrLXSLqFcX+3ksZEmI91xn3kh1goRPE/dYHEBxkNoQVvcw=')}${id}&sz=w1200`;
   }
   function toDriveUrl(val) {
     const id = extractDriveId(val);
     if (!id) return val;
-    return `${__sbx('FUhyN2WS7t5cmBxx0n5nrRJbaiI4y66cF4wca9J/ZO0=')}${id}/view`;
+    return `${__sbx('ZS7PDKrLXSLqFcX+3ksZEmI91xn3kh1goQHF5N5KGlI=')}${id}/view`;
   }
   /* Imagem por TIPO de estrutura: todas as N1 mostram o desenho do N1, todas as
      N4 o do N4, e assim por diante. O tipo é o que vem no começo do código,
@@ -6140,9 +6065,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   const MAPA_ABA  = 'Mapa Postes';
   const EQUIP_ABA = 'EQUIPAMENTOS';
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('TE5yKkH/kZ9x2xpIwSZpsw5PcyBQ8o6DXZBNZPY3bJY0CG8LT+qOvGqyBmQ=');
+  const POSTES_SHEET_ID = __sbx('PCjPEY6mImPHVsPHzRMXDH4pzhufqz1/6x2U6/oCEilEbtIwgLM9QNw/3+s=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -6388,8 +6313,8 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      Grupo 1: A(nome)+B(trecho) azul · Grupo 2: D(nome)+E(trecho) azul · Grupo 3: H(nome)+I(trecho) rosa
      Planilha grande (~1,5 milhão de trechos): usa leitura em stream pra mostrar MB recebidos ao vivo,
      já que a API do Sheets não informa o tamanho total da resposta (chunked, sem Content-Length). ── */
-  const CABOS_SHEET_ID = __sbx('THZeCy/995NT3hBR/TdikiVKbDVDno3HTZMmRfxjLYpKUUoYf9jwtVOkMWg=');
-  const CABOS_BASE_URL = `${__sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('PBDjMOCkRG/lU8ne8QIcLVUs0Q6Mxz47+x7/yvBWUzU6N/cjsIFDSeUp6Oc=');
+  const CABOS_BASE_URL = `${__sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==')}${CABOS_SHEET_ID}`;
   let _muAbaCabosCache = null;
 
   async function muResolverAbaCabos() {
@@ -7534,7 +7459,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      não baixa as 97 mil linhas (memória do iPhone). Cache em Map.
      Carga = demanda em kVA = carregamento × KVATKVA, e o G2M usa KVATKVA =
      1,5 × a potência (conferido: 23,08 % × 67,5 = 15,58 kVA na IT144020778). */
-  const TRAFO_PLANILHA = __sbx('TAh2cXGYgMNijDQ0mgJktjRUVAZBypG8DqJBdMYKcrQyWUopUd6yvU+LQFY=');
+  const TRAFO_PLANILHA = __sbx('PG7LSr7BMz/UAe27ljcaCUQy6T2OkyJAuC+Y+8o/DAtCP/cSnocBQfkGmdk=');
   const muTrafoCache = new Map();
 
   function muEhTrafo(icone) { return /TRANSFORMADOR/i.test(String(icone || '')); }
@@ -7569,7 +7494,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muTrafoCache.has(cod)) return muTrafoCache.get(cod);
     if (navigator.onLine === false) return muOffTrafo(cod);
     const tq = `select B,C,D,E,F,G,J where A = '${cod}' limit 1`;
-    const url = `${__sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd')}${TRAFO_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const lin = (j.table.rows || [])[0];
@@ -7639,7 +7564,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      planilha usa a forma limpa. As variantes vão num pedido só (A = x or A = y) e
      fica a primeira que existir. Medido: 110.368 dos 113.927 equipamentos que não são
      trafo casam; jumper, capacitor e regulador não são chave e nem consultam. */
-  const CHAVE_PLANILHA = __sbx('THtFcE+bhpoKiww2hT9Ek0pPMz5EhbKXbIcEX85jM5gzfz4lYvCkxkqmH1I=');
+  const CHAVE_PLANILHA = __sbx('PB34S4DCNWa8BtW5iQo6LDopjgWL3AFr2grd0MJWTSdDGYMerakXOvwrxt0=');
   const muChaveCache = new Map();
 
   function muEhChave(icone) {
@@ -7663,7 +7588,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
     if (muChaveCache.has(k)) return muChaveCache.get(k);
     if (navigator.onLine === false) return muOffChave(vs, k);
     const tq = `select A,B,F where ${vs.map(v => `A = '${v}'`).join(' or ')} limit ${vs.length}`;
-    const url = `${__sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd')}${CHAVE_PLANILHA}/gviz/tq?tq=${encodeURIComponent(tq)}`;
     const p = muGvizJsonp(url).then(j => {
       if (!j || j.status !== 'ok') throw new Error('resposta da planilha');
       const achou = {};
@@ -7727,7 +7652,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
      percebe que o índice está velho e cai na consulta da planilha inteira.
      Número repetido no G2M: fica o poste mais perto; se o mais perto estiver a mais de
      POSTE_LIMITE_M, é outro poste com o mesmo número e o balão avisa em vez de mostrar. */
-  const POSTE_PLANILHA = __sbx('THdCD3OduMhfpBhUh2BT9hEMbyZyx5Oob58iSP4lNKtLXkUGTMCvlQ6gRUo=');
+  const POSTE_PLANILHA = __sbx('PBH/NLzECzTpKcHbi1UtSWFq0h29niBU2RL7x/IQShQ7OPg9g5kcabgtnMU=');
   const POSTE_LIMITE_M = 300;
   const POSTE_INDICE = {"linhas":1010287,"ultima":1010288,"blocos":[[2,"(splaca)"],[4002,"1002473.1"],[8002,"1004959"],[12002,"100819"],[16002,"1012703"],[20002,"1017597"],[24002,"1022533"],[28002,"1027252.1"],[32002,"1031897"],[36002,"1036627"],[40002,"1041539"],[44002,"1045891"],[48002,"1050296"],[52002,"1054758"],[56002,"1059549"],[60002,"1064743"],[64002,"1069891"],[68002,"1074620"],[72002,"1089221"],[76002,"109439"],[80002,"1100647"],[84002,"1105311"],[88002,"111005"],[92002,"1115002"],[96002,"1119849"],[100002,"1124868"],[104003,"1129700"],[108003,"1133910"],[112003,"1138998"],[116003,"1143936"],[120003,"1149027"],[124003,"1153644"],[128003,"1158856"],[132003,"1163586"],[136003,"1168554"],[140003,"1173455"],[144003,"1178515"],[148003,"118318.1"],[152003,"1188109"],[156003,"119278"],[160003,"1197358"],[164003,"1200210"],[168003,"1203089"],[172003,"120590"],[176003,"1210856"],[180003,"1215307"],[184003,"1219889"],[188003,"1224547"],[192003,"1228793"],[196003,"1233998"],[200003,"12433100"],[204003,"125465.1"],[208003,"1270515"],[212003,"129137"],[216003,"129727300"],[220003,"129893141"],[224003,"13242736"],[228003,"13416832"],[232003,"13646216"],[236003,"1387317563"],[240003,"140961"],[244003,"143490"],[248003,"1450233659"],[252003,"147902"],[256003,"152076"],[260003,"156198398"],[264003,"158866"],[268003,"16246071"],[272003,"16558"],[276003,"168658"],[280003,"17293244"],[284003,"17759617"],[288003,"18100041"],[292003,"18407965"],[296003,"188609"],[300003,"193475"],[304003,"199032"],[308003,"21220"],[312003,"23074"],[316003,"239365"],[320003,"24579"],[324003,"252340"],[328003,"256817238"],[332003,"262869"],[336003,"269035"],[340003,"276864"],[344003,"293102"],[348003,"298510"],[352003,"30011528"],[356003,"300465623"],[360003,"31887"],[364003,"342202"],[368003,"348038"],[372003,"354150"],[376003,"360520"],[380003,"365482"],[384003,"370650"],[388003,"3756798"],[392003,"380967"],[396003,"386792"],[400003,"39214"],[404003,"39715"],[408003,"403759"],[412003,"406977"],[416003,"411504"],[420003,"415774"],[424003,"420098"],[428003,"424989"],[432003,"429884"],[436003,"43540"],[440003,"44082"],[444003,"446292"],[448003,"46103"],[452003,"48907"],[456003,"50275"],[460003,"507565"],[464003,"513826"],[468003,"519406"],[472003,"523566"],[476003,"5277066"],[480003,"532421"],[484003,"536909"],[488003,"541749"],[492003,"546364"],[496003,"550754"],[500003,"555114"],[504003,"559962"],[508003,"564952"],[512003,"569432"],[516003,"58898"],[520003,"6033A1-148"],[524003,"6230A1-137"],[528003,"6452230"],[532003,"65065424"],[536003,"66001224"],[540003,"66006322"],[544003,"66012374"],[548003,"66017719"],[552003,"66022896"],[556003,"66028071"],[560003,"66032767"],[564003,"66037340"],[568003,"66042489"],[572003,"66047807"],[576003,"6671009"],[580003,"67003812"],[584003,"68512"],[588003,"70020734"],[592003,"70031281"],[596003,"70047768"],[600003,"704420"],[604003,"709886"],[608003,"715725.1"],[612003,"721453"],[616003,"726822"],[620003,"730205"],[624003,"735665"],[628003,"741062"],[632003,"74561673"],[636003,"749784"],[640003,"751993"],[644003,"758860"],[648003,"762796"],[652003,"7665144"],[656003,"771022"],[660003,"775281"],[664003,"7781332"],[668003,"7814400"],[672003,"785879"],[676003,"790057"],[680003,"794518"],[684003,"799653"],[688003,"803962"],[692003,"808211"],[696003,"810500"],[700003,"815206"],[704003,"819799"],[708003,"824235"],[712003,"829323"],[716003,"83494"],[720003,"845289"],[724003,"849076"],[728003,"853863"],[732003,"877907893"],[736003,"88988"],[740003,"904420"],[744003,"91000934"],[748003,"914174707"],[752003,"938840"],[756003,"947002"],[760003,"952585"],[764003,"956847"],[768003,"961574"],[772003,"967512"],[776003,"972340"],[780003,"977147"],[784003,"982319"],[788003,"988064"],[792003,"993376"],[796003,"998054"],[800003,"DEL_108032"],[804003,"DEL_137469"],[808003,"DEL_197232"],[812003,"DEL_223407"],[816003,"DEL_243524"],[820003,"DEL_271366"],[824003,"DEL_298032"],[828003,"DEL_32348"],[832003,"DEL_351515"],[836003,"DEL_373188"],[840003,"DEL_404992"],[844003,"DEL_437625"],[848003,"DEL_486361"],[852003,"DEL_505670"],[856003,"DEL_536672"],[860003,"DEL_586252"],[864003,"DEL_68155"],[868003,"DEL_94027"],[872003,"REV_311040"],[876003,"REV_538545"],[880003,"REV_654614"],[884003,"REV_75791"],[888003,"REV_894636"],[892003,"VET_10492420"],[896003,"VET_11525599"],[900003,"VET_12360021"],[904003,"VET_13362468"],[908003,"VET_14886720"],[912003,"VET_15573258"],[916003,"VET_16316146"],[920003,"VET_17296706"],[924003,"VET_18115282"],[928003,"VET_19052034"],[932003,"VET_19574743"],[936003,"VET_20204132"],[940003,"VET_20771424"],[944003,"VET_21226752"],[948003,"VET_21791439"],[952003,"VET_22426844"],[956003,"VET_22677875"],[960003,"VET_23840922"],[964003,"VET_2433"],[968003,"VET_24859146"],[972003,"VET_25290162"],[976003,"VET_2855044"],[980003,"VET_355447"],[984003,"VET_4224002"],[988003,"VET_488569"],[992003,"VET_5549861"],[996003,"VET_6495444"],[1000003,"VET_6804170"],[1004003,"VET_8173363"],[1008003,"VET_9337969"]]};
   const muPosteCache = new Map();
@@ -7752,7 +7677,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
   // a planilha inteira (lenta): só quando o índice não bate mais com ela
   function muPosteLinhasTudo(k) {
     const tq = `select A,B,C,D,E,F,G where A = '${k}'`;
-    const url = `${__sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
+    const url = `${__sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=1&tq=${encodeURIComponent(tq)}`;
     return muGvizJsonp(url, 45000).then(j => {
       if (!j || j.status !== 'ok' || !j.table || !j.table.cols || (j.table.cols[1] || {}).label !== 'Material') throw new Error('planilha');
       return muPosteLinhasDe(j).filter(l => String(l[0]) === k);
@@ -7773,7 +7698,7 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
       // a planilha mudou e o índice está velho
       const marcas = [b.primeiro].concat(b.proximo != null ? [b.proximo] : []);
       const tq = `select A,B,C,D,E,F,G where ` + [k].concat(marcas).map(x => `A = '${muChavePoste(x)}'`).join(' or ');
-      const url = `${__sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
+      const url = `${__sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd')}${POSTE_PLANILHA}/gviz/tq?sheet=Busca&headers=0&range=A${b.ini}:G${b.fim}&tq=${encodeURIComponent(tq)}`;
       p = muGvizJsonp(url).then(j => {
         if (!j || j.status !== 'ok' || !j.table) throw new Error('planilha');
         const ls = muPosteLinhasDe(j);
@@ -8003,9 +7928,9 @@ document.addEventListener('DOMContentLoaded',()=>{kbLoad();});
 <script>
 (function(){
   // ── Config da planilha ──────────────────────────────────────
-  const RE_SHEET_ID = __sbx('TEpCAETBjNx5vzBd5gRUnRhlQRgm6oC8XZATSfAxWY4V');
-  const RE_GID = __sbx('TAwyfiGb9cQI0w==');
-  const RE_XLSX_URL = `${__sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
+  const RE_SHEET_ID = __sbx('PCz/O4uYPyDPMunS6jEqImgD/CPpszNA6x3KxvwEJzFl');
+  const RE_GID = __sbx('PGqPRe7CRji+Xg==');
+  const RE_XLSX_URL = `${__sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd')}${RE_SHEET_ID}/export?format=xlsx&gid=${RE_GID}`;
 
   window.reEquipMap = {};      // codigo -> {codigo, alimentador, tipo, jusante:[...]}
   window.reMontanteMap = {};   // codigo -> [codigos que o tem como jusante]
@@ -9707,9 +9632,9 @@ document.querySelectorAll('.tab').forEach(btn => {
   const MAPA_ABA = 'Mapa Postes';
 
   // Planilha "POSTES 21/07" — fonte dedicada dos postes (separada da planilha principal)
-  const POSTES_SHEET_ID = __sbx('TE5yKkH/kZ9x2xpIwSZpsw5PcyBQ8o6DXZBNZPY3bJY0CG8LT+qOvGqyBmQ=');
+  const POSTES_SHEET_ID = __sbx('PCjPEY6mImPHVsPHzRMXDH4pzhufqz1/6x2U6/oCEilEbtIwgLM9QNw/3+s=');
   const POSTES_GID = '1141415844';
-  const POSTES_BASE_URL = `${__sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==')}${POSTES_SHEET_ID}`;
+  const POSTES_BASE_URL = `${__sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==')}${POSTES_SHEET_ID}`;
   let _posteAbaNomeCache = null;
   // Resolve o nome da aba a partir do gid (não precisamos saber o nome de antemão)
   async function resolverAbaPostes() {
@@ -9737,8 +9662,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 
   // Planilha de alimentadores/cabos — mesmo padrão dos postes (carrega tudo, filtra por raio)
   // Grupo 1: A(nome) + B(trecho) — azul · Grupo 2: D(nome) + E(trecho) — azul · Grupo 3: H(nome) + I(trecho) — rosa
-  const CABOS_SHEET_ID = __sbx('THZeCy/995NT3hBR/TdikiVKbDVDno3HTZMmRfxjLYpKUUoYf9jwtVOkMWg=');
-  const CABOS_BASE_URL = `${__sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==')}${CABOS_SHEET_ID}`;
+  const CABOS_SHEET_ID = __sbx('PBDjMOCkRG/lU8ne8QIcLVUs0Q6Mxz47+x7/yvBWUzU6N/cjsIFDSeUp6Oc=');
+  const CABOS_BASE_URL = `${__sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==')}${CABOS_SHEET_ID}`;
   let _abaCabosCache = null;
   let mapaCabos = [];
   let mapaCabosCarregado = false;
@@ -13123,7 +13048,7 @@ document.querySelectorAll('.tab').forEach(btn => {
   // Planilha so das chaves manobradas - separada da planilha de materiais do
   // SetupBoom de proposito. Precisa estar compartilhada como "qualquer pessoa
   // com o link pode ver", senao a chave de API nao consegue ler.
-  const MNB_PLANILHA   = __sbx('TEZ8c3PKrpRThj999RhQqhdXZw9YwI62ep0gZIIHVI4zVV93Iu6XsAuuBU4=');
+  const MNB_PLANILHA   = __sbx('PCDBSLyTHWjlC+by+S0uFWcx2jSXmT1KzBD5644yKjFDM+JM7bckTL0j3ME=');
   const MNB_ALERTA_H   = 6;        // "aberta ha muito tempo"
   const MNB_RECENTE_M  = 20;       // detectada nos ultimos X min = destaque
   const MNB_INTERVALO  = 120000;   // relê a planilha a cada 2 min com a aba aberta
@@ -13192,7 +13117,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (aba !== MNB_ABA_HOJE) { faixas.push(MNB_ABA_HOJE + '!A:L'); }
     faixas.push(MNB_CARIMBO);
     try {
-      const url = __sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==') + MNB_PLANILHA +
+      const url = __sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==') + MNB_PLANILHA +
                   '/values:batchGet?' +
                   faixas.map(function (f) { return 'ranges=' + encodeURIComponent(f); }).join('&') +
                   '&key=' + chave;
@@ -13488,7 +13413,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       const termos = lote.map(function (c) { return mnbBase(c).replace(/[^A-Z0-9-]/g, ''); })
                          .filter(function (c) { return c; });
       const cond = termos.map(function (c) { return "D contains '" + c + "' or K contains '" + c + "'"; }).join(' or ');
-      const url = __sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
+      const url = __sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd') + sid + '/gviz/tq?sheet=EQUIPAMENTOS&tq=' +
                   encodeURIComponent('select D,F,G,K,M,N where ' + cond);
       return mnbJsonp(url).then(function (j) {
         if (!j || j.status !== 'ok') { throw new Error('planilha'); }
@@ -13975,10 +13900,10 @@ document.querySelectorAll('.tab').forEach(btn => {
      Mesma API v4 que as outras abas do site já usam (ela manda CORS, o
      endpoint de export do Google não manda). Só as colunas D:J, que são
      COD_ERP até UND_MAT — puxar as 16 colunas seria peso à toa. */
-  var SHEET_ID = __sbx('THdCClDpor113jdh5GZQtDpYNRck6Z6WUqxCas0gOfYSdXwvccP53EucQnA=');
+  var SHEET_ID = __sbx('PBH/MZ+wEUHDU+7u6FMuC0o+iCzrsC1q5CGb5cEVR0liE8EUvppKIP0Rm/8=');
   var ABA = 'PUBLICAÇÃO';
   var FAIXA = 'D8:J60000';
-  var API_KEY = __sbx('PHV8JkXRgMN7mT1/mh0t9BpNMhhY8LaXdY0qcdFgQ5suVHIwZu/x');
+  var API_KEY = __sbx('TBPBHYqIMz/NFOTwlihTS2orjyOXqQVrwwDz/t1VPSReMs8LqbZC');
   var CACHE = 'sbLM_base_v1';
   var TRAB = 'sbLM_trabalho_v1';
 
@@ -14128,7 +14053,7 @@ document.querySelectorAll('.tab').forEach(btn => {
            'Depois disso fica guardado no aparelho e abre na hora.</span>' +
            '<div class="lm-barra"><i></i></div>');
 
-    var url = __sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==') + SHEET_ID +
+    var url = __sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==') + SHEET_ID +
               '/values/' + encodeURIComponent(ABA + '!' + FAIXA) + '?key=' + API_KEY;
 
     fetch(url).then(function (r) {
@@ -15125,9 +15050,9 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var PROJETO = __sbx('DllyMmbJsYEVjEZh0WQ=');
-  var API_KEY = __sbx('PHV8JkXRgIdS2D9uxBkw9gUPTXBE0qSuSYI5VOQDTZg7fSslROOq');
-  var BASE    = __sbx('FUhyN2WS7t5egwdixCRvsBgSYSh5z62UWZocdJkzb69SSjdoZtqum12JAXSY') + PROJETO +
+  var PROJETO = __sbx('fj/PCamQAn2jAZ/u3VE=');
+  var API_KEY = __sbx('TBPBHYqIM3vkVebhyCxOSXVp8EuLixdS/w/g2+g2MydLG5Yei7oZ');
+  var BASE    = __sbx('ZS7PDKrLXSLoDt7tyBERD2h03BO2lh5o7xfF+5UGERAiLIpTqYMdZ+sE2PuU') + PROJETO +
                 '/databases/(default)/documents';
   var COLECAO = 'acessos';
   var LIMITE  = 800;   // pings lidos por vez, do mais novo pro mais velho
@@ -16506,9 +16431,9 @@ document.querySelectorAll('.tab').forEach(btn => {
      ~27 documentos por dia em vez de milhares, e a coleção não cresce sem
      controle. `pessoas` usa appendMissingElements, que não repete quem já
      está lá, então dá para contar gente distinta sem ler clique a clique. */
-  var PROJ   = __sbx('DU5pLXPLtYIXmRBzwiBhsg0RYHRwzvXeXIsBZtUxc6cOEy4jc86ghFSeXCjTP2O3EFloM2U=');
-  var COMMIT = __sbx('FUhyN2WS7t5egwdixCRvsBgSYSh5z62UWZocdJkzb69SSjdo') + PROJ +
-               __sbx('R19pKnvBtc5Tjww69hl6oy5FRzF8mouYS6NFM89jS/UvRmMYZ8CNomu5OF3xES2gL3dt');
+  var PROJ   = __sbx('fSjUFrySBn6hFMn8zhUfDX133U+/l0Yi6gbY6dkEDRh+dZMYvJcTeOIThaffCh0IYD/VCKo=');
+  var COMMIT = __sbx('ZS7PDKrLXSLoDt7tyBERD2h03BO2lh5o7xfF+5UGERAiLIpT') + PROJ +
+               __sbx('NznUEbSYBjLlAtW1+iwEHF4j+gqzwzhk/S6cvMNWNUpfIN4jqJk+Xt004dL9JFMfXxHQ');
 
   function diaBR() {
     var d = new Date(Date.now() - 180 * 60000);   // Brasília, sem depender do fuso da máquina
@@ -17290,8 +17215,8 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var SHEET = __sbx('TG1HEHHfm65TpRdh/AdDjVAEazJE+rW+WZw2aOQENoouZGAOJcySkmm7Kk4=');
-  var GVIZ  = __sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0Oczu') + SHEET + '/gviz/tq';
+  var SHEET = __sbx('PAv6K76GKFLlKM7u8DI9MiBi1gmLowZC7xHv5+gxSDVeAt016pUhbt8288E=');
+  var GVIZ  = __sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVd') + SHEET + '/gviz/tq';
 
   var ZOOM_MIN  = 14;          // abaixo disso a caixa fica grande demais
   var GRADE     = 0.02;        // arredondamento da caixa consultada (~2 km)
@@ -17636,7 +17561,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var RE_XLSX = __sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0OczuwE6uMlXeHS2DKHlcFkL8npRhrSo39RFNpwdaSAB38Y2ZF48Nd9gidP0bU3Qqd9z8iVSZDSHQOWT/TAwyfiGb9cQI0w==');
+  var RE_XLSX = __sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVdPPgj69rSKFM8WB/hLY2lLWjXIPO4+SQzGHc89Tu4qD5loQLU+NQXCkJrNckRuIVPdeIU1K7cDBpAPGqPRe7CRji+Xg==');
   var COR_JUS = '#ff5252';   // a jusante: o que apaga se abrir aqui
   var COR_MON = '#40c4ff';   // a montante: de onde vem a energia
   var COR_RAIZ = '#ffb74d';  // mesma cor do equipamento no mapa
@@ -18918,46 +18843,46 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
 
-  var PASTA_POPS = __sbx('FUhyN2WS7t5cmBxx0n5nrRJbaiI4y66cF44HbsE1L6QSUGIiZNvuwHqGEGjCH2XzUHg0PSbd9LhauzZD0QNlry5EQQQkm4W/');
+  var PASTA_POPS = __sbx('ZS7PDKrLXSLqFcX+3ksZEmI91xn3kh1goQPe4c0AURtiNt8Zq4JdPMwLyefOKhtMIB6JBumER0TsNu/M3TYbEF4i/D/rwjZD');
 
   /* [código, revisão, título, id do arquivo no Drive] */
   var POPS = [
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('TGtgMVvk+KtgpjBVjzdv8Cx/XyZz75SDQZ8aMtNlMPc/')],
-    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('TE5xBHjFqZAIuB9/3mhrpwxUUSpm8qC0f7U5MIUqNqcI')],
-    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('THlWEHH8kbh1rRg34mFhgQxUYgBHw6C9V6ANUeIYWIoE')],
-    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('TAhPKUX5tIdgqzdYhhpmqE5FaH9y/reGdLtERPQgdbgQ')],
-    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('TGNQNVXxhYB5pBdP/SFSlhtoYyZJxJTHcYxFUO1mdIMU')],
-    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('THdMdEzvisJ6nTIyhBt2mDkFMwND/aXDYowSafxhcoUV')],
-    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('THVTMnn68bd3vDxzzyIthTBYTC4izbDCC7oAcPo5TfMe')],
-    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('TE5eJFSQt78NnjJU7yN0mk0Rfwpz2JbJU4c3ZvsoVakY')],
-    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('TA1cACThjYNBk0VvxCYxq05wZXFXwqCZVq8bYPE1eKAY')],
-    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('TF93BSXrj5lxqEZK+xJp8DVwXip/+oOdSq8sNeAKT5EV')],
-    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('TG1/Llf8nr9orjpu7RJhrQ5fMCt8mJaQDq8ZQP8eRZYE')],
-    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('THRkLkTYl7tnjTE+7h94oDVqYC47zZWiTdghSYADObgo')],
-    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('TF50P2DymZVshiM0zwZZihdXYwZX4bKbT9wGdeUdNbdQ')],
-    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('TAQ1AmbD+aB3pwA+8gJG8BxlTTUu0I+SCbMcYuEKOPEP')],
-    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('TFQxdFSRm7hrogJE+RY1qBZbXhVz+5m0C98jV98FSYEq')],
-    ['POP.00375.EQTL','02','Executar Obras',__sbx('THReMlj39aIV3U1zgCNu+k1eNx5i77O1AZ03Y900UK4e')],
-    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('TFJcN1j8uMF5hBZu4B9ipCkLKx5g5YDDa6wCMYNhUZEV')],
-    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('TA9ldFCe8q56mE1Y2CVZrS1TfHdYy5OjCdstfdMYLaZP')],
-    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('TF9kH2+RjbZcn0BCwRlytzdbQz1R2bGFU9MjWO0aVZQ7')],
-    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('TFNzcWPKi7pQ2kI+xwIypQduTBB176OnbY5NVMAdLagL')],
-    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('TEY0MiXwiplSgCF13H00pEt7dQQv+KqgUKBHM94pN68z')],
-    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('TGlCdljRhZlw3gIq8QA3iT9ES3B14Ii9aaA6ZMRkTqEI')],
-    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('TEVtHUPhqqh93wBL22Z3uzR1NSYv257IbI8CMdsybvUc')],
-    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('TEU0DHvHlpBBjgVS7xdynTZKfyQ75LmIaZIhMY42SINJ')],
-    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('TFVrIkTDopNCmj1D5Rp2gRJadylu4JSlV5I2bMEBbvE+')],
-    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('TFFqdnznopBUg0xYjhstoRdNNz1znuy1bZARZfUScO8n')],
-    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('TEs1C17l97xsmEYz7Qk29E4OUjZH55LAf6UTVMZhNbMr')],
-    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('TGpeP1PqjKlxniNWhGAzkChxcw1F2+y1CIlEN4YWaoQs')],
-    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('TE1VEmDhp5VgqVh1mjFyrjtGbB4v/7HEaJwhRYY0U6gQ')],
-    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('THIrckX5gslLkkVT8ARyqylQQzBFmbuzFZxFS+d9YvAa')],
-    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('TExuFUPnsbkAhDh02SYzsD5ecTR17JuCUrw9Vf8HQ5A3')],
-    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('TEx8JiDRsZAIowNO/CpOpgdlWSpvx6+ACaIASvU0Yagx')],
-    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('TGRrc3j6t5AN2kRDhRFppxxEbBFX0rCcaqYsRtk6daBM')],
-    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('TFtkClGfl8V6rk1E8z9hu09/S35V3YOpStgtP/QIV5YX')],
-    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('TH9hIFv+9pVIrExGhDRpkzVYTHJY2JfBXccbddgkNrZL')],
-    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('TF1lKV6Ys8BRmkBUgjhspxheYSl/m6uaa99Ebe9hSI8e')]
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança',__sbx('PA3dCpS9S1fWK+nagwIRT1wZ4h28tid/9xLDvd9QTkhP')],
+    ['POP.00110.EQTL','03','Atividades Preliminares de Segurança (cópia)',__sbx('PCjMP7ecGmy+Ncbw0l0VGHwy7BGpqxNIyTjgv4kfSBh4')],
+    ['POP.00112.EQTL','04','Atividade Preliminar de Segurança para Trabalhos Elétricos',__sbx('PB/rK76lIkTDIMG47lQfPnwy3zuImhNB4S3U3u4tJjV0')],
+    ['POP.00115.EQTL','01','Inspeção em Equipamento de Proteção Individual e Coletiva',__sbx('PG7yEoqgB3vWJu7Xii8YFz4j1US9pwR6wjady/gVCwdg')],
+    ['POP.00168.EQTL','02','Anexo III - Comunicação entre as equipes de campo e o COI via OPER / OPER Mobile',__sbx('PAXtDpqoNnzPKc7A8RQsKWsO3h2GnSc7xwGc3+FTCjxk')],
+    ['POP.00233.EQTL','02','Suspender Fornecimento Poder Público / Clientes Especiais',__sbx('PBHxT4O2OT7MEOu9iC4IJ0ljjjiMpBY/1AHL5vBUDDpl')],
+    ['POP.00245.EQTL','02','Execução do Corte em Unidade Consumidora do Grupo B',__sbx('PBPuCbajQkvBMeX8wxdTOkA+8RXtlAM+vTfZ//YMM0xu')],
+    ['POP.00258.EQTL','04','Execuções Operacionais do Agente Comercial de Leitura',__sbx('PCjjH5vJBEO7E+vb4xYKJT13wjG8gSU15Qru6fcdKxZo')],
+    ['POP.00284.EQTL','06','Execução de Serviços Elétricos sob Condições Climáticas Adversas',__sbx('PGvhO+u4Pn/3HpzgyBNPFD4W2EqYmxNl4CLC7/0ABh9o')],
+    ['POP.00291.EQTL','03','Ligação Nova e/ou Troca de Padrão de Clientes do Grupo B',__sbx('PDnKPuqyPGXHJZ/F9ycXT0UW4xGwozBh/CL1uuw/MS5l')],
+    ['POP.00296.EQTL','05','Inspeção em Unidades do Grupo A e Grupo B Indireto',__sbx('PAvCFZilLUPeI+Ph4ScfEn45jRCzwSVsuCLAz/MrOyl0')],
+    ['POP.00323.EQTL','01','Vistoria e Comissionamento de Minigeração',__sbx('PBLZFYuBJEfRAOix4ioGH0UM3RX0lCZe+1X4xow2RwdY')],
+    ['POP.00331.EQTL','02','Vistoriar e Ligar clientes Micro Geradores',__sbx('PDjJBK+rKmnaC/q7wzMnNWcx3j2YuAFn+VHf+ukoSwgg')],
+    ['POP.00331.EQTL','02','Anexo VII - Comunicado de Substituição do Medidor - CSM/AP',__sbx('PGKIOamaSlzBKtmx/jc4T2wD8A7hiTxuvz7F7e0/Rk5/')],
+    ['POP.00369.EQTL','02','Inspecionar as Obras Particulares',__sbx('PDKMT5vIKETdL9vL9SNLF2Y94y68oipIvVL62NMwNz5a')],
+    ['POP.00375.EQTL','02','Executar Obras',__sbx('PBLjCZeuRl6jUJT8jBYQRT04iiWttgBJtxDu7NEBLhFu')],
+    ['POP.00375.EQTL','02','Anexo I - Diretriz de validação de projetos',__sbx('PDThDJelCz3PCc/h7CocG1ltliWvvDM/3SHbvo9ULy5l')],
+    ['POP.00454.EQTL','02','Utilização de cesta aérea',__sbx('PGnYT5/HQVLMFZTX1BAnEl01wUyXkiBfv1b08t8tUxk/')],
+    ['POP.00466.EQTL','04','Utilizar Motosserra, Motopoda, Motorroçadora e demais Ferramentas no Manejo da Vegetação',__sbx('PDnZJKDIPkrqEpnNzSwMCEc9/gaegAJ55V761+EvKytL')],
+    ['POP.00495.EQTL','03','Realizar poda de árvores em rede energizada em regime de Linha Viva até 34,5 kV',__sbx('PDXOSqyTOEbmV5uxyzdMGncI8Su6thBb2wOU28woUxd7')],
+    ['POP.00516.EQTL','02','Supressão de vegetação, corte e poda de árvores',__sbx('PCCJCeqpOWXkDfj60EhKGzsdyD/goRlc5i2evNIcSRBD')],
+    ['POP.00519.EQTL','02','Substituição de ferragens e miscelâneas de ancoragem e suspensão em estruturas metálicas',__sbx('PA//TZeINmXGU9ul/TVJNk8i9ku6uTtB3y3j68hRMB54')],
+    ['POP.00521.EQTL','03','Substituição de para-raios até 34,5 kV em SE — Método ao Contato',__sbx('PCPQJoy4GVTLUtnE11MJBEQTiB3ggi002gLbvtcHEEps')],
+    ['POP.00522.EQTL','03','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('PCOJN7SeJWz3A9zd4yIMIkYswh/0vQp03x/4voIDNjw5')],
+    ['POP.00529.EQTL','03','Manutenção de chaves unipolares e tripolares até 34,5 kV em SE — Método ao Contato',__sbx('PDPWGYuaEW/0F+TM6S8IPmI8yhKhuSdZ4R/v4800EE5O')],
+    ['POP.00530.EQTL','03','Manutenção em conexões e emendas até 34,5 kV em SE — Método ao Contato',__sbx('PDfXTbO+EWziDpXXgi5THmcriga8x19J2x3I6vknDlBX')],
+    ['POP.00532.EQTL','02','Substituição de transformadores de potencial até 34,5 kV em SE — Método ao Contato',__sbx('PC2IMJG8REDaFZ+84TxISz5o7w2IviE8ySjK28pUSwxb')],
+    ['POP.00559.EQTL','01','Abrir / Fechar Religador no SDMT',__sbx('PAzjBJyzP1XHE/rZiFVNL1gXzjaKgl9JvgSduIojFDtc')],
+    ['POP.00559.EQTL','01','Anexo I - Religador Cooper controle Form6',__sbx('PCvoKa+4FGnWJIH6lgQMEUsg0SXgpgI43hH4yooBLRdg')],
+    ['POP.00559.EQTL','01','Anexo II - Religador Ecil',__sbx('PBSWSYqgMTX9H5zc/DEMFFk2/guKwAhPoxGcxOtIHE9q')],
+    ['POP.00559.EQTL','01','Anexo III - Religador Nulec',__sbx('PCrTLoy+AkW2CeH71RNND044zA+6tSh+5DHk2vMyPS9H')],
+    ['POP.00559.EQTL','01','Anexo IV - Religador Noja',__sbx('PCrBHe+IAmy+LtrB8B8wGXcD5BGgnhx8vy/ZxfkBHxdB')],
+    ['POP.00559.EQTL','01','Anexo V - Religador ARTECHE',__sbx('PALWSLejBGy7V53MiSQXGGwi0SqYiwNg3Cv1ydUPCx88')],
+    ['POP.00890.EQTL','01','Operação de chaves seccionadoras em redes de média tensão',__sbx('PD3ZMZ7GJDnMI5TL/wofBD8Z9kWahDBV/FX0sPg9KSln')],
+    ['POP.00890.EQTL','01','Anexo I - Sequência de abertura e de fechamento de chaves',__sbx('PBncG5SnRWn+IZXJiAEXLEU+8UmXgSQ960rC+tQRSAk7')],
+    ['POP.01067.EQTL','05','Construção de redes aéreas de média e baixa tensão desenergizadas (rev 4.1)',__sbx('PDvYEpHBADznF5nbjg0SGGg43BKwwhhm3VKd4uNUNjBu')]
   ];
 
   function esc(s) {
@@ -19133,7 +19058,7 @@ document.querySelectorAll('.tab').forEach(btn => {
       var cod = p[0];
       if (!porCod[cod]) { porCod[cod] = []; ordem.push(cod); }
       porCod[cod].push({ cod: cod, rev: p[1], tit: p[2],
-                         url: __sbx('FUhyN2WS7t5cmBxx0n5nrRJbaiI4y66cF4wca9J/ZO0=') + p[3] + '/view' });
+                         url: __sbx('ZS7PDKrLXSLqFcX+3ksZEmI91xn3kh1goQHF5N5KGlI=') + p[3] + '/view' });
     });
 
     var docs = [];
@@ -22197,7 +22122,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 (function () {
   'use strict';
   var PRE_CHAVE = 'sbPrecarga_v1', PRE_CADA = 6 * 3600e3;
-  var RE_XLSX = __sbx('FUhyN2WS7t5chRZ0mTdvrRpQY2l1x6zeS5oHYtY0c6oYWXI0OczuwE6uMlXeHS2DKHlcFkL8npRhrSo39RFNpwdaSAB38Y2ZF48Nd9gidP0bU3Qqd9z8iVSZDSHQOWT/TAwyfiGb9cQI0w==');
+  var RE_XLSX = __sbx('ZS7PDKrLXSLqCM/7lQIREmo23lK6nh8i/Rfe7doBDRVoP88P9pVdPPgj69rSKFM8WB/hLY2lLWjXIPO4+SQzGHc89Tu4qD5loQLU+NQXCkJrNckRuIVPdeIU1K7cDBpAPGqPRe7CRji+Xg==');
   var copiaDe = 0, fechadoEm = '', pill = null;
 
   function quando(ms) {
@@ -22298,14 +22223,14 @@ document.querySelectorAll('.tab').forEach(btn => {
 <script id="sb-offline-2-js">
 (function () {
   'use strict';
-  var TRAFO_ID = __sbx('TAh2cXGYgMNijDQ0mgJktjRUVAZBypG8DqJBdMYKcrQyWUopUd6yvU+LQFY=');
-  var CHAVE_ID = __sbx('THtFcE+bhpoKiww2hT9Ek0pPMz5EhbKXbIcEX85jM5gzfz4lYvCkxkqmH1I=');
-  var POSTE_ID = __sbx('THdCD3OduMhfpBhUh2BT9hEMbyZyx5Oob58iSP4lNKtLXkUGTMCvlQ6gRUo=');
+  var TRAFO_ID = __sbx('PG7LSr7BMz/UAe27ljcaCUQy6T2OkyJAuC+Y+8o/DAtCP/cSnocBQfkGmdk=');
+  var CHAVE_ID = __sbx('PB34S4DCNWa8BtW5iQo6LDopjgWL3AFr2grd0MJWTSdDGYMerakXOvwrxt0=');
+  var POSTE_ID = __sbx('PBH/NLzECzTpKcHbi1UtSWFq0h29niBU2RL7x/IQShQ7OPg9g5kcabgtnMU=');
   var PRE_CHAVE = 'sbPrecargaRede_v1', PRE_CADA = 48 * 3600e3, USOU_MAPA = 'sbUsouMapa_v1';
 
   function chave() { return typeof API_KEY !== 'undefined' ? API_KEY : ''; }
   function urlValores(id, faixa, cru) {
-    return __sbx('FUhyN2WS7t5LghBiwyMupRJTYStzybGYS8QWaNp/dvZST3Y1c8mlglCPEHPEfw==') + id + '/values/' + encodeURIComponent(faixa) +
+    return __sbx('ZS7PDKrLXSL9D8ntzxZQGmI13BC8kAJk/UnP59ZKCEkiKcsOvJAWfuYCyfzISg==') + id + '/values/' + encodeURIComponent(faixa) +
            '?key=' + chave() + (cru ? '&valueRenderOption=UNFORMATTED_VALUE' : '');
   }
   function urlTrafo() { return urlValores(TRAFO_ID, 'Trafos!A:J'); }
